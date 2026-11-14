@@ -1,7 +1,8 @@
 {
-  "run_id": "43623299043",
-  "run_url": "https://github.com/vivi9116/global-opportunity-radar/actions/runs/43623299043",
+  "run_id": "43624119468",
+  "run_url": "https://github.com/vivi9116/global-opportunity-radar/actions/runs/43624119468",
   "collector_outcome": "success",
-  "recorded_at": "2026-11-14T17:51:48+00:00",
+  "trigger_event": "workflow_dispatch",
+  "recorded_at": "2026-11-14T18:01:22+00:00",
   "status": "这是采集步骤结果；推送和整个任务是否成功，仍以GitHub运行页最终结论为准。"
 }

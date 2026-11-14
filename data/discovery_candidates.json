@@ -1,287 +1,5 @@
 [
   {
-    "url": "https://github.com/mainbrella/backend",
-    "found_in": "https://news.ycombinator.com/item?id=49971503",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/mainbrella/web",
-    "found_in": "https://news.ycombinator.com/item?id=49971503",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/Varinomics",
-    "found_in": "https://news.ycombinator.com/item?id=50496986",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://djangocontrolroom.com/panels/",
-    "found_in": "https://news.ycombinator.com/item?id=50484330",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://subvocal.company/",
-    "found_in": "https://news.ycombinator.com/item?id=50340088",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.youtube.com/watch",
-    "found_in": "https://news.ycombinator.com/item?id=50340088",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://drive.google.com/file/d/1mwhv5HZMz3UTevdrgwS5O7g2jWV...",
-    "found_in": "https://news.ycombinator.com/item?id=50340088",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/dftan-github/L",
-    "found_in": "https://ruby-china.org/topics/44755",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/weiliping/ClipboardHistory",
-    "found_in": "https://ruby-china.org/topics/44722",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://longsms.net/",
-    "found_in": "https://ruby-china.org/topics/44699",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://5sim.net/",
-    "found_in": "https://ruby-china.org/topics/44699",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://sms-man.com/",
-    "found_in": "https://ruby-china.org/topics/44699",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/gsel001",
-    "found_in": "https://www.reddit.com/r/forhire/comments/1xw5ymc/for_hire_ill_fix_your_website_automate_repetitive/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://samibentaleb.com/",
-    "found_in": "https://www.reddit.com/r/forhire/comments/1xw03lr/for_hire_software_engineer_designer_custom/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://drive.google.com/drive/u/1/folders/1OfK6jmVhcxz4sdHHXh3j6JTHFyIq-TA7",
-    "found_in": "https://www.reddit.com/r/forhire/comments/1xvwtw6/for_hire_freelance_video_editor_available_for/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://drive.google.com/drive/folders/1A_648tQacTJQ-sQ6TW_iaAd3P7SsWXtT",
-    "found_in": "https://www.reddit.com/r/forhire/comments/1xvtbrw/for_hire_virtual_assistant_and_video_editor/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/langfuse/langfuse",
-    "found_in": "https://news.ycombinator.com/item?id=50484682",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://news.ycombinator.com/item",
-    "found_in": "https://news.ycombinator.com/item?id=50484682",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/langfuse/langfuse/tree/main/ai-gateway",
-    "found_in": "https://news.ycombinator.com/item?id=50484682",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://leeroo.com/",
-    "found_in": "https://news.ycombinator.com/item?id=50471281",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/Leeroo-AI/kapso",
-    "found_in": "https://news.ycombinator.com/item?id=50471281",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/diderisoft/bot-bottle/main/install.sh",
-    "found_in": "https://news.ycombinator.com/item?id=50456190",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://bot-bottle.com/docs",
-    "found_in": "https://news.ycombinator.com/item?id=50456190",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/klad-app/klad",
-    "found_in": "https://news.ycombinator.com/item?id=50454951",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://klad.studio",
-    "found_in": "https://news.ycombinator.com/item?id=50454951",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "http://pavago.co",
-    "found_in": "https://weworkremotely.com/remote-jobs/pavago-seo-digital-marketing-specialist",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://weworkremotely.com/remote-jobs/pavago-seo-digital-marketing-specialist",
-    "found_in": "https://weworkremotely.com/remote-jobs/pavago-seo-digital-marketing-specialist",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "http://terac.com",
-    "found_in": "https://weworkremotely.com/remote-jobs/terac-product-marketing-managers-gtm-brief-review-for-bike-repair-tool",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://weworkremotely.com/remote-jobs/terac-product-marketing-managers-gtm-brief-review-for-bike-repair-tool",
-    "found_in": "https://weworkremotely.com/remote-jobs/terac-product-marketing-managers-gtm-brief-review-for-bike-repair-tool",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "http://capslock.global",
-    "found_in": "https://weworkremotely.com/remote-jobs/capslock-creative-marketing-project-coordinator",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://weworkremotely.com/remote-jobs/capslock-creative-marketing-project-coordinator",
-    "found_in": "https://weworkremotely.com/remote-jobs/capslock-creative-marketing-project-coordinator",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "http://wevote.us",
-    "found_in": "https://weworkremotely.com/remote-jobs/wevote-managing-editor-volunteer",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://wevote.applytojob.com/apply.",
-    "found_in": "https://weworkremotely.com/remote-jobs/wevote-managing-editor-volunteer",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://weworkremotely.com/remote-jobs/wevote-managing-editor-volunteer",
-    "found_in": "https://weworkremotely.com/remote-jobs/wevote-managing-editor-volunteer",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://WeVote.US",
-    "found_in": "https://weworkremotely.com/remote-jobs/wevote-newsletter-team-co-lead",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://wevote.applytojob.com/apply",
-    "found_in": "https://weworkremotely.com/remote-jobs/wevote-financial-controller-1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.silverorange.com/",
-    "found_in": "https://weworkremotely.com/remote-jobs/silverorange-director-of-business-development-1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://weworkremotely.com/remote-jobs/silverorange-director-of-business-development-1",
-    "found_in": "https://weworkremotely.com/remote-jobs/silverorange-director-of-business-development-1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://weworkremotely.com/remote-jobs/edgeq-technologies-private-limited-ai-infrastructure-specialist",
-    "found_in": "https://weworkremotely.com/remote-jobs/edgeq-technologies-private-limited-ai-infrastructure-specialist",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.integromat.com/oauth/cb/shopify/",
-    "found_in": "https://community.make.com/t/how-to-upload-an-image-file-to-a-shopify-order-write-files-scope-missing-in-the-make-connection/119701",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://breedcoins.com/blog/signal-trading-bot-development",
-    "found_in": "https://community.make.com/t/signal-trading-bot-development-from-market-analysis-to-automated-execution/119676",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://wa.me/917358121732",
-    "found_in": "https://community.make.com/t/signal-trading-bot-development-from-market-analysis-to-automated-execution/119676",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.linkedin.com/in/marius-andronie",
-    "found_in": "https://community.make.com/t/make-python-developer-custom-api-and-webhook-integrations-ai-steps-with-human-approval-lovable-and-bubble-backends/119660",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://nolo.formwrks.co/demo",
-    "found_in": "https://community.make.com/t/ai-assistants-make-n8n-workflows-websites-manuel-restrepo-en-es/119632",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://nolo.formwrks.co",
-    "found_in": "https://community.make.com/t/ai-assistants-make-n8n-workflows-websites-manuel-restrepo-en-es/119632",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://portfolio-brianparisien.vercel.app/",
-    "found_in": "https://community.make.com/t/ai-automation-delivery-lead-make-com-builds-with-tested-ai-steps-and-real-error-handling/119548",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://portfolio-brianparisien.vercel.app/Brian-Parisien-Resume.pdf",
-    "found_in": "https://community.make.com/t/ai-automation-delivery-lead-make-com-builds-with-tested-ai-steps-and-real-error-handling/119548",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
     "url": "https://beyondcreator.ca",
     "found_in": "https://community.make.com/t/hiring-agency-operations-ai-systems-builder-remote-part-time/119528",
     "status": "not_validated",
@@ -1040,6 +758,390 @@
     "found_at": "2026-11-14T17:51:48+00:00",
     "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
     "query": "\"domain parking\" \"revenue\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://cyberbrics.info/the-largest-personal-data-leakage-in...",
+    "found_in": "https://news.ycombinator.com/item?id=50490925",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://www.copyright.gov/ai/Copyright-and-Artificial-Intell...",
+    "found_in": "https://news.ycombinator.com/item?id=50473123",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "http://www.sadtrombone.com",
+    "found_in": "https://news.ycombinator.com/item?id=50465777",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/RedSwoosh",
+    "found_in": "https://news.ycombinator.com/item?id=50465777",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://mail.example.com",
+    "found_in": "https://news.ycombinator.com/item?id=50456921",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://nitromta.com/docs/compatibility/",
+    "found_in": "https://news.ycombinator.com/item?id=50456921",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://nitromta.com/docs/benchmarks/",
+    "found_in": "https://news.ycombinator.com/item?id=50456921",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://support.google.com/googleplay/android-developer/answer/17594752",
+    "found_in": "https://news.ycombinator.com/item?id=50375898",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://app.wonderchat.io/llms.txt",
+    "found_in": "https://news.ycombinator.com/item?id=50479411",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://wonderchat.io/",
+    "found_in": "https://news.ycombinator.com/item?id=50479411",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://lelouch.dev/blog/you-are-probably-not-dumb/",
+    "found_in": "https://news.ycombinator.com/item?id=50469605",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/andy-spike/armin",
+    "found_in": "https://news.ycombinator.com/item?id=50469605",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://pomerado.ai/",
+    "found_in": "https://news.ycombinator.com/item?id=50455811",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://youtu.be/Bi4jci7rgHo",
+    "found_in": "https://news.ycombinator.com/item?id=50455811",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/Pomerado/pomerado",
+    "found_in": "https://news.ycombinator.com/item?id=50455811",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://laminar.sh",
+    "found_in": "https://news.ycombinator.com/item?id=50154029",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://laminar.sh/blog/flow-1",
+    "found_in": "https://news.ycombinator.com/item?id=50154029",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://youtu.be/KJa3h6ZJNLQ",
+    "found_in": "https://news.ycombinator.com/item?id=50154029",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://mainbrella.com/",
+    "found_in": "https://news.ycombinator.com/item?id=49971503",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://hereforsomeone.org.uk",
+    "found_in": "https://www.sitepoint.com/community/t/i-ve-built-a-mental-health-support-website-and-would-really-appreciate-a-designer-s-advice/491592",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://berean-biblechurch.org/study/",
+    "found_in": "https://www.sitepoint.com/community/t/block-does-not-resize-as-expected-on-mobile-browser/491444",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/tenstorrent/tt-metal/pull/34985",
+    "found_in": "https://github.com/tenstorrent/tt-metal/issues/65437",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://docs.tenstorrent.com/bounty_terms.html",
+    "found_in": "https://github.com/tenstorrent/tt-metal/issues/65437",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://janzeer.org,",
+    "found_in": "https://github.com/janzeerOrg/janzeer-cli/issues/2",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/janzeerOrg/janzeer-cli/releases.",
+    "found_in": "https://github.com/janzeerOrg/janzeer-cli/issues/2",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/IES-BoilerRoom/solana-svm-cpi-conformance/issues/1",
+    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4341",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://algora.io",
+    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4341",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://polar.sh",
+    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4341",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/IES-BoilerRoom/pcie-tlp-credit-flow-gate/issues/1",
+    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4340",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/IES-BoilerRoom/solana-svm-cpi-conformance/issues/2",
+    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4339",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/IES-BoilerRoom/pcie-tlp-credit-flow-gate/issues/2",
+    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4338",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://opire.dev",
+    "found_in": "https://github.com/WholeTroutMedia/agent-conformance-quarantine/issues/1",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://hanzo.ai/lz4/v4",
+    "found_in": "https://github.com/hanzo-go/lz4/issues/1",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/hanzo-go/lz4`,",
+    "found_in": "https://github.com/hanzo-go/lz4/issues/1",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://proxy.golang.org/hanzo.ai/lz4/v4/@v/list`",
+    "found_in": "https://github.com/hanzo-go/lz4/issues/1",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://chromewebstore.google.com/detail/kknfboekekeaagdoineimnebhlmiohpb",
+    "found_in": "https://www.reddit.com/r/adops/comments/1xw2oym/sidepanel_debugger_for_floodlight_trade_desk/",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://nauticalnames.net/",
+    "found_in": "https://www.reddit.com/r/passive_income/comments/1xvpahj/does_anyone_here_run_a_website_like_this_for/",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://foldinglink.com",
+    "found_in": "https://www.reddit.com/r/passive_income/comments/1xux4sz/creators_wanted_for_referral_and_paid_brand/",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://vsys.host/news/two-kyiv-data-centers-hit-within-hours-incident-report-and-recovery-status",
+    "found_in": "https://lowendtalk.com/discussion/221478/vsys-host-ua-data-centers-what-happened-and-where-recovery-stands",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://create.roblox.com/",
+    "title": "Roblox Creator Hub",
+    "snippet": "Unlock your imagination with Roblox Creator Hub - the ultimate platform for building and publishing games. Join a vibrant community of creators today and publish your ideas to millions of people around the world.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
+    "query": "\"creator rewards\" \"payout\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.creator.co/",
+    "title": "Creator · Powering Brand-Influencer Partnerships",
+    "snippet": "Creator.co brings creator discovery, outreach, campaign management, content approvals, payouts, and performance tracking into one place, with in-house experts available when brands need additional support.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
+    "query": "\"creator rewards\" \"payout\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://dictionary.cambridge.org/dictionary/english/creator",
+    "title": "CREATOR | English meaning - Cambridge Dictionary",
+    "snippet": "CREATOR definition: 1. someone who makes something new: 2. a divine being who created someone or something or created…. Learn more.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
+    "query": "\"creator rewards\" \"payout\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.merriam-webster.com/dictionary/creator",
+    "title": "CREATOR Definition & Meaning - Merriam-Webster",
+    "snippet": "The meaning of CREATOR is one that creates usually by bringing something new or original into being; especially Creator : god.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
+    "query": "\"creator rewards\" \"payout\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://create.roblox.com/creator",
+    "title": "Creator Dashboard - Roblox",
+    "snippet": "Roblox Studio is an advanced development environment allowing you to create anything you can imagine with a comprehensive set of free, powerful 3D creation tools. 77.7M daily active users across 190 countries spend on average 2.4 hours on t",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
+    "query": "\"creator rewards\" \"payout\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.youtube.com/creators/",
+    "title": "Create, Grow & Earn on YouTube | YouTube for Creators",
+    "snippet": "Welcome to the official YouTube Creators hub. Discover educational resources, inspiring creator stories, best practices, and the latest news to help you grow.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
+    "query": "\"creator rewards\" \"payout\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://explore.microsoft.com/en-us/bing/features/bing-image-creator",
+    "title": "Bing Image Creator | Microsoft Bing",
+    "snippet": "Create visuals with Bing Image Creator, a free AI-powered tool that turns your descriptions into images. Explore different styles of artwork, or upload your own images to personalize what you make.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
+    "query": "\"creator rewards\" \"payout\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.facebook.com/creator_studio/welcome/",
+    "title": "Creator Studio - Facebook",
+    "snippet": "We've reimagined Facebook Creator Studio as an AI-powered companion app to help you grow on Facebook. Creator Studio is available in select regions and rolling out to more soon.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
+    "query": "\"creator rewards\" \"payout\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://kick.com/category/peak-1",
+    "title": "PEAK Live Streams - Watch Live on KICK",
+    "snippet": "Watch live PEAK streams on KICK: Platform, Adventure, and Indie streams from top streamers and new channels going live right now.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22CSV%22%20%22paid%20me%22",
+    "query": "\"CSV\" \"paid me\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.twitch.tv/directory/category/peak-2025",
+    "title": "PEAK - Twitch",
+    "snippet": "Peak is a cooperative climbing game for up to four players. After crash-landing on an unknown island, players take the role of scouts attempting to ascend the mountain at its center.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22CSV%22%20%22paid%20me%22",
+    "query": "\"CSV\" \"paid me\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.youtube.com/watch",
+    "title": "PEAK LIVE Can We Reach the Summit?! | Epic Mountain Climbing Gameplay",
+    "snippet": "Welcome to the PEAK LIVE STREAM! 🏔️ Today we’re climbing higher, surviving the dangers, and trying to reach the ultimate summit.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22CSV%22%20%22paid%20me%22",
+    "query": "\"CSV\" \"paid me\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://kick.com/peak",
+    "title": "peak Live Stream - Watch Live on KICK",
+    "snippet": "Watch peak live on KICK, plus VODs, clips and highlights from every stream.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22CSV%22%20%22paid%20me%22",
+    "query": "\"CSV\" \"paid me\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://peak-game.wiki/room-codes/",
+    "title": "PEAK Room Codes: Current Crossplay Rules",
+    "snippet": "The host copies the current code from the lobby pause menu; the joining player enters it through JOIN GAME. Crossplay now covers Steam, PS5, Xbox Series X|S and Nintendo Switch 2, while progress does not transfer between platforms.",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22CSV%22%20%22paid%20me%22",
+    "query": "\"CSV\" \"paid me\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://discord.com/invite/peakgame",
+    "title": "Join the PEAK Discord Server!",
+    "snippet": "This is the official server for PEAK by Aggro Crab and Landfall Games! | 598307 members",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22CSV%22%20%22paid%20me%22",
+    "query": "\"CSV\" \"paid me\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://steamcommunity.com/app/3527290/discussions/0/592900931251612177/",
+    "title": "public lobby :: PEAK General Discussions",
+    "snippet": "I get this and that is nice that they offer it, but there's a certain charm to finding people in public lobbies that I feel this game would thrive on! I would love it to be an option some day; I personally just don't want to have to join an",
+    "found_at": "2026-11-14T18:01:21+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22CSV%22%20%22paid%20me%22",
+    "query": "\"CSV\" \"paid me\"",
     "status": "search_excerpt_only",
     "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
   }

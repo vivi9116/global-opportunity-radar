@@ -46,7 +46,7 @@
     $('platformCount').textContent=payload.coverage?.successful_platforms??'—';$('recordSummary').textContent=`${payload.signals?.length||0}条来源记录 · ${payload.reference_signals?.length||0}条参考思路`;
     $('updatedAt').textContent=payload.updated_at?`最近完成：${date(payload.updated_at)} · ${payload.environment==='github-actions'?'GitHub云端采集':'本机采集'}`:'还没有完成的采集批次';
     const run=payload.cloud?.last_run_record;
-    $('cloudDetails').innerHTML=run?.run_url?`<p><a href="${escape(safeURL(run.run_url))}" target="_blank" rel="noopener noreferrer">点开核对这批数据的真实GitHub任务 ↗</a></p><p class="small muted">${escape(run.status||'任务最终结论以GitHub运行页为准')}</p>`:'还没有读到云端任务记录，先不把配置文件当成部署成功。';
+    $('cloudDetails').innerHTML=run?.run_url?`<p><a href="${escape(safeURL(run.run_url))}" target="_blank" rel="noopener noreferrer">点开核对这批数据的真实GitHub任务 ↗</a></p><p class="small muted">这批触发方式：${escape(({schedule:'GitHub定时触发',workflow_dispatch:'手动触发的云端验收'})[run.trigger_event]||'旧记录未标注')}。${escape(run.status||'任务最终结论以GitHub运行页为准')}</p>`:'还没有读到云端任务记录，先不把配置文件当成部署成功。';
     const tr=payload.translation;$('translationStatus').textContent=tr?`中文整理：本轮新译${tr.new_fields||0}段，缓存${tr.cached_fields||0}段，待补${tr.pending_fields||0}段。${(tr.failures||[]).join('；')}`:'英文原题与原文证据保留，中文整理随采集补充。';
     factoryOptions();renderHistory();renderMarkets();
   }

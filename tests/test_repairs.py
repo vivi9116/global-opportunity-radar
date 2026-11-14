@@ -12,7 +12,8 @@ from radar.catalog import default_sources
 from radar.engine import Engine
 from radar.fetch import HTTPClient,FetchFailure,retry_delay,challenge_title
 from radar.html_sources import warrior,trustmrr
-from radar.translation import split_translation,translate
+from radar.translation import split_translation,translate,numbers_preserved
+from radar.analysis import financial_evidence
 
 class RepairTests(unittest.TestCase):
     def test_actual_bot_page_is_a_challenge_even_with_http200(self):
@@ -44,6 +45,12 @@ class RepairTests(unittest.TestCase):
         response=json.dumps([[['⟦R0⟧\n清理CSV表格需求',None]]])
         with patch('radar.translation.HTTPClient.get',return_value=(response,{})):report=translate([item],{}, {'sources':{},'host_backoff':{}})
         self.assertIn('清理CSV',item['title_zh']);self.assertEqual(item['raw_title_en'],'CSV cleanup request');self.assertEqual(item['financial_evidence'][0]['quote'],'Budget $60');self.assertEqual(report['new_fields'],1)
+    def test_global_currency_is_not_silently_relabelled_usd(self):
+        self.assertEqual(financial_evidence('','I earned R$150 from this work.','business_discussion')[0]['amount'],'R$150')
+        self.assertEqual(financial_evidence('','I earned 20 USDT from this work.','business_discussion')[0]['amount'],'20 USDT')
+    def test_numeric_translation_guard_rejects_changed_money(self):
+        self.assertTrue(numbers_preserved('Budget $1,000 for 20 rows','预算1000美元，20行'))
+        self.assertFalse(numbers_preserved('Budget $60','预算600美元'))
     def test_csv_sample_flags_ambiguity_instead_of_losing_rows(self):
         file=Path(__file__).resolve().parents[1]/'assets/csv_merge_sample.py';spec=importlib.util.spec_from_file_location('csv_sample',file);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
         with tempfile.TemporaryDirectory() as tmp:

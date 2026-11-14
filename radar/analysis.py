@@ -6,7 +6,7 @@ import re
 from .business_profiles import profile_for,observed_constraints
 from .catalog import PLATFORMS
 
-MONEY=re.compile(r'(?:US\$|USD\s*|\$|€|£|¥|￥)\s*\d[\d,]*(?:\.\d+)?(?:\s*[kKmMbB]\b)?|\d[\d,]*(?:\.\d+)?\s*(?:美元|元|日元|USD|EUR|GBP)')
+MONEY=re.compile(r'(?:US\$|R\$|CA\$|A\$|HK\$|S\$|NT\$|USD\s*|\$|€|£|¥|￥|₽|₹|₩)\s*\d[\d,]*(?:\.\d+)?(?:\s*[kKmMbB]\b)?|\d[\d,]*(?:\.\d+)?\s*(?:美元|日元|元|円|USDT\b|USDC\b|USD\b|EUR\b|GBP\b|BRL\b|JPY\b|CNY\b|RUB\b|BTC\b|ETH\b|руб\b|€|£|₽)',re.I)
 GOAL=re.compile(r'\b(?:goal|target|aim|hope|hoping|plan|would|could|want to|expect|projected|potential|forecast|journey to)\b|目标|计划|希望|预计',re.I)
 OUTCOME=re.compile(r'\b(?:earned|paid me|received|made|generated|netted|first sale|sold)\b|\b(?:revenue|profit|income)\s*[:=]|到账|实收|赚了|营收[：:]',re.I)
 BUYER=re.compile(r'\[\s*(?:hiring|task)\s*\]|\b(?:bounty|need someone|looking for (?:a |an )?(?:freelancer|developer|designer|writer|someone)|willing to pay someone|hiring (?:a|an))\b|悬赏|求开发|求外包|招募',re.I)
@@ -156,6 +156,8 @@ def analyze(raw,source,environment='local'):
         item['kind']='seller_report';item['title_zh']='【正文收入说法·待核验】'+title
     item['pain_point_zh']=('正文可见的需求/背景：'+body[:260]) if body else '缺少正文证据，请展开源链接核对具体需求；不从标题补写故事。'
     item['solver_case_zh']='尚未找到与该需求严格对应、可核验的付费解决案例。'
+    if item['kind']=='seller_report':item['solver_case_zh']='这条是原文披露的收入说法，下面保留金额和语境。没有独立核对付款凭证，也没把它冒充与你要做的需求完全相同的成交。'
+    if item['kind']=='platform_metrics':item['solver_case_zh']='这里是平台公开展示的订阅/营收指标，可以反过来看它卖什么。它不是净利润，也不是本监控台审计过的银行到账。'
     item['platform_ecology'],item['action_steps'],item['reverse_model']=detailed_strategy(item,source)
     item['strategy_label']='以下是基于来源内容的执行建议与商业推理，不是已经验证的收益。'
     from .editorial import apply

@@ -3,6 +3,9 @@ import hashlib
 import json
 import re
 import time
+import os
+from collections import Counter
+from pathlib import Path
 from urllib.parse import urlencode
 from .fetch import HTTPClient,FetchFailure
 
@@ -14,12 +17,41 @@ def split_translation(value,count):
     if [int(m[1]) for m in markers]!=list(range(count)):raise ValueError('翻译分段标识不完整，未把结果错配给项目。')
     return [value[m.end():markers[i+1].start() if i+1<count else len(value)].strip() for i,m in enumerate(markers)]
 
+def offline_english(missing,cache):
+    root=Path(os.environ.get('RADAR_OFFLINE_MODEL_DIR',''))
+    if not all((root/name).is_file() for name in ['model/model.bin','source.spm','target.spm']):return missing,0,'离线模型还未就绪'
+    import ctranslate2
+    import sentencepiece as spm
+    import langid
+    selected=[];pending=[]
+    for key,text in missing:
+        language,_=langid.classify(text)
+        if language=='en':selected.append((key,text))
+        else:pending.append((key,text))
+    if not selected:return pending,0,None
+    source=spm.SentencePieceProcessor(model_file=str(root/'source.spm'));target=spm.SentencePieceProcessor(model_file=str(root/'target.spm'))
+    translator=ctranslate2.Translator(str(root/'model'),device='cpu',compute_type='int8',intra_threads=2,inter_threads=1)
+    for offset in range(0,len(selected),24):
+        batch=selected[offset:offset+24]
+        tokens=[['>>cmn_Hans<<']+source.encode(text,out_type=str) for _,text in batch]
+        results=translator.translate_batch(tokens,beam_size=2,max_batch_size=24,max_input_length=256,max_decoding_length=256)
+        for (key,text),result in zip(batch,results):
+            chinese=target.decode(result.hypotheses[0]);chinese=re.sub(r'>>[^<]+<<','',chinese).strip()
+            if not chinese or not numbers_preserved(text,chinese):pending.append((key,text));continue
+            cache[key]={'text':chinese,'source_text':text,'provider':'GitHub运行器离线OPUS模型（英→简体中文）'}
+    return pending,sum(key in cache for key,_ in selected),None
+
 def public_text(text):
     text=re.sub(r'[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}','[联系方式见原帖]',text)
     return re.sub(r'\b(?:gh[pousr]_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})\b','[凭据已隐藏]',text)
 
+def numbers_preserved(source,target):
+    def values(text):return Counter(re.sub(r'[^0-9]','',part) for part in re.findall(r'\d[\d.,]*',text))
+    required=values(source);actual=values(target)
+    return all(actual[key]>=count for key,count in required.items())
+
 def translate(records,cache,state,max_requests=40):
-    report={'provider':'公共机器翻译入口（不是付费官方API）','requests':0,'new_fields':0,'cached_fields':0,'failures':[]}
+    report={'provider':'公共机器翻译入口（不是付费官方API）','requests':0,'new_fields':0,'offline_fields':0,'cached_fields':0,'failures':[]}
     wanted={}
     for target in ['title','excerpt']:
       for item in sorted(records,key=lambda r:not r.get('editorial_match',False)):
@@ -31,6 +63,12 @@ def translate(records,cache,state,max_requests=40):
             key=hashlib.sha256(text.encode()).hexdigest()
             wanted[key]=text
     missing=[(key,text) for key,text in wanted.items() if key not in cache]
+    if os.environ.get('RADAR_OFFLINE_MODEL_DIR') and missing:
+        try:
+            missing,count,error=offline_english(missing,cache)
+            report['offline_fields']=count;report['new_fields']+=count;report['provider']='云端离线英→中＋缓存；其它语言保留待补或公共翻译'
+            if error:report['failures'].append(error)
+        except (ImportError,OSError,ValueError,RuntimeError) as exc:report['failures'].append('离线翻译未完成：'+type(exc).__name__)
     client=HTTPClient(state,timeout=25,max_bytes=1500000)
     started=time.monotonic()
     while missing and report['requests']<max_requests and time.monotonic()-started<120:

@@ -72,6 +72,16 @@ class EvidenceTests(unittest.TestCase):
             with patch('radar.engine.HTTPClient.get',side_effect=[(raw,{'http_status':200}) for raw in incoming]):
                 with self.assertRaises(ValueError):engine.sync_cloud()
             self.assertFalse((engine.data/'latest.json').exists())
+    def test_cloud_sync_preserves_locally_authored_reference_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            engine=Engine(tmp);save(Path(tmp)/'cloud_config.json',{'repository':'owner/repo','mode':'cloud'})
+            local_refs=[{'id':'local-authoring-fixture'}]
+            save(engine.data/'reference_projects.json',local_refs)
+            payload={'environment':'github-actions','signals':[],'reference_signals':[], 'cloud':{'last_run_record':{'run_url':'https://github.com/owner/repo/actions/runs/123'}}}
+            incoming=[json.dumps(payload),'{"sources":[]}','[]']
+            with patch('radar.engine.HTTPClient.get',side_effect=[(raw,{'http_status':200}) for raw in incoming]):engine.sync_cloud()
+            self.assertEqual(json.loads((engine.data/'reference_projects.json').read_text()),local_refs)
+            self.assertEqual(engine.snapshot()['reference_signals'],[])
 
 class SourceTests(unittest.TestCase):
     def test_parse_atom_body_without_treating_html_as_feed(self):

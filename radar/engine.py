@@ -169,8 +169,8 @@ class Engine:
         finally:self.lock.release()
     def snapshot(self):
         value=load(self.data/'latest.json',{'version':'9.3','updated_at':None,'environment':self.environment,'live_count':0,'signals':[],'coverage':{}})
-        value['reference_signals']=load(self.data/'reference_projects.json',[])
-        for item in value['reference_signals']:editorial_apply(item)
+        if value.get('environment')!='github-actions' or load(self.root/'cloud_config.json',{}).get('mode')!='cloud':value['reference_signals']=load(self.data/'reference_projects.json',[])
+        for item in value.get('reference_signals',[]):editorial_apply(item)
         value['cloud']=self.cloud_status()
         value['collecting']=self.lock.locked();return value
     def cloud_status(self):
@@ -188,7 +188,7 @@ class Engine:
         if data.get('environment')!='github-actions' or not str(run.get('run_url','')).startswith('https://github.com/'+repo+'/actions/runs/'):
             raise ValueError('云端响应没有匹配仓库的真实Actions运行标记，未覆盖当前数据')
         for name,value in incoming.items():save(self.data/name,value)
-        save(self.data/'catalog.json',data['signals']);save(self.data/'reference_projects.json',data.get('reference_signals',[]))
+        save(self.data/'catalog.json',data['signals'])
         save(self.data/'cloud_last_run.json',run);save(self.data/'source_state.json',self.state)
         self.export_site();return data
     def pair(self,catalog):

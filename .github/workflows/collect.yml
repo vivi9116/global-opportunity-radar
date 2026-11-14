@@ -32,11 +32,24 @@ jobs:
         run: |
           python opportunity_monitor_24h.py --self-test
           node tests/test_ui.js
+      - name: Cache the public offline translation model
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: private/offline_translation
+          key: opus-eng-zho-20200717-ct2-4-9-int8-v1
+      - name: Prepare offline Chinese translation on the cloud runner
+        continue-on-error: true
+        run: |
+          python -m pip install --disable-pip-version-check ctranslate2==4.9.0 sentencepiece==0.2.3 langid==1.1.6 certifi
+          python cloud/prepare_offline_translation.py
       - name: Collect public sources without a browser
         id: scan
         continue-on-error: true
         env:
           PYTHONIOENCODING: utf-8
+          RADAR_OFFLINE_MODEL_DIR: ${{ github.workspace }}/private/offline_translation
+          OMP_NUM_THREADS: '2'
+          OPENBLAS_NUM_THREADS: '1'
         run: python opportunity_monitor_24h.py --once
       - name: Record actual result and publish only public files
         if: always() && (steps.scan.outcome == 'success' || steps.scan.outcome == 'failure')

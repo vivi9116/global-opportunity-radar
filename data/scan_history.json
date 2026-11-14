@@ -1,0 +1,11 @@
+[
+  {
+    "started_at": "2026-11-14T17:27:31+00:00",
+    "completed_at": "2026-11-14T17:27:37+00:00",
+    "environment": "github-actions",
+    "run_id": "43621192187",
+    "records": 574,
+    "preferred_records": 234,
+    "successful_platforms": 35
+  }
+]

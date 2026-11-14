@@ -1,0 +1,179 @@
+"""Durable local/cloud scan engine; reading the UI never triggers a scan."""
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+from collections import defaultdict
+import datetime as dt
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import sqlite3
+import threading
+import time
+import urllib.parse
+import xml.etree.ElementTree as ET
+from .analysis import analyze,utc_now
+from .catalog import PLATFORMS,default_sources
+from .fetch import HTTPClient,FetchFailure,safe_public_url
+from .parsers import parse
+
+ROOT=Path(__file__).resolve().parent.parent
+def load(path,default):
+    try:return json.loads(path.read_text(encoding='utf-8'))
+    except (OSError,ValueError):return default
+def save(path,data):
+    path.parent.mkdir(parents=True,exist_ok=True);temporary=path.with_suffix(path.suffix+'.tmp')
+    temporary.write_text(json.dumps(data,ensure_ascii=False,indent=2),encoding='utf-8');temporary.replace(path)
+def public_record(item):
+    result={k:v for k,v in item.items() if not k.startswith('_')}
+    # Evidence links suffice for contact; do not publish scraped email addresses.
+    def redact(value):
+        if isinstance(value,str):
+            value=re.sub(r'[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}','[邮箱见原帖]',value)
+            return re.sub(r'\b(?:gh[pousr]_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})\b','[凭据已隐藏]',value)
+        if isinstance(value,list):return [redact(x) for x in value]
+        if isinstance(value,dict):return {k:redact(v) for k,v in value.items()}
+        return value
+    return redact(result)
+
+class Engine:
+    def __init__(self,root=ROOT):
+        self.root=Path(root);self.data=self.root/'data';self.private=self.root/'private'
+        self.data.mkdir(exist_ok=True);self.private.mkdir(exist_ok=True)
+        self.state=load(self.data/'source_state.json',{'sources':{},'host_backoff':{}})
+        self.sources=load(self.root/'sources.json',None)
+        if self.sources is None:self.sources=default_sources();save(self.root/'sources.json',self.sources)
+        self.environment='github-actions' if os.environ.get('GITHUB_ACTIONS')=='true' else 'local'
+        self.db=self.private/'radar_history.sqlite';self.lock=threading.Lock()
+        with self.connect() as conn:
+            conn.execute('CREATE TABLE IF NOT EXISTS records(id TEXT PRIMARY KEY, document TEXT NOT NULL, first_seen TEXT, last_seen TEXT)')
+            conn.execute('CREATE TABLE IF NOT EXISTS source_runs(source_id TEXT, checked_at TEXT, status TEXT, http_status INTEGER, message TEXT, environment TEXT)')
+            # A cloud runner is ephemeral. Rehydrate the last published catalog.
+            for item in load(self.data/'catalog.json',[]):
+                conn.execute('INSERT OR IGNORE INTO records VALUES(?,?,?,?)',(item['id'],json.dumps(item,ensure_ascii=False),item.get('first_seen_at') or item.get('fetched_at'),item.get('fetched_at')))
+    @contextmanager
+    def connect(self):
+        conn=sqlite3.connect(self.db,timeout=15);conn.execute('PRAGMA journal_mode=WAL')
+        try:
+            with conn:yield conn
+        finally:conn.close()
+    def one(self,source):
+        report={'id':source['id'],'platform':source['platform'],'name':source['name'],'url':source.get('url'),'checked_at':utc_now(),'environment':self.environment,'parsed_count':0,'kept_count':0}
+        if not source.get('enabled',True):return [],{**report,'status':'not_connected','message':source.get('reason','未启用，未发送请求。')}
+        try:
+            raw,meta=HTTPClient(self.state).get(source['url'],source['id']);report.update(meta)
+            if raw is None:
+                if not self.state.get('sources',{}).get(source['id'],{}).get('last_success_at'):
+                    raise FetchFailure('cache_without_validated_data','收到304但本机没有成功解析该入口的记录，不能计为成功采集。',304)
+                return [],{**report,'status':'not_modified','message':'源站返回304，沿用此前已抓取的记录；本轮没有新增正文。'}
+            snapshot=self.private/'source_snapshots';snapshot.mkdir(exist_ok=True)
+            (snapshot/(source['id']+'.txt')).write_text(raw,encoding='utf-8')
+            if not raw.strip():raise FetchFailure('invalid_response','HTTP响应成功，但正文为0字节；没有可解析的RSS/JSON内容。',meta.get('http_status'))
+            if source['format'] in {'rss','hn','v2ex','cnode','freelancer','github_issues','remotive','remoteok','arbeitnow'} and re.search(r'<!doctype\s+html|<html(?:\s|>)',raw[:1000],re.I):
+                raise FetchFailure('invalid_response','HTTP响应成功，但返回HTML页面，而不是所需RSS/JSON；具体是登录、落地页或拦截需查该响应，不猜测封禁原因。',meta.get('http_status'))
+            try:items=parse(raw,source)
+            except (ValueError,ET.ParseError,TypeError,KeyError) as exc:raise FetchFailure('invalid_response','解析失败：'+str(exc)[:180],meta.get('http_status'))
+            report['parsed_count']=len(items);records=[];stale=0
+            for item in items:
+                if item.get('published_at'):
+                    age=dt.datetime.now(dt.timezone.utc)-dt.datetime.fromisoformat(item['published_at'])
+                    if age>dt.timedelta(days=60) or age<dt.timedelta(days=-1):stale+=1;continue
+                record=analyze(item,source,self.environment)
+                if record:records.append(record)
+            report.update(status='ok' if records else 'ok_no_matches',kept_count=len(records),stale_filtered=stale,message=f'响应格式有效，读取{len(items)}条，保留{len(records)}条商业线索；不等于这些线索已经成交。',body_sha256=hashlib.sha256(raw.encode()).hexdigest())
+            self.state.setdefault('sources',{}).setdefault(source['id'],{})['last_success_at']=report['checked_at']
+            return records,report
+        except FetchFailure as exc:return [],{**report,'status':exc.status,'http_status':exc.http_status,'message':str(exc)}
+        except Exception as exc:return [],{**report,'status':'internal_error','message':type(exc).__name__+': '+str(exc)[:200]}
+    def scan(self):
+        if not self.lock.acquire(blocking=False):return self.snapshot()
+        started=utc_now()
+        try:
+            groups=defaultdict(list)
+            for source in self.sources:groups[urllib.parse.urlsplit(source.get('url','')).hostname or source['id']].append(source)
+            def group(sources):return [self.one(source) for source in sources]
+            records=[];statuses=[]
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                for rows in pool.map(group,groups.values()):
+                    for found,status in rows:records.extend(found);statuses.append(status)
+            with self.connect() as conn:
+                for item in records:
+                    old=conn.execute('SELECT first_seen FROM records WHERE id=?',(item['id'],)).fetchone()
+                    item['first_seen_at']=old[0] if old else item['fetched_at']
+                    conn.execute('INSERT OR REPLACE INTO records VALUES(?,?,?,?)',(item['id'],json.dumps(item,ensure_ascii=False),item['first_seen_at'],item['fetched_at']))
+                for status in statuses:conn.execute('INSERT INTO source_runs VALUES(?,?,?,?,?,?)',(status['id'],status['checked_at'],status['status'],status.get('http_status'),status.get('message'),self.environment))
+                catalog=[json.loads(row[0]) for row in conn.execute('SELECT document FROM records ORDER BY last_seen DESC LIMIT 800')]
+            self.pair(catalog)
+            # Re-evaluate old rows after parser/filter changes, rather than keeping stale noise.
+            catalog=[item for item in catalog if item.get('platform_id')!='hackernews' or item.get('body_observed')]
+            now=dt.datetime.now(dt.timezone.utc)
+            def current(item):
+                try:
+                    seen=dt.datetime.fromisoformat(item.get('published_at') or item.get('first_seen_at') or item['fetched_at'])
+                    return -1<=(now-seen).total_seconds()/86400<=60
+                except (ValueError,KeyError,TypeError):return False
+            catalog=[item for item in catalog if current(item)]
+            public=[public_record(item) for item in catalog]
+            save(self.data/'catalog.json',public)
+            configured={s['platform'] for s in self.sources if s.get('enabled',True)}
+            ready={s['platform'] for s in statuses if s['status'] in {'ok','ok_no_matches','not_modified'}}
+            report={'started_at':started,'completed_at':utc_now(),'environment':self.environment,'configured_platforms':len(configured),'configured_channels':sum(s.get('enabled',True) for s in self.sources),'successful_platforms':len(ready),'platforms_with_new_matches':len({s['platform'] for s in statuses if s.get('kept_count',0)>0}),'successful_platform_names':[PLATFORMS.get(p,{'name':p})['name'] for p in sorted(ready)],'failed_or_paused_channels':sum(s['status'] not in {'ok','ok_no_matches','not_modified','not_connected'} for s in statuses),'not_connected_platforms':len({s['platform'] for s in statuses if s['status']=='not_connected'}),'sources':statuses,'scope_note':'平台、社区/栏目和来源页面分别统计；有效响应可包含零条匹配；这是已配置来源的覆盖情况，不是全网全覆盖保证。'}
+            save(self.data/'source_health.json',report);save(self.data/'source_state.json',self.state)
+            payload={'version':'9.3','updated_at':report['completed_at'],'environment':self.environment,'live_count':len(public),'signals':public,'reference_signals':load(self.data/'reference_projects.json',[]),'coverage':{k:v for k,v in report.items() if k!='sources'},'cloud':self.cloud_status()}
+            save(self.data/'latest.json',payload)
+            self.discover(catalog)
+            self.export_site()
+            return payload
+        finally:self.lock.release()
+    def snapshot(self):
+        value=load(self.data/'latest.json',{'version':'9.3','updated_at':None,'environment':self.environment,'live_count':0,'signals':[],'coverage':{}})
+        value['reference_signals']=load(self.data/'reference_projects.json',[]);value['cloud']=self.cloud_status()
+        value['collecting']=self.lock.locked();return value
+    def cloud_status(self):
+        return {'configured':bool(os.environ.get('GITHUB_REPOSITORY') or load(self.root/'cloud_config.json',{}).get('repository')),'workflow_file':'.github/workflows/collect.yml','last_run_record':load(self.data/'cloud_last_run.json',None),'note':'工作流文件存在不等于云端已经部署或运行；采集步骤记录不代表整个任务已成功。'}
+    def sync_cloud(self):
+        config=load(self.root/'cloud_config.json',{});repo=config.get('repository','')
+        if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+',repo):raise ValueError('云端仓库配置无效')
+        incoming={};client=HTTPClient(self.state)
+        for name in ['latest.json','source_health.json','discovery_candidates.json']:
+            raw,meta=client.get('https://raw.githubusercontent.com/'+repo+'/main/data/'+name,'cloud_'+name)
+            incoming[name]=json.loads(raw) if raw is not None else load(self.data/name,None)
+            self.state.setdefault('sources',{}).setdefault('cloud_'+name,{})['last_success_at']=utc_now()
+        data=incoming['latest.json'];run=data.get('cloud',{}).get('last_run_record',{})
+        if data.get('environment')!='github-actions' or not str(run.get('run_url','')).startswith('https://github.com/'+repo+'/actions/runs/'):
+            raise ValueError('云端响应没有匹配仓库的真实Actions运行标记，未覆盖当前数据')
+        for name,value in incoming.items():save(self.data/name,value)
+        save(self.data/'catalog.json',data['signals']);save(self.data/'reference_projects.json',data.get('reference_signals',[]))
+        save(self.data/'cloud_last_run.json',run);save(self.data/'source_state.json',self.state)
+        self.export_site();return data
+    def pair(self,catalog):
+        solvers=[s for s in catalog if s.get('financial_evidence') and s.get('kind')=='seller_report' and s.get('body_observed')]
+        topics={'csv','excel','spreadsheet','scraping','scraper','automation','workflow','crm','subtitle','caption','translation','video','data','leads','invoice'}
+        for item in catalog:
+            if item['kind'] not in {'buyer_request','pain_point'}:continue
+            tokens=set(re.findall(r'[a-z]+',(item['raw_title_en']+' '+item.get('_body','')).lower()))&topics
+            matches=[]
+            for solver in solvers:
+                if solver['source_url']==item['source_url']:continue
+                shared=tokens&(set(re.findall(r'[a-z]+',(solver['raw_title_en']+' '+solver.get('_body','')).lower()))&topics)
+                if len(shared)>=2:matches.append({'id':solver['id'],'title':solver['title_zh'],'url':solver['source_url'],'shared_topics':sorted(shared),'relationship':'主题相近的收入自述，仅为候选对照，不证明同一需求已成交。'})
+            item['candidate_solver_matches']=matches[:3]
+            if matches:item['solver_case_zh']='发现主题相近的作者收入自述，需进一步核对用户类型、任务和交付方式；没有把它当作本需求的成交证据。'
+    def discover(self,catalog):
+        old=load(self.data/'discovery_candidates.json',[]);known={x['url'] for x in old}
+        # Candidate discovery is deliberately not counted as successful monitoring.
+        for item in catalog:
+            for url in re.findall(r'https?://[^\s<>"\)]+',item.get('_body',''))[:3]:
+                parsed=urllib.parse.urlsplit(url)
+                url=urllib.parse.urlunsplit((parsed.scheme,parsed.netloc,parsed.path,'',''))
+                if safe_public_url(url) and url not in known:old.append({'url':url,'found_in':item['source_url'],'status':'not_validated','reason':'从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。'});known.add(url)
+        save(self.data/'discovery_candidates.json',old[-150:])
+    def export_site(self):
+        site=self.root/'site';(site/'data').mkdir(parents=True,exist_ok=True)
+        for original,target in [('global_arb_radar_workbench.html','index.html'),('app.js','app.js'),('styles.css','styles.css')]:
+            file=self.root/original
+            if file.exists():(site/target).write_bytes(file.read_bytes())
+        for name in ['latest.json','source_health.json','reference_projects.json','discovery_candidates.json','cloud_last_run.json']:
+            file=self.data/name
+            if file.exists():(site/'data'/name).write_bytes(file.read_bytes())

@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
   pages: write
   id-token: write
 
@@ -70,6 +71,10 @@ jobs:
         with:
           path: site
           retention-days: 1
+      - name: Wait for the uploaded Pages artifact to be visible
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python cloud/wait_for_pages_artifact.py
       - name: Deploy the cloud dashboard
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

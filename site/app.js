@@ -27,12 +27,13 @@
     $('cloudState').textContent=run?.run_id?'有运行记录':'未验证';
     $('cloudHint').textContent=run?.run_id?'请点运行链接核对是否成功结束':'不能据本地运行或YAML文件宣称已在云端采集';
     $('cloudDetails').innerHTML=run?.run_url?`<a href="${escape(safeURL(run.run_url))}" target="_blank" rel="noopener noreferrer">核对GitHub Actions原始运行记录</a><p>${escape(run.status||'需核对GitHub结论')}</p>`:'工作流已准备与否、仓库是否配置、任务是否跑通，会分别记录。当前没有可验证的云端运行记录。';
+    $('refreshButton').textContent=!local||payload.cloud?.mode==='cloud'?'刷新云端快照':'扫描已配置来源';
   }
   function renderSources(){
     $('coverageNote').textContent=`已配置 ${sources.configured_platforms??0} 个平台、${sources.configured_channels??0} 个社区/栏目；本轮有效响应的平台 ${sources.successful_platforms??0} 个。${sources.scope_note||'尚未扫描，不据名称计成功。'}`;
     $('sourcesBody').innerHTML=(sources.sources||[]).map(s=>`<tr><td>${escape(s.name)}<br><span class="small muted">${escape(s.platform)}</span></td><td><span class="badge ${['ok','ok_no_matches','not_modified'].includes(s.status)?'':'warning'}">${escape(s.status)}</span></td><td>${escape(s.http_status??'未取得')} / ${escape(s.parsed_count??0)} / ${escape(s.kept_count??0)}</td><td>${escape(s.message)}<br><span class="small muted">${escape(date(s.checked_at))}</span></td></tr>`).join('');
   }
-  async function json(path){const r=await fetch(path,{cache:'no-store',signal:AbortSignal.timeout(6000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
+  async function json(path){const r=await fetch(path,{cache:'no-cache',signal:AbortSignal.timeout(10000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}
   const local=/^https?:$/.test(location.protocol)&&['127.0.0.1','localhost'].includes(location.hostname);
   async function load(){if(busy)return;busy=true;try{
     const data=await json(local?'/api/signals':'data/latest.json');
@@ -43,8 +44,8 @@
   async function status(){try{sources=await json(local?'/api/sources':'data/source_health.json');renderSources();const entries=await json(local?'/api/discovery':'data/discovery_candidates.json');$('discoveryList').innerHTML=entries.slice(-30).map(e=>`<p class="small">${escape(e.url)} — ${escape(e.reason||e.status)}</p>`).join('')||'<p>暂未发现待验证的新入口。</p>';}catch(error){$('coverageNote').textContent='来源状态暂不可读：'+error.message;}}
   for(const id of ['search','trackFilter','originFilter'])$(id).addEventListener(id==='search'?'input':'change',render);
   $('collapseAll').onclick=()=>document.querySelectorAll('.opportunity[open]').forEach(d=>d.open=false);
-  $('refreshButton').onclick=async()=>{if(!local){await load();await status();return;}try{const r=await fetch('/api/refresh',{method:'POST'});const result=await r.json();$('gatewayStatus').textContent=result.message;await load();}catch(error){$('gatewayStatus').textContent='安排扫描失败：'+error.message;}};
+  $('refreshButton').onclick=async()=>{if(!local){await load();await status();return;}try{const r=await fetch('/api/refresh',{method:'POST'});const result=await r.json();$('gatewayStatus').textContent=result.message;setTimeout(()=>{load();status();},2500);}catch(error){$('gatewayStatus').textContent='安排扫描失败：'+error.message;}};
   document.querySelector('nav').addEventListener('click',event=>{const tab=event.target.dataset.tab;if(!tab)return;for(const name of ['radar','reports','sources'])$('tab-'+name).classList.toggle('hidden',name!==tab);document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));if(tab==='sources')status();});
   $('cardsContainer').addEventListener('click',event=>{const id=event.target.dataset.report;if(!id)return;const record=all().find(x=>x.id===id);if(!record)return;const blob=new Blob([JSON.stringify(record,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='opportunity_'+id+'.json';a.click();URL.revokeObjectURL(url);});
-  load();status();setInterval(load,5000);setInterval(status,60000);
+  load();status();setInterval(load,300000);setInterval(status,300000);
 })(typeof globalThis!=='undefined'?globalThis:this);

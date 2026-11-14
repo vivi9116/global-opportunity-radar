@@ -8,12 +8,12 @@
     "hn_0": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:15+00:00"
+      "last_success_at": "2026-11-14T16:18:41+00:00"
     },
     "hn_1": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:15+00:00"
+      "last_success_at": "2026-11-14T16:18:41+00:00"
     },
     "zenn": {
       "etag": null,
@@ -23,12 +23,12 @@
     "hn_2": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:16+00:00"
+      "last_success_at": "2026-11-14T16:18:41+00:00"
     },
     "tabnews": {
-      "etag": "W/\"dw7n6nu0u83fz2\"",
+      "etag": "W/\"rutisf1f713gz0\"",
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:16+00:00"
+      "last_success_at": "2026-11-14T16:18:41+00:00"
     },
     "ruby_china": {
       "etag": "W/\"46b61f66369555fa8b4e05d2020a0738\"",
@@ -38,7 +38,7 @@
     "hn_3": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:16+00:00"
+      "last_success_at": "2026-11-14T16:18:42+00:00"
     },
     "sidehustlenation": {
       "etag": null,
@@ -47,12 +47,12 @@
     "sitepoint": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:16+00:00"
+      "last_success_at": "2026-11-14T16:18:41+00:00"
     },
     "hn_4": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:16+00:00"
+      "last_success_at": "2026-11-14T16:18:42+00:00"
     },
     "devto": {
       "etag": "W/\"5ea33607afc3edc477f9c992ad782a80\"",
@@ -67,17 +67,17 @@
     "freelancer_active": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:17+00:00"
+      "last_success_at": "2026-11-14T16:18:42+00:00"
     },
     "hn_5": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:17+00:00"
+      "last_success_at": "2026-11-14T16:18:42+00:00"
     },
     "github_bounties": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:17+00:00"
+      "last_success_at": "2026-11-14T16:18:42+00:00"
     },
     "vc_ru": {
       "etag": null,
@@ -87,27 +87,27 @@
     "problogger_jobs": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:17+00:00"
+      "last_success_at": "2026-11-14T16:18:42+00:00"
     },
     "hn_6": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:17+00:00"
+      "last_success_at": "2026-11-14T16:18:43+00:00"
     },
     "afflift_public": {
       "etag": null,
-      "last_modified": "Sat, 14 Nov 2026 16:14:18 GMT",
-      "last_success_at": "2026-11-14T16:14:18+00:00"
+      "last_modified": "Sat, 14 Nov 2026 16:18:43 GMT",
+      "last_success_at": "2026-11-14T16:18:43+00:00"
     },
     "discourse_marketplace": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:17+00:00"
+      "last_success_at": "2026-11-14T16:18:42+00:00"
     },
     "hn_comments_0": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:18+00:00"
+      "last_success_at": "2026-11-14T16:18:43+00:00"
     },
     "warrior_marketing": {
       "etag": null,
@@ -115,38 +115,38 @@
     },
     "digitalpoint_services": {
       "etag": null,
-      "last_modified": "Sat, 14 Nov 2026 16:14:18 GMT",
-      "last_success_at": "2026-11-14T16:14:18+00:00"
+      "last_modified": "Sat, 14 Nov 2026 16:18:43 GMT",
+      "last_success_at": "2026-11-14T16:18:43+00:00"
     },
     "xbiz_business": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:18+00:00"
+      "last_success_at": "2026-11-14T16:18:43+00:00"
     },
     "v2ex_latest": {
-      "etag": "W/\"72b67e63c7f693510271984c5e863ffd2d8f7e88\"",
+      "etag": "W/\"82368e8d0c4453111c5dbf4f4d9a4500035223f1\"",
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:18+00:00"
+      "last_success_at": "2026-11-14T16:18:43+00:00"
     },
     "obsidian_business": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:18+00:00"
+      "last_success_at": "2026-11-14T16:18:42+00:00"
     },
     "hn_comments_1": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:18+00:00"
+      "last_success_at": "2026-11-14T16:18:43+00:00"
     },
     "xbiz_business_features": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:18+00:00"
+      "last_success_at": "2026-11-14T16:18:43+00:00"
     },
     "producthunt": {
-      "etag": "W/\"304a2c7d3c99043f923fcd94592b7603\"",
-      "last_modified": "Sat, 14 Nov 2026 16:12:47 GMT",
-      "last_success_at": "2026-11-14T16:14:19+00:00"
+      "etag": "W/\"288c191ff7259d816b421cb95ddacf21\"",
+      "last_modified": "Sat, 14 Nov 2026 16:18:29 GMT",
+      "last_success_at": "2026-11-14T16:18:44+00:00"
     },
     "remotive": {
       "etag": null,
@@ -156,12 +156,12 @@
     "remoteok": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:19+00:00"
+      "last_success_at": "2026-11-14T16:18:44+00:00"
     },
     "n8n_latest": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:19+00:00"
+      "last_success_at": "2026-11-14T16:18:44+00:00"
     },
     "arbeitnow": {
       "etag": null,
@@ -171,17 +171,17 @@
     "make_latest": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:19+00:00"
+      "last_success_at": "2026-11-14T16:18:44+00:00"
     },
     "weworkremotely": {
-      "etag": "W/\"df4b1aba18cd2913f61fb54d5253fa49\"",
+      "etag": "W/\"6e52b94b176165756d866ae11978bfd6\"",
       "last_modified": null,
-      "last_success_at": "2026-11-14T16:14:19+00:00"
+      "last_success_at": "2026-11-14T16:18:44+00:00"
     },
     "wordpress_support": {
       "etag": null,
-      "last_modified": "Sat, 14 Nov 2026 15:56:35 GMT",
-      "last_success_at": "2026-11-14T16:14:19+00:00"
+      "last_modified": "Sat, 14 Nov 2026 16:14:27 GMT",
+      "last_success_at": "2026-11-14T16:18:44+00:00"
     }
   },
   "host_backoff": {

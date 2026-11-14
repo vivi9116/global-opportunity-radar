@@ -1,1 +1,191 @@
-{"sources":{},"host_backoff":{}}
+{
+  "sources": {
+    "reddit_forhire": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:15+00:00"
+    },
+    "hn_0": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:15+00:00"
+    },
+    "hn_1": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:15+00:00"
+    },
+    "zenn": {
+      "etag": null,
+      "last_modified": "Sat, 14 Nov 2026 14:32:07 GMT",
+      "last_success_at": "2026-11-14T16:14:15+00:00"
+    },
+    "hn_2": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:16+00:00"
+    },
+    "tabnews": {
+      "etag": "W/\"dw7n6nu0u83fz2\"",
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:16+00:00"
+    },
+    "ruby_china": {
+      "etag": "W/\"46b61f66369555fa8b4e05d2020a0738\"",
+      "last_modified": "Sat, 14 Nov 2026 13:45:34 GMT",
+      "last_success_at": "2026-11-14T16:14:15+00:00"
+    },
+    "hn_3": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:16+00:00"
+    },
+    "sidehustlenation": {
+      "etag": null,
+      "last_modified": null
+    },
+    "sitepoint": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:16+00:00"
+    },
+    "hn_4": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:16+00:00"
+    },
+    "devto": {
+      "etag": "W/\"5ea33607afc3edc477f9c992ad782a80\"",
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:17+00:00"
+    },
+    "nichepursuits": {
+      "etag": "\"ca8b9d029722960514f9129b2d8e62ef\"",
+      "last_modified": "Wed, 11 Nov 2026 14:09:00 GMT",
+      "last_success_at": "2026-11-14T16:14:16+00:00"
+    },
+    "freelancer_active": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:17+00:00"
+    },
+    "hn_5": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:17+00:00"
+    },
+    "github_bounties": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:17+00:00"
+    },
+    "vc_ru": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:15+00:00"
+    },
+    "problogger_jobs": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:17+00:00"
+    },
+    "hn_6": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:17+00:00"
+    },
+    "afflift_public": {
+      "etag": null,
+      "last_modified": "Sat, 14 Nov 2026 16:14:18 GMT",
+      "last_success_at": "2026-11-14T16:14:18+00:00"
+    },
+    "discourse_marketplace": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:17+00:00"
+    },
+    "hn_comments_0": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:18+00:00"
+    },
+    "warrior_marketing": {
+      "etag": null,
+      "last_modified": null
+    },
+    "digitalpoint_services": {
+      "etag": null,
+      "last_modified": "Sat, 14 Nov 2026 16:14:18 GMT",
+      "last_success_at": "2026-11-14T16:14:18+00:00"
+    },
+    "xbiz_business": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:18+00:00"
+    },
+    "v2ex_latest": {
+      "etag": "W/\"72b67e63c7f693510271984c5e863ffd2d8f7e88\"",
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:18+00:00"
+    },
+    "obsidian_business": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:18+00:00"
+    },
+    "hn_comments_1": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:18+00:00"
+    },
+    "xbiz_business_features": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:18+00:00"
+    },
+    "producthunt": {
+      "etag": "W/\"304a2c7d3c99043f923fcd94592b7603\"",
+      "last_modified": "Sat, 14 Nov 2026 16:12:47 GMT",
+      "last_success_at": "2026-11-14T16:14:19+00:00"
+    },
+    "remotive": {
+      "etag": null,
+      "last_modified": "Sat, 14 Nov 2026 14:44:59 GMT",
+      "last_success_at": "2026-11-14T16:14:19+00:00"
+    },
+    "remoteok": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:19+00:00"
+    },
+    "n8n_latest": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:19+00:00"
+    },
+    "arbeitnow": {
+      "etag": null,
+      "last_modified": "Sat, 14 Nov 2026 15:23:26 GMT",
+      "last_success_at": "2026-11-14T16:14:19+00:00"
+    },
+    "make_latest": {
+      "etag": null,
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:19+00:00"
+    },
+    "weworkremotely": {
+      "etag": "W/\"df4b1aba18cd2913f61fb54d5253fa49\"",
+      "last_modified": null,
+      "last_success_at": "2026-11-14T16:14:19+00:00"
+    },
+    "wordpress_support": {
+      "etag": null,
+      "last_modified": "Sat, 14 Nov 2026 15:56:35 GMT",
+      "last_success_at": "2026-11-14T16:14:19+00:00"
+    }
+  },
+  "host_backoff": {
+    "www.reddit.com": 1794674655.8483922,
+    "www.blackhatworld.com": 1794674659.153946
+  }
+}

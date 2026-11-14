@@ -1,263 +1,5 @@
 [
   {
-    "url": "https://beyondcreator.ca",
-    "found_in": "https://community.make.com/t/hiring-agency-operations-ai-systems-builder-remote-part-time/119528",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://gethnjobs.com/",
-    "found_in": "https://news.ycombinator.com/item?id=50338728",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://hnwork.app",
-    "found_in": "https://news.ycombinator.com/item?id=50338728",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://dheerajck.github.io/hnwhoishiring/",
-    "found_in": "https://news.ycombinator.com/item?id=50338728",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://marginalrevolution.com/marginalrevolution/2026/06/mo...",
-    "found_in": "https://news.ycombinator.com/item?id=49731216",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://archive.is/20261113091227/https://www.wsj.com/tech/j...",
-    "found_in": "https://news.ycombinator.com/item?id=50498196",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.bcsatellite.net/blog/pats-memoirs-design-time/",
-    "found_in": "https://news.ycombinator.com/item?id=50498344",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://golden-bow-systems.software.informer.com/",
-    "found_in": "https://news.ycombinator.com/item?id=50498344",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://api.llamport.com/v1",
-    "found_in": "https://www.tabnews.com.br/llamport/pitch-llamport-servindo-modelos-codex-pelas-apis-da-openai-e-da-anthropic-e-por-que-o-cache-de-prompt-decide-o-custo",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://secretario.stacktools.com.br",
-    "found_in": "https://www.tabnews.com.br/raphael01/como-construimos-um-pipeline-de-transcricao-e-atas-de-reuniao-meet-teams-e-zoom-em-45-mb-de-ram-com-fastify-e-sqlite-wal",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://controlcloud.dev/pt/blog/service-principal-azure-solo-lectura-reader",
-    "found_in": "https://www.tabnews.com.br/gonzalogjuka/service-principal-azure-somente-leitura-papel-reader-custos-vencimento-do-secret-e-como-comprovar-que-nao-escreve",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://controlcloud.dev/pt/blog/azure-allocationfailed-skunotavailable-cuota-vcpu",
-    "found_in": "https://www.tabnews.com.br/gonzalogjuka/allocationfailed-skunotavailable-e-cota-no-azure-qual-e-qual-e-qual-se-resolve-tentando-de-novo",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://lightnote.com.br",
-    "found_in": "https://www.tabnews.com.br/nglczr/como-analisar-um-csv-em-poucos-cliques-sem-excel-e-sem-python",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/unorouter",
-    "found_in": "https://www.tabnews.com.br/unorouter/pitch-unorouter-um-gateway-llm-open-source-com-uma-chave-para-todos-os-modelos",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://api.unorouter.com/v1",
-    "found_in": "https://www.tabnews.com.br/unorouter/pitch-unorouter-um-gateway-llm-open-source-com-uma-chave-para-todos-os-modelos",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/jluispbraga/Tender",
-    "found_in": "https://www.tabnews.com.br/jlbraga/tender-uma-alternativa-open-source-ao-docker-desktop-para-quem-usa-docker-no-wsl-2",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://example-tech-blog.com/payments,resource_page,add_api_docs,high,to_contact",
-    "found_in": "https://dev.to/coder_sarah/link-building-in-2027-a-developers-strategic-guide-to-backlinks-authority-and-growth-3ajl",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://apiv2.ahrefs.com",
-    "found_in": "https://dev.to/coder_sarah/link-building-in-2027-a-developers-strategic-guide-to-backlinks-authority-and-growth-3ajl",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://karobarsaathi.co.in/blog/validate-business-idea-strategies-that-actual",
-    "found_in": "https://dev.to/shivaji_mane_5d0e910bf697/validate-business-idea-strategies-that-actually-work-326k",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://api.infrai.cc/v1/storage/object/presign/tenant-a-media/avatar-revision-18.jpg",
-    "found_in": "https://dev.to/remielbarrett8283/tenant-isolated-saas-avatars-governing-signed-object-storage-upload-and-restore-j29",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://doc.apixhm.com",
-    "found_in": "https://cnodejs.org/topic/49341",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://api.apixhm.com",
-    "found_in": "https://cnodejs.org/topic/49341",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://image.apixhm.com",
-    "found_in": "https://cnodejs.org/topic/49341",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://folkbench.com/blog/api-relay-reliability-checks",
-    "found_in": "https://cnodejs.org/topic/49336",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://folkbench.com/blog/ai-api-relay-stability-guide",
-    "found_in": "https://cnodejs.org/topic/49331",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "http://simondm.com",
-    "found_in": "https://www.reddit.com/r/forhire/comments/1xw7t92/for_hire_senior_graphic_designer/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/PersonaliAI/chatty",
-    "found_in": "https://www.reddit.com/r/SaaS/comments/1xvwas8/i_built_an_opensource_ai_chatbot_for_websites/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.xpoutbid.xyz/",
-    "found_in": "https://www.reddit.com/r/SaaS/comments/1xvqgpw/small_saas_ive_got_5_free_spots_on_my_xp_desktop/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://jeffkemptoncreative.myportfolio.com/home",
-    "found_in": "https://www.reddit.com/r/forhire/comments/1xvnkd4/for_hire_ai_content_creator_video_production/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://bugcapsule.com",
-    "found_in": "https://www.reddit.com/r/SaaS/comments/1xvkfow/i_got_tired_of_works_on_my_machine_so_i_built_a/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://hundredflowersmedia.wordpress.com",
-    "found_in": "https://www.reddit.com/r/slavelabour/comments/1xvjpn4/offer_freelance_content_writer_fictionnonfiction/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.behance.net/gallery/249678701/Lib-Portfolio-2026",
-    "found_in": "https://www.reddit.com/r/slavelabour/comments/1xvio90/offer_wordpress_website_landing_page_designer/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://kanhagita.com/",
-    "found_in": "https://www.reddit.com/r/forhire/comments/1xvim96/for_hire_full_stack_developer_android_apps_saas/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://hereon.me/",
-    "found_in": "https://www.reddit.com/r/forhire/comments/1xvim96/for_hire_full_stack_developer_android_apps_saas/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "http://klynt.space/",
-    "found_in": "https://www.reddit.com/r/forhire/comments/1xvim96/for_hire_full_stack_developer_android_apps_saas/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://sidetracked.site",
-    "found_in": "https://www.reddit.com/r/SaaS/comments/1xvfmt9/built_8_things_in_a_year_burnt_out_and_i_need/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://reservetable.app",
-    "found_in": "https://www.reddit.com/r/SaaS/comments/1xvfmt9/built_8_things_in_a_year_burnt_out_and_i_need/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://caf-ops.com",
-    "found_in": "https://www.reddit.com/r/SaaS/comments/1xvfmt9/built_8_things_in_a_year_burnt_out_and_i_need/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://rotate.ad",
-    "found_in": "https://www.reddit.com/r/SaaS/comments/1xvfdj0/from_an_idea_nobody_believed_in_to_50_paid/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.linkedin.com/in/swalker234/",
-    "found_in": "https://www.reddit.com/r/forhire/comments/1xvfasy/for_hire_i_move_business_email_off_microsoft_365/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://charterprep.ai",
-    "found_in": "https://www.reddit.com/r/SaaS/comments/1xvf6e0/im_building_charterprepai_a_study_workspace_for/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://my.purevoltage.com/",
-    "found_in": "https://lowendtalk.com/discussion/223258/16-gb-kvm-production-vps-deals",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://imgur.com/a/viArnHW",
-    "found_in": "https://lowendtalk.com/discussion/223290/think-twice-before-grabbing-deluxhost-deals-my-4-day-experience",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
     "url": "https://imgur.com/a/8SmfYiJ",
     "found_in": "https://lowendtalk.com/discussion/223290/think-twice-before-grabbing-deluxhost-deals-my-4-day-experience",
     "status": "not_validated",
@@ -1142,6 +884,334 @@
     "found_at": "2026-11-14T18:01:21+00:00",
     "found_in": "https://www.bing.com/search?format=rss&q=%22CSV%22%20%22paid%20me%22",
     "query": "\"CSV\" \"paid me\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.integromat.com/oauth/cb/shopify/",
+    "found_in": "https://community.make.com/t/how-to-upload-an-image-file-to-a-shopify-order-write-files-scope-missing-in-the-make-connection/119701",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://breedcoins.com/blog/signal-trading-bot-development",
+    "found_in": "https://community.make.com/t/signal-trading-bot-development-from-market-analysis-to-automated-execution/119676",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://wa.me/917358121732",
+    "found_in": "https://community.make.com/t/signal-trading-bot-development-from-market-analysis-to-automated-execution/119676",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://www.linkedin.com/in/marius-andronie",
+    "found_in": "https://community.make.com/t/make-python-developer-custom-api-and-webhook-integrations-ai-steps-with-human-approval-lovable-and-bubble-backends/119660",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://nolo.formwrks.co/demo",
+    "found_in": "https://community.make.com/t/ai-assistants-make-n8n-workflows-websites-manuel-restrepo-en-es/119632",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://nolo.formwrks.co",
+    "found_in": "https://community.make.com/t/ai-assistants-make-n8n-workflows-websites-manuel-restrepo-en-es/119632",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://portfolio-brianparisien.vercel.app/",
+    "found_in": "https://community.make.com/t/ai-automation-delivery-lead-make-com-builds-with-tested-ai-steps-and-real-error-handling/119548",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://portfolio-brianparisien.vercel.app/Brian-Parisien-Resume.pdf",
+    "found_in": "https://community.make.com/t/ai-automation-delivery-lead-make-com-builds-with-tested-ai-steps-and-real-error-handling/119548",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://news.ycombinator.com/item",
+    "found_in": "https://news.ycombinator.com/item?id=50498196",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/mainbrella/backend",
+    "found_in": "https://news.ycombinator.com/item?id=49971503",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/mainbrella/web",
+    "found_in": "https://news.ycombinator.com/item?id=49971503",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://subvocal.company/",
+    "found_in": "https://news.ycombinator.com/item?id=50340088",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://drive.google.com/file/d/1mwhv5HZMz3UTevdrgwS5O7g2jWV...",
+    "found_in": "https://news.ycombinator.com/item?id=50340088",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/gsel001",
+    "found_in": "https://www.reddit.com/r/forhire/comments/1xw5ymc/for_hire_ill_fix_your_website_automate_repetitive/",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://samibentaleb.com/",
+    "found_in": "https://www.reddit.com/r/forhire/comments/1xw03lr/for_hire_software_engineer_designer_custom/",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://drive.google.com/drive/u/1/folders/1OfK6jmVhcxz4sdHHXh3j6JTHFyIq-TA7",
+    "found_in": "https://www.reddit.com/r/forhire/comments/1xvwtw6/for_hire_freelance_video_editor_available_for/",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://drive.google.com/drive/folders/1A_648tQacTJQ-sQ6TW_iaAd3P7SsWXtT",
+    "found_in": "https://www.reddit.com/r/forhire/comments/1xvtbrw/for_hire_virtual_assistant_and_video_editor/",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/Varinomics",
+    "found_in": "https://news.ycombinator.com/item?id=50496986",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/langfuse/langfuse",
+    "found_in": "https://news.ycombinator.com/item?id=50484682",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/langfuse/langfuse/tree/main/ai-gateway",
+    "found_in": "https://news.ycombinator.com/item?id=50484682",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://leeroo.com/",
+    "found_in": "https://news.ycombinator.com/item?id=50471281",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/Leeroo-AI/kapso",
+    "found_in": "https://news.ycombinator.com/item?id=50471281",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/diderisoft/bot-bottle/main/install.sh",
+    "found_in": "https://news.ycombinator.com/item?id=50456190",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://bot-bottle.com/docs",
+    "found_in": "https://news.ycombinator.com/item?id=50456190",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/klad-app/klad",
+    "found_in": "https://news.ycombinator.com/item?id=50454951",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://klad.studio",
+    "found_in": "https://news.ycombinator.com/item?id=50454951",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://www.d4networks.com/looking-glass",
+    "found_in": "https://lowendtalk.com/discussion/222926/d4-networks-dedicated-deals-dallas-2x-platinum-8173m-128-gb-10-gbps-175-usd-mo-no-setup",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://my.d4networks.com/cart.php",
+    "found_in": "https://lowendtalk.com/discussion/222926/d4-networks-dedicated-deals-dallas-2x-platinum-8173m-128-gb-10-gbps-175-usd-mo-no-setup",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://simplelocalize.io/blog/posts/what-is-localization/",
+    "title": "What is localization? Definition, examples, and how it works for global ...",
+    "snippet": "What is localization? Learn how localization goes beyond translation, with practical examples for software, websites, and global products—and why it matters for SEO, UX, and growth.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22localization%22%20%22commission%22%20%22indie%20game%22",
+    "query": "\"localization\" \"commission\" \"indie game\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Localization",
+    "title": "Localization - Wikipedia",
+    "snippet": "Localization of function, locating psychological functions in the brain or nervous system; see Linguistic intelligence Localization of sensation, ability to tell what part of the body is affected by touch or other sensation; see Allochiria ",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22localization%22%20%22commission%22%20%22indie%20game%22",
+    "query": "\"localization\" \"commission\" \"indie game\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Language_localisation",
+    "title": "Language localisation - Wikipedia",
+    "snippet": "Language localisation (or language localization) is the process of adapting a product's translation to a specific country or region. It is the second phase of a larger process of product translation and cultural adaptation (for specific cou",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22localization%22%20%22commission%22%20%22indie%20game%22",
+    "query": "\"localization\" \"commission\" \"indie game\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.languageline.com/blog/what-is-localization",
+    "title": "What Is Localization, and When Do You Need It? - LanguageLine",
+    "snippet": "Localization is the process of adapting a product or content to a specific location or market. Learn more about localization, why it’s beneficial and how to determine if your organization needs it.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22localization%22%20%22commission%22%20%22indie%20game%22",
+    "query": "\"localization\" \"commission\" \"indie game\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://localizejs.com/articles/what-is-localization",
+    "title": "What Is Localization? Key Components, Examples, and Best Practices",
+    "snippet": "What Is Localization? Localization is the process of adapting a product, service, or content to meet a specific target market's cultural, linguistic, and functional requirements. It involves translation but also modifying elements such as d",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22localization%22%20%22commission%22%20%22indie%20game%22",
+    "query": "\"localization\" \"commission\" \"indie game\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://dictionary.cambridge.org/dictionary/english/localization",
+    "title": "LOCALIZATION | English meaning - Cambridge Dictionary",
+    "snippet": "LOCALIZATION definition: 1. the process of organizing a business or industry so that its main activities happen in local…. Learn more.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22localization%22%20%22commission%22%20%22indie%20game%22",
+    "query": "\"localization\" \"commission\" \"indie game\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.techtarget.com/searchcio/definition/localization",
+    "title": "What is localization? | Definition from TechTarget",
+    "snippet": "Localization (sometimes shortened to 'l10n') is the process of adapting a product or service to a particular language, culture, and desired local look-and-feel.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22localization%22%20%22commission%22%20%22indie%20game%22",
+    "query": "\"localization\" \"commission\" \"indie game\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://learn.microsoft.com/en-us/globalization/localization/localization-overview",
+    "title": "Localize your product - Globalization | Microsoft Learn",
+    "snippet": "Understand the process of localization (l10n) and strategies for how to localize different types of content.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22localization%22%20%22commission%22%20%22indie%20game%22",
+    "query": "\"localization\" \"commission\" \"indie game\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.merriam-webster.com/dictionary/content",
+    "title": "CONTENT Definition & Meaning - Merriam-Webster",
+    "snippet": "The meaning of CONTENT is something contained —usually plural. How to use content in a sentence.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22content%20locking%22%20%22case%20study%22",
+    "query": "\"content locking\" \"case study\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://dictionary.cambridge.org/dictionary/english/content",
+    "title": "CONTENT | English meaning - Cambridge Dictionary",
+    "snippet": "CONTENT definition: 1. pleased with your situation and not hoping for change or improvement: 2. to make someone feel…. Learn more.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22content%20locking%22%20%22case%20study%22",
+    "query": "\"content locking\" \"case study\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://usdictionary.com/definitions/content/",
+    "title": "Content: Definition, Meaning, and Examples - usdictionary.com",
+    "snippet": "What exactly is \"content\"? Discover its role in communication, creativity, and how it shapes the digital world.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22content%20locking%22%20%22case%20study%22",
+    "query": "\"content locking\" \"case study\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.dictionary.com/browse/content",
+    "title": "CONTENT Definition & Meaning | Dictionary.com",
+    "snippet": "CONTENT definition: Usually contents. See examples of content used in a sentence.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22content%20locking%22%20%22case%20study%22",
+    "query": "\"content locking\" \"case study\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Content",
+    "title": "Content - Wikipedia",
+    "snippet": "Content analysis, a methodology used in the social sciences and humanities for studying the content of communication Content format, an encoded format for converting a specific type of data to displayable information Digital content, conten",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22content%20locking%22%20%22case%20study%22",
+    "query": "\"content locking\" \"case study\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://dictionary.cambridge.org/us/dictionary/english/content",
+    "title": "CONTENT | definition in the Cambridge English Dictionary",
+    "snippet": "CONTENT meaning: 1. pleased with your situation and not hoping for change or improvement: 2. to make someone feel…. Learn more.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22content%20locking%22%20%22case%20study%22",
+    "query": "\"content locking\" \"case study\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.vocabulary.com/dictionary/content",
+    "title": "Content - Definition, Meaning & Synonyms | Vocabulary.com",
+    "snippet": "If you feel content, you're satisfied and happy. The content of a book, movie, or song is what it's about: the topic.",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22content%20locking%22%20%22case%20study%22",
+    "query": "\"content locking\" \"case study\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.thefreedictionary.com/content",
+    "title": "Content - definition of content by The Free Dictionary",
+    "snippet": "Define content. content synonyms, content pronunciation, content translation, English dictionary definition of content. n. 1. often contents Something contained, as in a receptacle: the contents of my desk drawer; the contents of an aerosol",
+    "found_at": "2026-11-14T18:06:49+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22content%20locking%22%20%22case%20study%22",
+    "query": "\"content locking\" \"case study\"",
     "status": "search_excerpt_only",
     "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
   }

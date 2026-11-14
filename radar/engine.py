@@ -17,6 +17,8 @@ from .analysis import analyze,utc_now
 from .catalog import PLATFORMS,default_sources
 from .fetch import HTTPClient,FetchFailure,safe_public_url
 from .parsers import parse
+from .editorial import apply as editorial_apply
+from .translation import translate
 
 ROOT=Path(__file__).resolve().parent.parent
 def load(path,default):
@@ -60,9 +62,19 @@ class Engine:
         finally:conn.close()
     def one(self,source):
         report={'id':source['id'],'platform':source['platform'],'name':source['name'],'url':source.get('url'),'checked_at':utc_now(),'environment':self.environment,'parsed_count':0,'kept_count':0}
-        if not source.get('enabled',True):return [],{**report,'status':'not_connected','message':source.get('reason','未启用，未发送请求。')}
+        if not source.get('enabled',True):return [],{**report,'status':'outside_scope' if source.get('scope_disabled') else 'not_connected','message':source.get('reason','未启用，未发送请求。')}
+        if source.get('rotation_group'):
+            group=source['rotation_group'];cursor=self.state.setdefault('rotation_cursor',{}).get(group,0)
+            if source['rotation_slot']!=cursor%source['rotation_total']:
+                return [],{**report,'status':'scheduled_later','message':'按低频轮换计划，本轮轮到同平台另一组；此组未请求，不把它算成成功。'}
         try:
-            raw,meta=HTTPClient(self.state).get(source['url'],source['id']);report.update(meta)
+            for attempt in range(source.get('transient_attempts',1)):
+                try:
+                    raw,meta=HTTPClient(self.state,timeout=source.get('timeout',15),max_bytes=source.get('max_bytes',5000000)).get(source['url'],source['id']);meta['attempts']=attempt+1;break
+                except FetchFailure as exc:
+                    transient=exc.status in {'timeout','network_error'} or source.get('retry_tls_eof') and exc.status=='tls_error' and ('EOF' in str(exc) or 'timed out' in str(exc))
+                    if not transient or attempt+1>=source.get('transient_attempts',1):raise
+            report.update(meta)
             if raw is None:
                 if not self.state.get('sources',{}).get(source['id'],{}).get('last_success_at'):
                     raise FetchFailure('cache_without_validated_data','收到304但本机没有成功解析该入口的记录，不能计为成功采集。',304)
@@ -74,14 +86,17 @@ class Engine:
                 raise FetchFailure('invalid_response','HTTP响应成功，但返回HTML页面，而不是所需RSS/JSON；具体是登录、落地页或拦截需查该响应，不猜测封禁原因。',meta.get('http_status'))
             try:items=parse(raw,source)
             except (ValueError,ET.ParseError,TypeError,KeyError) as exc:raise FetchFailure('invalid_response','解析失败：'+str(exc)[:180],meta.get('http_status'))
-            report['parsed_count']=len(items);records=[];stale=0
+            report['parsed_count']=len(items);records=[];stale=0;evergreen=0
             for item in items:
                 if item.get('published_at'):
                     age=dt.datetime.now(dt.timezone.utc)-dt.datetime.fromisoformat(item['published_at'])
-                    if age>dt.timedelta(days=60) or age<dt.timedelta(days=-1):stale+=1;continue
+                    if age>dt.timedelta(days=source.get('max_age_days',60)) or age<dt.timedelta(days=-1):stale+=1;continue
                 record=analyze(item,source,self.environment)
-                if record:records.append(record)
-            report.update(status='ok' if records else 'ok_no_matches',kept_count=len(records),stale_filtered=stale,message=f'响应格式有效，读取{len(items)}条，保留{len(records)}条商业线索；不等于这些线索已经成交。',body_sha256=hashlib.sha256(raw.encode()).hexdigest())
+                if record:
+                    if source.get('evergreen') and item.get('published_at') and age>dt.timedelta(days=60):
+                        record.update(reference_only=True,provenance_kind='evergreen_source',archival_source=True,max_source_age_days=source.get('max_age_days',730));record['audit']+=' 原文较早，作为长期参考；当前Offer和结算另核。';record['title_zh']='【长期参考】'+record['title_zh'];evergreen+=1
+                    records.append(record)
+            report.update(status='ok' if records else 'ok_no_matches',kept_count=len(records),stale_filtered=stale,evergreen_reference_count=evergreen,message=f'响应格式有效，读取{len(items)}条，保留{len(records)}条（其中{evergreen}条较早内容标为长期参考）；不等于已成交。',body_sha256=hashlib.sha256(raw.encode()).hexdigest())
             self.state.setdefault('sources',{}).setdefault(source['id'],{})['last_success_at']=report['checked_at']
             return records,report
         except FetchFailure as exc:return [],{**report,'status':exc.status,'http_status':exc.http_status,'message':str(exc)}
@@ -97,6 +112,18 @@ class Engine:
             with ThreadPoolExecutor(max_workers=4) as pool:
                 for rows in pool.map(group,groups.values()):
                     for found,status in rows:records.extend(found);statuses.append(status)
+            supplement=load(self.data/'local_supplement.json',None)
+            if supplement and supplement.get('environment')=='local-authorized-session':
+                try:
+                    age=(dt.datetime.now(dt.timezone.utc)-dt.datetime.fromisoformat(supplement['captured_at'])).total_seconds()
+                    fresh=0<=age<=86400
+                    imported=[item for item in supplement.get('records',[]) if item.get('environment')=='local-authorized-session' and urllib.parse.urlsplit(item.get('source_url','')).hostname=='www.blackhatworld.com'] if fresh else []
+                    records.extend(imported)
+                    statuses.append({'id':'bhw_local_supplement','platform':'blackhatworld','name':'BHW 本机已有会话补采（非云端直连）','url':'https://www.blackhatworld.com/','checked_at':supplement['captured_at'],'environment':'local-authorized-session','parsed_count':len(imported),'kept_count':len(imported),'status':'local_supplement' if fresh else 'local_supplement_stale','message':'导入本机已有登录会话读到的公开作者楼层；电脑关机后该来源不刷新。' if fresh else '本机补采快照已超过24小时，不当作本轮新采集。'})
+                except (ValueError,KeyError,TypeError):pass
+            for group in {s['rotation_group'] for s in self.sources if s.get('rotation_group')}:
+                chosen=[s['id'] for s in self.sources if s.get('rotation_group')==group and s['rotation_slot']==self.state.get('rotation_cursor',{}).get(group,0)%s['rotation_total']]
+                if any(row['id'] in chosen and row['status'] not in {'paused','scheduled_later'} for row in statuses):self.state['rotation_cursor'][group]=self.state['rotation_cursor'].get(group,0)+1
             with self.connect() as conn:
                 for item in records:
                     old=conn.execute('SELECT first_seen FROM records WHERE id=?',(item['id'],)).fetchone()
@@ -111,24 +138,40 @@ class Engine:
             def current(item):
                 try:
                     seen=dt.datetime.fromisoformat(item.get('published_at') or item.get('first_seen_at') or item['fetched_at'])
-                    return -1<=(now-seen).total_seconds()/86400<=60
+                    return -1<=(now-seen).total_seconds()/86400<=item.get('max_source_age_days',60)
                 except (ValueError,KeyError,TypeError):return False
             catalog=[item for item in catalog if current(item)]
+            source_index={source['id']:source for source in self.sources}
+            for item in catalog:editorial_apply(item,source_index.get(item.get('source_id'),{}))
+            translation_cache=load(self.data/'translation_cache.json',{})
+            translation_report=translate(catalog,translation_cache,self.state)
+            save(self.data/'translation_cache.json',translation_cache)
             public=[public_record(item) for item in catalog]
             save(self.data/'catalog.json',public)
             configured={s['platform'] for s in self.sources if s.get('enabled',True)}
             ready={s['platform'] for s in statuses if s['status'] in {'ok','ok_no_matches','not_modified'}}
-            report={'started_at':started,'completed_at':utc_now(),'environment':self.environment,'configured_platforms':len(configured),'configured_channels':sum(s.get('enabled',True) for s in self.sources),'successful_platforms':len(ready),'platforms_with_new_matches':len({s['platform'] for s in statuses if s.get('kept_count',0)>0}),'successful_platform_names':[PLATFORMS.get(p,{'name':p})['name'] for p in sorted(ready)],'failed_or_paused_channels':sum(s['status'] not in {'ok','ok_no_matches','not_modified','not_connected'} for s in statuses),'not_connected_platforms':len({s['platform'] for s in statuses if s['status']=='not_connected'}),'sources':statuses,'scope_note':'平台、社区/栏目和来源页面分别统计；有效响应可包含零条匹配；这是已配置来源的覆盖情况，不是全网全覆盖保证。'}
+            report={'started_at':started,'completed_at':utc_now(),'environment':self.environment,'configured_platforms':len(configured),'configured_channels':sum(len(s.get('communities',[])) or 1 for s in self.sources if s.get('enabled',True)),'successful_platforms':len(ready),'platforms_with_new_matches':len({s['platform'] for s in statuses if s.get('kept_count',0)>0}),'successful_platform_names':[PLATFORMS.get(p,{'name':p})['name'] for p in sorted(ready)],'failed_or_paused_channels':sum(s['status'] not in {'ok','ok_no_matches','not_modified','not_connected','outside_scope','scheduled_later','local_supplement'} for s in statuses),'not_connected_platforms':len({s['platform'] for s in statuses if s['status']=='not_connected'}),'sources':statuses,'scope_note':'平台、社区/栏目和来源页面分别统计；Reddit分组低频轮换，每轮一个请求；未轮到不计成功，读到内容也不等于已成交。'}
             save(self.data/'source_health.json',report);save(self.data/'source_state.json',self.state)
-            payload={'version':'9.3','updated_at':report['completed_at'],'environment':self.environment,'live_count':len(public),'signals':public,'reference_signals':load(self.data/'reference_projects.json',[]),'coverage':{k:v for k,v in report.items() if k!='sources'},'cloud':self.cloud_status()}
+            refs=load(self.data/'reference_projects.json',[])
+            for reference in refs:editorial_apply(reference)
+            history=load(self.data/'scan_history.json',[])
+            history.append({'started_at':started,'completed_at':report['completed_at'],'environment':self.environment,'run_id':os.environ.get('GITHUB_RUN_ID'),'records':len(public),'preferred_records':sum(bool(i.get('editorial_match')) for i in public),'successful_platforms':len(ready)})
+            save(self.data/'scan_history.json',history[-80:])
+            payload={'version':'9.3','updated_at':report['completed_at'],'environment':self.environment,'live_count':len(public),'preferred_count':sum(bool(i.get('editorial_match')) for i in public),'signals':public,'reference_signals':refs,'scan_history':history[-80:],'translation':translation_report,'coverage':{k:v for k,v in report.items() if k!='sources'},'cloud':self.cloud_status()}
             save(self.data/'latest.json',payload)
             self.discover(catalog)
+            from .new_routes import discover as discover_routes
+            candidates,discovery_report=discover_routes(self.state,load(self.data/'discovery_candidates.json',[])) if configured else ([],{'queries':[],'new_candidates':0,'errors':[]})
+            save(self.data/'discovery_candidates.json',candidates);save(self.data/'source_state.json',self.state)
+            payload['new_routes']=discovery_report;save(self.data/'latest.json',payload)
             self.export_site()
             return payload
         finally:self.lock.release()
     def snapshot(self):
         value=load(self.data/'latest.json',{'version':'9.3','updated_at':None,'environment':self.environment,'live_count':0,'signals':[],'coverage':{}})
-        value['reference_signals']=load(self.data/'reference_projects.json',[]);value['cloud']=self.cloud_status()
+        value['reference_signals']=load(self.data/'reference_projects.json',[])
+        for item in value['reference_signals']:editorial_apply(item)
+        value['cloud']=self.cloud_status()
         value['collecting']=self.lock.locked();return value
     def cloud_status(self):
         config=load(self.root/'cloud_config.json',{})
@@ -172,9 +215,10 @@ class Engine:
         save(self.data/'discovery_candidates.json',old[-150:])
     def export_site(self):
         site=self.root/'site';(site/'data').mkdir(parents=True,exist_ok=True)
-        for original,target in [('global_arb_radar_workbench.html','index.html'),('app.js','app.js'),('styles.css','styles.css')]:
+        for original,target in [('global_arb_radar_workbench.html','index.html'),('app.js','app.js'),('styles.css','styles.css'),('assets/csv_merge_sample.py','assets/csv_merge_sample.py')]:
             file=self.root/original
-            if file.exists():(site/target).write_bytes(file.read_bytes())
+            if file.exists():
+                (site/target).parent.mkdir(parents=True,exist_ok=True);(site/target).write_bytes(file.read_bytes())
         for name in ['latest.json','source_health.json','reference_projects.json','discovery_candidates.json','cloud_last_run.json']:
             file=self.data/name
             if file.exists():(site/'data'/name).write_bytes(file.read_bytes())

@@ -20,13 +20,16 @@ def utc_now():return dt.datetime.now(dt.timezone.utc).isoformat(timespec='second
 
 def kind_for(title,body,source):
     text=(title+' '+body).lower()
+    if source.get('format')=='gamma_markets':return 'market_observation','market_watch'
+    if source.get('format')=='trustmrr_html':return 'platform_metrics','pain_saas'
     if source.get('job_source') or source.get('format') in {'remoteok','remotive','arbeitnow'}:return 'job_posting','remote_work'
     if source.get('adult') or re.search(r'\badult\b|nsfw|onlyfans|fanvue|fansly|成人',text):return 'business_discussion','nsfw_adult'
-    if re.search(r'\[\s*for\s+hire\s*\]',title,re.I):return 'seller_offer','global_business'
+    if re.search(r'\[\s*for\s*hire\s*\]',title,re.I):return 'seller_offer','global_business'
     if re.search(r'bulk gmail|bulk.*account creation|captcha bypass|cloaking|account farming',text):return 'method_discussion','gray_arb'
     if BUYER.search(title+' '+body[:1000]):return 'buyer_request','bounty_direct'
     if source.get('buyer_source'):return 'buyer_request','bounty_direct'
     if re.search(r'account network|cloaking|black.?hat|gr[ae]y.?hat|cpa|content lock|账号网络|灰色|灰产|流量套利',text):return 'method_discussion','gray_arb'
+    if source.get('platform') in {'adsterra','propellerads','monetag','namepros','domainnamewire'}:return 'method_discussion','gray_arb'
     if PAIN.search(title+' '+body):return 'pain_point','pain_saas'
     if source.get('tool_source') or title.startswith('Show HN:'):return 'tool_launch','tools'
     return 'business_discussion','global_business'
@@ -123,7 +126,10 @@ def detailed_strategy(item,source):
     return ecology,[{'step':i+1,'title':title,'detail':detail} for i,(title,detail) in enumerate(steps)],[{'dimension':title,'detail':detail} for title,detail in reverse]
 
 def analyze(raw,source,environment='local'):
+    if raw.get('community'):
+        source={**source,'name':'Reddit r/'+raw['community']+'（联合订阅）','adult':raw['community'].lower() in {'creatorsadvice','onlyfansadvice'}}
     title=clean(raw.get('title',''));body=clean(raw.get('body',''))
+    if re.search(r'\bnudify\b|\bdeepnude\b|non.?consensual|undress(?:ing)?.{0,30}photo|remove clothes.{0,30}photo|脱衣.{0,15}照片|深度伪造.{0,15}裸',title+' '+body,re.I):return None
     if not title or PROMO.search(title+' '+body):return None
     multilingual=re.search(r'ingresos|clientes|ganar dinero|revenus|gagner|выручк|доход|клиент|заработ|receita|clientes|faturamento|売上|収益|副業|顧客|案件|有料|報酬|受注',title+' '+body,re.I)
     if source.get('filter_business',True) and not multilingual and not BUSINESS.search(title+' '+body) and not PAIN.search(title+' '+body) and not BUYER.search(title+' '+body):return None
@@ -139,13 +145,19 @@ def analyze(raw,source,environment='local'):
         'source_url':raw['url'],'published_at':raw.get('published_at'),'fetched_at':utc_now(),
         'environment':environment,'body_observed':bool(body),'body_length':len(body),'_body':body[:12000],
         'evidence_excerpt':body[:180] if body else '', 'reply_count':raw.get('reply_count'),
-        'location':raw.get('location'),'reference_only':False,
-        'audit':'已读取来源正文；观点与收款自述未独立核验' if body else '只有来源标题/链接；未据此编造赚钱案例'}
+        'location':raw.get('location'),'reference_only':False,'body_scope':raw.get('body_scope','来源提供的正文/摘要'),
+        'audit':'已读取来源提供的正文/摘要；观点与收款说法未独立核验' if body else '只有来源标题/链接；没有补写赚钱故事'}
+    if raw.get('body_scope'):item['audit']=raw['body_scope']+'；金额与到账另看证据。'
+    if raw.get('platform_metrics'):item['platform_metrics']=raw['platform_metrics']
+    if raw.get('market_quote'):item['market_quote']=raw['market_quote']
     item['financial_evidence']=financial_evidence(title,body,kind)
+    if kind in {'market_observation','platform_metrics'}:item['financial_evidence']=[]
     if kind not in {'buyer_request','job_posting','seller_offer'} and item['financial_evidence']:
         item['kind']='seller_report';item['title_zh']='【正文收入说法·待核验】'+title
     item['pain_point_zh']=('正文可见的需求/背景：'+body[:260]) if body else '缺少正文证据，请展开源链接核对具体需求；不从标题补写故事。'
     item['solver_case_zh']='尚未找到与该需求严格对应、可核验的付费解决案例。'
     item['platform_ecology'],item['action_steps'],item['reverse_model']=detailed_strategy(item,source)
     item['strategy_label']='以下是基于来源内容的执行建议与商业推理，不是已经验证的收益。'
+    from .editorial import apply
+    apply(item,source)
     return item

@@ -1,5 +1,17 @@
 """Explicit source registry. A configured source is not a successful crawl."""
 PLATFORMS={
+ 'monetag':{'name':'Monetag 广告分成','docs':'https://monetag.com/','ecology':'先弄清广告格式、允许的网站和流量、扣量及结算条件；案例的流量来源与花费要一起看。'},
+ 'curseforge':{'name':'CurseForge 创作者生态','docs':'https://blog.curseforge.com/','ecology':'游戏模组的下载、奖励和现金收入分开；核对原创/授权、平台奖励资格和提现地区。'},
+ 'roblox':{'name':'Roblox 开发者社区','docs':'https://devforum.roblox.com/','ecology':'找明确的插件、素材、定制或分成需求；平台虚拟币、报价与已提现现金不混算。'},
+ 'lowendtalk':{'name':'LowEndTalk 小众站长与服务','docs':'https://lowendtalk.com/','ecology':'先看具体服务需求、履约和付款主体；低价主机广告不直接当盈利项目，退款与维护要算进成本。'},
+ 'domainnamewire':{'name':'Domain Name Wire 域名生意','docs':'https://domainnamewire.com/','ecology':'域名新闻、挂牌价和报道成交分别标记；历史成交不能证明新注册域名能卖同样价格。'},
+ 'itchio':{'name':'itch.io 独立作品与工具','docs':'https://itch.io/','ecology':'免费发布、下载量和销量不同；看授权、定价、平台分成、更新维护和实际付费反馈。'},
+ 'crakrevenue':{'name':'CrakRevenue 成人联盟','docs':'https://www.crakrevenue.com/blog/','ecology':'先看Offer允许的国家、流量来源、计费动作、扣量和付款门槛；博客收入案例是平台披露，不能直接当自己的到账。'},
+ 'adsterra':{'name':'Adsterra 流量变现','docs':'https://adsterra.com/blog/','ecology':'分开看展示/点击/转化报价、买流量花费和实际到账；平台案例不是每个新账号都能复现的结果。'},
+ 'propellerads':{'name':'PropellerAds CPA/流量','docs':'https://propellerads.com/blog/','ecology':'投放案例必须同时看广告费、转化、扣量、净利和获准来源，不能只抄收入截图。'},
+ 'namepros':{'name':'NamePros 域名与停放','docs':'https://www.namepros.com/','ecology':'标价、出价、卖方自述和完成交易分开；老域名先看历史、商标与真实流量，不把挂价当成交。'},
+ 'trustmrr':{'name':'TrustMRR 小工具收入榜','docs':'https://trustmrr.com/','ecology':'公开MRR是平台显示的订阅指标，不是净利润，也不是本监控台核验的银行到账；看小功能、客源和成本能否复用。'},
+ 'polymarket':{'name':'Polymarket 公开市场数据','docs':'https://docs.polymarket.com/','ecology':'公开买卖报价不是保证能吃到的利润；需要另核成交深度、费用、库存和适用地区。此处只读数据。'},
  'ruby_china':{'name':'Ruby China','docs':'https://ruby-china.org/','ecology':'社区技术讨论与招聘分开；先核对地区、技术要求、联系渠道和任务状态。'},
  'cnode':{'name':'CNode','docs':'https://cnodejs.org/api','ecology':'技术求助不等于付费外包，先确认任务范围、预算和是否允许服务推广。'},
  'vc_ru':{'name':'VC.ru','docs':'https://vc.ru/','ecology':'俄语商业经验区分作者自述和广告；国家、收付款和语言要求需要逐项确认。'},
@@ -34,15 +46,30 @@ PLATFORMS={
 
 def default_sources():
     result=[]
-    for community in ['forhire','slavelabour','SaaS','Entrepreneur','sidehustle','beermoney','beermoneyglobal','WorkOnline','freelance','sweatystartup','smallbusiness','Affiliatemarketing','CreatorsAdvice','onlyfansadvice','adops','marketing','flipping','passive_income']:
-        result.append({'id':'reddit_'+community.lower(),'platform':'reddit','name':'Reddit r/'+community,'url':f'https://www.reddit.com/r/{community}/new/.rss?limit=15','format':'rss','adult':community in {'CreatorsAdvice','onlyfansadvice'},'enabled':True})
+    communities=['forhire','slavelabour','SaaS','Entrepreneur','sidehustle','beermoney','beermoneyglobal','WorkOnline','freelance','sweatystartup','smallbusiness','Affiliatemarketing','CreatorsAdvice','onlyfansadvice','adops','marketing','flipping','passive_income']
+    for slot in range(3):
+        group=communities[slot*6:(slot+1)*6]
+        result.append({'id':'reddit_group_'+str(slot),'platform':'reddit','name':'Reddit 联合订阅第'+str(slot+1)+'组（每轮只轮到一组）','url':'https://www.reddit.com/r/'+'+'.join(group)+'/new/.rss?limit=100','format':'rss','limit':100,'communities':group,'rotation_group':'reddit','rotation_slot':slot,'rotation_total':3,'preferred_theme':True,'enabled':True})
     for index,query in enumerate(['first sale','paying customers','MRR','willing to pay','alternative to','freelance','revenue']):
         from urllib.parse import quote
         result.append({'id':'hn_'+str(index),'platform':'hackernews','name':'HN · '+query,'url':'https://hn.algolia.com/api/v1/search_by_date?query='+quote(query)+'&tags=story&hitsPerPage=15','format':'hn','enabled':True})
     result.extend([
+      {'id':'monetag_posts','platform':'monetag','name':'小站流量、弹窗与广告分成','url':'https://monetag.com/feed/','format':'rss','preferred_theme':True,'commercial_publisher':True,'enabled':True},
+      {'id':'curseforge_creators','platform':'curseforge','name':'游戏模组创作者与平台奖励','url':'https://blog.curseforge.com/rss/','format':'rss','enabled':True},
+      {'id':'roblox_creators','platform':'roblox','name':'游戏插件、素材与创作者需求','url':'https://devforum.roblox.com/latest.rss','format':'rss','enabled':True},
+      {'id':'lowendtalk_niches','platform':'lowendtalk','name':'海外小站长与技术杂活','url':'https://lowendtalk.com/discussions/feed.rss','format':'rss','enabled':True},
+      {'id':'domainnamewire','platform':'domainnamewire','name':'域名交易、停放与遗留流量','url':'https://domainnamewire.com/feed/','format':'rss','preferred_theme':True,'enabled':True},
+      {'id':'itchio_devlogs','platform':'itchio','name':'独立作品、插件和数字交付','url':'https://itch.io/devlogs.xml','format':'rss','enabled':True},
+      {'id':'crakrevenue_blog','platform':'crakrevenue','name':'成人联盟拉新与经营案例（较早文章标作长期参考）','url':'https://www.crakrevenue.com/blog/feed/','format':'rss','adult':True,'preferred_theme':True,'evergreen':True,'max_age_days':730,'commercial_publisher':True,'enabled':True},
+      {'id':'adsterra_blog','platform':'adsterra','name':'Adsterra 流量与广告分成','url':'https://adsterra.com/blog/feed/','format':'rss','preferred_theme':True,'commercial_publisher':True,'enabled':True},
+      {'id':'propellerads_blog','platform':'propellerads','name':'PropellerAds CPA与流量案例','url':'https://propellerads.com/blog/feed/','format':'rss','preferred_theme':True,'commercial_publisher':True,'enabled':True},
+      {'id':'namepros_domains','platform':'namepros','name':'域名、老流量与停放门道','url':'https://www.namepros.com/forums/-/index.rss','format':'rss','preferred_theme':True,'enabled':True},
+      {'id':'trustmrr_public','platform':'trustmrr','name':'小工具公开订阅收入表格','url':'https://trustmrr.com/','format':'trustmrr_html','preferred_theme':True,'filter_business':False,'enabled':True},
+      {'id':'polymarket_public','platform':'polymarket','name':'预测市场官方公开报价','url':'https://gamma-api.polymarket.com/markets/keyset?closed=false&limit=10','format':'gamma_markets','filter_business':False,'preferred_theme':True,'enabled':True},
+      {'id':'sidehustle_podcast','platform':'sidehustlenation','name':'Side Hustle Show 官方播客经营案例（博客验证时的公开补充）','url':'https://feeds.megaphone.fm/YAP9195874886','format':'rss','max_bytes':12000000,'timeout':25,'preferred_theme':True,'enabled':True},
       {'id':'ruby_china','platform':'ruby_china','name':'Ruby China 技术与远程需求','url':'https://ruby-china.org/topics/feed','format':'rss','enabled':True},
-      {'id':'cnode','platform':'cnode','name':'CNode 中文开发者需求','url':'https://cnodejs.org/api/v1/topics?limit=20','format':'cnode','enabled':True},
-      {'id':'vc_ru','platform':'vc_ru','name':'VC.ru 俄语商业内容','url':'https://vc.ru/rss','format':'rss','enabled':True},
+      {'id':'cnode','platform':'cnode','name':'CNode 官方RSS（已迁离失效旧API）','url':'https://cnodejs.org/rss','format':'rss','timeout':25,'transient_attempts':2,'retry_tls_eof':True,'enabled':True},
+      {'id':'vc_ru','platform':'vc_ru','name':'VC.ru 俄语商业内容','url':'https://vc.ru/rss','format':'rss','timeout':30,'transient_attempts':2,'enabled':True},
       {'id':'zenn','platform':'zenn','name':'Zenn 日本产品与经营线索','url':'https://zenn.dev/feed','format':'rss','enabled':True},
       {'id':'tabnews','platform':'tabnews','name':'TabNews 葡语产品经验','url':'https://www.tabnews.com.br/rss','format':'rss','enabled':True},
       {'id':'nichepursuits','platform':'nichepursuits','name':'Niche Pursuits 经营复盘','url':'https://www.nichepursuits.com/feed/','format':'rss','enabled':True},
@@ -56,7 +83,7 @@ def default_sources():
       {'id':'obsidian_business','platform':'obsidian','name':'Obsidian 用户痛点','url':'https://forum.obsidian.md/latest.rss','format':'rss','enabled':True},
       {'id':'afflift_public','platform':'afflift','name':'affLIFT 公开联盟实验','url':'https://afflift.com/f/forums/-/index.rss','format':'rss','enabled':True},
       {'id':'digitalpoint_services','platform':'digitalpoint','name':'Digital Point 服务需求','url':'https://forums.digitalpoint.com/forums/services.60/index.rss','format':'rss','enabled':True},
-      {'id':'warrior_marketing','platform':'warriorforum','name':'Warrior Forum 公开营销讨论','url':'https://www.warriorforum.com/external.php?type=RSS2&forumids=3','format':'rss','enabled':True},
+      {'id':'warrior_marketing','platform':'warriorforum','name':'Warrior 公开最新讨论（已迁离空RSS）','url':'https://www.warriorforum.com/discussions/latest/','format':'warrior_html','preferred_theme':True,'enabled':True},
       {'id':'xbiz_business','platform':'xbiz','name':'XBIZ 成人平台与技术经营','url':'https://www.xbiz.com/rss/news/web-tech.xml','format':'rss','adult':True,'enabled':True},
       {'id':'xbiz_business_features','platform':'xbiz','name':'XBIZ 成人经营趋势','url':'https://www.xbiz.com/rss/features/business.xml','format':'rss','adult':True,'enabled':True},
       {'id':'v2ex_latest','platform':'v2ex','name':'V2EX 最新主题（旧版公开接口，实测状态为准）','url':'https://www.v2ex.com/api/topics/latest.json','format':'v2ex','enabled':True},
@@ -70,6 +97,9 @@ def default_sources():
       {'id':'arbeitnow','platform':'arbeitnow','name':'Arbeitnow 招聘','url':'https://www.arbeitnow.com/api/job-board-api','format':'arbeitnow','filter_business':False,'enabled':True},
       {'id':'wordpress_support','platform':'wordpress','name':'WordPress 支持需求','url':'https://wordpress.org/support/rss/','format':'rss','enabled':True},
     ])
+    for source in result:
+        if source['platform'] in {'remoteok','remotive','weworkremotely','arbeitnow','problogger'}:
+            source.update(enabled=False,scope_disabled=True,reason='按用户选题要求，普通岗位从默认采集移入扩展资料；不会用招聘信息填充赚钱野路子。')
     for index,query in enumerate(['first sale','paying customers']):
         from urllib.parse import quote
         result.append({'id':'hn_comments_'+str(index),'platform':'hackernews','name':'HN 用户经验 · '+query,'url':'https://hn.algolia.com/api/v1/search_by_date?query='+quote(query)+'&tags=comment&hitsPerPage=15','format':'hn','enabled':True})

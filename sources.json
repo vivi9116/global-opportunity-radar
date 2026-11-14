@@ -1,164 +1,65 @@
 [
   {
-    "id": "reddit_forhire",
+    "id": "reddit_group_0",
     "platform": "reddit",
-    "name": "Reddit r/forhire",
-    "url": "https://www.reddit.com/r/forhire/new/.rss?limit=15",
+    "name": "Reddit 联合订阅第1组（每轮只轮到一组）",
+    "url": "https://www.reddit.com/r/forhire+slavelabour+SaaS+Entrepreneur+sidehustle+beermoney/new/.rss?limit=100",
     "format": "rss",
-    "adult": false,
+    "limit": 100,
+    "communities": [
+      "forhire",
+      "slavelabour",
+      "SaaS",
+      "Entrepreneur",
+      "sidehustle",
+      "beermoney"
+    ],
+    "rotation_group": "reddit",
+    "rotation_slot": 0,
+    "rotation_total": 3,
+    "preferred_theme": true,
     "enabled": true
   },
   {
-    "id": "reddit_slavelabour",
+    "id": "reddit_group_1",
     "platform": "reddit",
-    "name": "Reddit r/slavelabour",
-    "url": "https://www.reddit.com/r/slavelabour/new/.rss?limit=15",
+    "name": "Reddit 联合订阅第2组（每轮只轮到一组）",
+    "url": "https://www.reddit.com/r/beermoneyglobal+WorkOnline+freelance+sweatystartup+smallbusiness+Affiliatemarketing/new/.rss?limit=100",
     "format": "rss",
-    "adult": false,
+    "limit": 100,
+    "communities": [
+      "beermoneyglobal",
+      "WorkOnline",
+      "freelance",
+      "sweatystartup",
+      "smallbusiness",
+      "Affiliatemarketing"
+    ],
+    "rotation_group": "reddit",
+    "rotation_slot": 1,
+    "rotation_total": 3,
+    "preferred_theme": true,
     "enabled": true
   },
   {
-    "id": "reddit_saas",
+    "id": "reddit_group_2",
     "platform": "reddit",
-    "name": "Reddit r/SaaS",
-    "url": "https://www.reddit.com/r/SaaS/new/.rss?limit=15",
+    "name": "Reddit 联合订阅第3组（每轮只轮到一组）",
+    "url": "https://www.reddit.com/r/CreatorsAdvice+onlyfansadvice+adops+marketing+flipping+passive_income/new/.rss?limit=100",
     "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_entrepreneur",
-    "platform": "reddit",
-    "name": "Reddit r/Entrepreneur",
-    "url": "https://www.reddit.com/r/Entrepreneur/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_sidehustle",
-    "platform": "reddit",
-    "name": "Reddit r/sidehustle",
-    "url": "https://www.reddit.com/r/sidehustle/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_beermoney",
-    "platform": "reddit",
-    "name": "Reddit r/beermoney",
-    "url": "https://www.reddit.com/r/beermoney/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_beermoneyglobal",
-    "platform": "reddit",
-    "name": "Reddit r/beermoneyglobal",
-    "url": "https://www.reddit.com/r/beermoneyglobal/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_workonline",
-    "platform": "reddit",
-    "name": "Reddit r/WorkOnline",
-    "url": "https://www.reddit.com/r/WorkOnline/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_freelance",
-    "platform": "reddit",
-    "name": "Reddit r/freelance",
-    "url": "https://www.reddit.com/r/freelance/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_sweatystartup",
-    "platform": "reddit",
-    "name": "Reddit r/sweatystartup",
-    "url": "https://www.reddit.com/r/sweatystartup/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_smallbusiness",
-    "platform": "reddit",
-    "name": "Reddit r/smallbusiness",
-    "url": "https://www.reddit.com/r/smallbusiness/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_affiliatemarketing",
-    "platform": "reddit",
-    "name": "Reddit r/Affiliatemarketing",
-    "url": "https://www.reddit.com/r/Affiliatemarketing/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_creatorsadvice",
-    "platform": "reddit",
-    "name": "Reddit r/CreatorsAdvice",
-    "url": "https://www.reddit.com/r/CreatorsAdvice/new/.rss?limit=15",
-    "format": "rss",
-    "adult": true,
-    "enabled": true
-  },
-  {
-    "id": "reddit_onlyfansadvice",
-    "platform": "reddit",
-    "name": "Reddit r/onlyfansadvice",
-    "url": "https://www.reddit.com/r/onlyfansadvice/new/.rss?limit=15",
-    "format": "rss",
-    "adult": true,
-    "enabled": true
-  },
-  {
-    "id": "reddit_adops",
-    "platform": "reddit",
-    "name": "Reddit r/adops",
-    "url": "https://www.reddit.com/r/adops/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_marketing",
-    "platform": "reddit",
-    "name": "Reddit r/marketing",
-    "url": "https://www.reddit.com/r/marketing/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_flipping",
-    "platform": "reddit",
-    "name": "Reddit r/flipping",
-    "url": "https://www.reddit.com/r/flipping/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
-    "enabled": true
-  },
-  {
-    "id": "reddit_passive_income",
-    "platform": "reddit",
-    "name": "Reddit r/passive_income",
-    "url": "https://www.reddit.com/r/passive_income/new/.rss?limit=15",
-    "format": "rss",
-    "adult": false,
+    "limit": 100,
+    "communities": [
+      "CreatorsAdvice",
+      "onlyfansadvice",
+      "adops",
+      "marketing",
+      "flipping",
+      "passive_income"
+    ],
+    "rotation_group": "reddit",
+    "rotation_slot": 2,
+    "rotation_total": 3,
+    "preferred_theme": true,
     "enabled": true
   },
   {
@@ -218,6 +119,130 @@
     "enabled": true
   },
   {
+    "id": "monetag_posts",
+    "platform": "monetag",
+    "name": "小站流量、弹窗与广告分成",
+    "url": "https://monetag.com/feed/",
+    "format": "rss",
+    "preferred_theme": true,
+    "commercial_publisher": true,
+    "enabled": true
+  },
+  {
+    "id": "curseforge_creators",
+    "platform": "curseforge",
+    "name": "游戏模组创作者与平台奖励",
+    "url": "https://blog.curseforge.com/rss/",
+    "format": "rss",
+    "enabled": true
+  },
+  {
+    "id": "roblox_creators",
+    "platform": "roblox",
+    "name": "游戏插件、素材与创作者需求",
+    "url": "https://devforum.roblox.com/latest.rss",
+    "format": "rss",
+    "enabled": true
+  },
+  {
+    "id": "lowendtalk_niches",
+    "platform": "lowendtalk",
+    "name": "海外小站长与技术杂活",
+    "url": "https://lowendtalk.com/discussions/feed.rss",
+    "format": "rss",
+    "enabled": true
+  },
+  {
+    "id": "domainnamewire",
+    "platform": "domainnamewire",
+    "name": "域名交易、停放与遗留流量",
+    "url": "https://domainnamewire.com/feed/",
+    "format": "rss",
+    "preferred_theme": true,
+    "enabled": true
+  },
+  {
+    "id": "itchio_devlogs",
+    "platform": "itchio",
+    "name": "独立作品、插件和数字交付",
+    "url": "https://itch.io/devlogs.xml",
+    "format": "rss",
+    "enabled": true
+  },
+  {
+    "id": "crakrevenue_blog",
+    "platform": "crakrevenue",
+    "name": "成人联盟拉新与经营案例（较早文章标作长期参考）",
+    "url": "https://www.crakrevenue.com/blog/feed/",
+    "format": "rss",
+    "adult": true,
+    "preferred_theme": true,
+    "evergreen": true,
+    "max_age_days": 730,
+    "commercial_publisher": true,
+    "enabled": true
+  },
+  {
+    "id": "adsterra_blog",
+    "platform": "adsterra",
+    "name": "Adsterra 流量与广告分成",
+    "url": "https://adsterra.com/blog/feed/",
+    "format": "rss",
+    "preferred_theme": true,
+    "commercial_publisher": true,
+    "enabled": true
+  },
+  {
+    "id": "propellerads_blog",
+    "platform": "propellerads",
+    "name": "PropellerAds CPA与流量案例",
+    "url": "https://propellerads.com/blog/feed/",
+    "format": "rss",
+    "preferred_theme": true,
+    "commercial_publisher": true,
+    "enabled": true
+  },
+  {
+    "id": "namepros_domains",
+    "platform": "namepros",
+    "name": "域名、老流量与停放门道",
+    "url": "https://www.namepros.com/forums/-/index.rss",
+    "format": "rss",
+    "preferred_theme": true,
+    "enabled": true
+  },
+  {
+    "id": "trustmrr_public",
+    "platform": "trustmrr",
+    "name": "小工具公开订阅收入表格",
+    "url": "https://trustmrr.com/",
+    "format": "trustmrr_html",
+    "preferred_theme": true,
+    "filter_business": false,
+    "enabled": true
+  },
+  {
+    "id": "polymarket_public",
+    "platform": "polymarket",
+    "name": "预测市场官方公开报价",
+    "url": "https://gamma-api.polymarket.com/markets/keyset?closed=false&limit=10",
+    "format": "gamma_markets",
+    "filter_business": false,
+    "preferred_theme": true,
+    "enabled": true
+  },
+  {
+    "id": "sidehustle_podcast",
+    "platform": "sidehustlenation",
+    "name": "Side Hustle Show 官方播客经营案例（博客验证时的公开补充）",
+    "url": "https://feeds.megaphone.fm/YAP9195874886",
+    "format": "rss",
+    "max_bytes": 12000000,
+    "timeout": 25,
+    "preferred_theme": true,
+    "enabled": true
+  },
+  {
     "id": "ruby_china",
     "platform": "ruby_china",
     "name": "Ruby China 技术与远程需求",
@@ -228,9 +253,12 @@
   {
     "id": "cnode",
     "platform": "cnode",
-    "name": "CNode 中文开发者需求",
-    "url": "https://cnodejs.org/api/v1/topics?limit=20",
-    "format": "cnode",
+    "name": "CNode 官方RSS（已迁离失效旧API）",
+    "url": "https://cnodejs.org/rss",
+    "format": "rss",
+    "timeout": 25,
+    "transient_attempts": 2,
+    "retry_tls_eof": true,
     "enabled": true
   },
   {
@@ -239,6 +267,8 @@
     "name": "VC.ru 俄语商业内容",
     "url": "https://vc.ru/rss",
     "format": "rss",
+    "timeout": 30,
+    "transient_attempts": 2,
     "enabled": true
   },
   {
@@ -317,7 +347,9 @@
     "format": "rss",
     "job_source": true,
     "filter_business": false,
-    "enabled": true
+    "enabled": false,
+    "scope_disabled": true,
+    "reason": "按用户选题要求，普通岗位从默认采集移入扩展资料；不会用招聘信息填充赚钱野路子。"
   },
   {
     "id": "discourse_marketplace",
@@ -354,9 +386,10 @@
   {
     "id": "warrior_marketing",
     "platform": "warriorforum",
-    "name": "Warrior Forum 公开营销讨论",
-    "url": "https://www.warriorforum.com/external.php?type=RSS2&forumids=3",
-    "format": "rss",
+    "name": "Warrior 公开最新讨论（已迁离空RSS）",
+    "url": "https://www.warriorforum.com/discussions/latest/",
+    "format": "warrior_html",
+    "preferred_theme": true,
     "enabled": true
   },
   {
@@ -425,7 +458,9 @@
     "url": "https://remoteok.com/api",
     "format": "remoteok",
     "filter_business": false,
-    "enabled": true
+    "enabled": false,
+    "scope_disabled": true,
+    "reason": "按用户选题要求，普通岗位从默认采集移入扩展资料；不会用招聘信息填充赚钱野路子。"
   },
   {
     "id": "remotive",
@@ -434,7 +469,9 @@
     "url": "https://remotive.com/api/remote-jobs",
     "format": "remotive",
     "filter_business": false,
-    "enabled": true
+    "enabled": false,
+    "scope_disabled": true,
+    "reason": "按用户选题要求，普通岗位从默认采集移入扩展资料；不会用招聘信息填充赚钱野路子。"
   },
   {
     "id": "weworkremotely",
@@ -444,7 +481,9 @@
     "format": "rss",
     "job_source": true,
     "filter_business": false,
-    "enabled": true
+    "enabled": false,
+    "scope_disabled": true,
+    "reason": "按用户选题要求，普通岗位从默认采集移入扩展资料；不会用招聘信息填充赚钱野路子。"
   },
   {
     "id": "arbeitnow",
@@ -453,7 +492,9 @@
     "url": "https://www.arbeitnow.com/api/job-board-api",
     "format": "arbeitnow",
     "filter_business": false,
-    "enabled": true
+    "enabled": false,
+    "scope_disabled": true,
+    "reason": "按用户选题要求，普通岗位从默认采集移入扩展资料；不会用招聘信息填充赚钱野路子。"
   },
   {
     "id": "wordpress_support",

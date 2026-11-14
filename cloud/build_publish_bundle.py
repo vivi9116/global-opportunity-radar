@@ -6,8 +6,8 @@ import shutil
 
 ROOT=Path(__file__).resolve().parents[1]
 FILES=['.gitignore','README.md','opportunity_monitor_24h.py','start_workbench.py','start_hidden.vbs','start_local_workbench.bat','app.js','styles.css','global_arb_radar_workbench.html','sources.json']
-TREES=['radar','tests','cloud','.github','docs']
-PUBLIC_DATA=['reference_projects.json']
+TREES=['radar','tests','cloud','.github','docs','assets']
+PUBLIC_DATA=['reference_projects.json','translation_cache.json']
 
 def build(destination=None):
     destination=Path(destination or ROOT/'private/publish_bundle')

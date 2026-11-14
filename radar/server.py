@@ -24,6 +24,7 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/sources':return self.send(load(engine.data/'source_health.json',{'sources':[],'note':'尚未完成首次采集，不能据配置名声称已抓取。'}))
         if path=='/api/discovery':return self.send(load(engine.data/'discovery_candidates.json',[]))
         assets={'/':('global_arb_radar_workbench.html','text/html; charset=utf-8'),'/index.html':('global_arb_radar_workbench.html','text/html; charset=utf-8'),'/global_arb_radar_workbench.html':('global_arb_radar_workbench.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/styles.css':('styles.css','text/css; charset=utf-8')}
+        assets['/assets/csv_merge_sample.py']=('assets/csv_merge_sample.py','text/plain; charset=utf-8')
         if path in assets:
             filename,mime=assets[path];return self.send((engine.root/filename).read_bytes(),mime=mime)
         if path=='/favicon.ico':return self.send(b'',204,'image/x-icon')
@@ -50,7 +51,11 @@ def serve(port=8765,interval=1200):
         while not stop.is_set():
             wake.clear()
             try:
-                if load(engine.root/'cloud_config.json',{}).get('mode')=='cloud':engine.sync_cloud()
+                if load(engine.root/'cloud_config.json',{}).get('mode')=='cloud':
+                    engine.sync_cloud()
+                    if load(engine.root/'cloud_config.json',{}).get('existing_bhw_supplement'):
+                        from .session_bridge import run as supplement
+                        supplement(engine.root)
                 else:engine.scan()
             except Exception as exc:print('采集失败：'+type(exc).__name__+': '+str(exc),flush=True)
             wake.wait(max(300,interval))

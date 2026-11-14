@@ -1,221 +1,5 @@
 [
   {
-    "url": "https://mail.example.com",
-    "found_in": "https://news.ycombinator.com/item?id=50456921",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://nitromta.com/docs/compatibility/",
-    "found_in": "https://news.ycombinator.com/item?id=50456921",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://nitromta.com/docs/benchmarks/",
-    "found_in": "https://news.ycombinator.com/item?id=50456921",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://support.google.com/googleplay/android-developer/answer/17594752",
-    "found_in": "https://news.ycombinator.com/item?id=50375898",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://tryredacted.com",
-    "found_in": "https://problogger.com/jobs/job/content-copywriters-for-analytics-startup-50-cents-word/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://app.wonderchat.io/llms.txt",
-    "found_in": "https://news.ycombinator.com/item?id=50479411",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://wonderchat.io/",
-    "found_in": "https://news.ycombinator.com/item?id=50479411",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://lelouch.dev/blog/you-are-probably-not-dumb/",
-    "found_in": "https://news.ycombinator.com/item?id=50469605",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/andy-spike/armin",
-    "found_in": "https://news.ycombinator.com/item?id=50469605",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://hereforsomeone.org.uk",
-    "found_in": "https://www.sitepoint.com/community/t/i-ve-built-a-mental-health-support-website-and-would-really-appreciate-a-designer-s-advice/491592",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://berean-biblechurch.org/study/",
-    "found_in": "https://www.sitepoint.com/community/t/block-does-not-resize-as-expected-on-mobile-browser/491444",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://feeflowcalculator.com/",
-    "found_in": "https://dev.to/kavish_rana_620bdceabc9c9/i-built-a-tool-that-roasts-your-payment-gateway-setup-and-it-told-me-i-was-losing-2844-a-year-i2d",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/modelhub-solutions/ModelHub.MultiTenancy",
-    "found_in": "https://dev.to/olosunde_kehinde_e4f0c25d/the-forgotten-where-clause-claim-based-multi-tenancy-for-aspnet-core-and-ef-core-2o63",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.nuget.org/packages/ModelHub.MultiTenancy",
-    "found_in": "https://dev.to/olosunde_kehinde_e4f0c25d/the-forgotten-where-clause-claim-based-multi-tenancy-for-aspnet-core-and-ef-core-2o63",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://api.gumroad.com/v2/licenses/verify",
-    "found_in": "https://dev.to/storeintel/how-we-built-published-manifest-v3-b2b-chrome-extensions-using-activetab-only-architecture-zero-3k1a",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/tenstorrent/tt-metal/pull/34985",
-    "found_in": "https://github.com/tenstorrent/tt-metal/issues/65437",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://docs.tenstorrent.com/bounty_terms.html",
-    "found_in": "https://github.com/tenstorrent/tt-metal/issues/65437",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://janzeer.org,",
-    "found_in": "https://github.com/janzeerOrg/janzeer-cli/issues/2",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/janzeerOrg/janzeer-cli/releases.",
-    "found_in": "https://github.com/janzeerOrg/janzeer-cli/issues/2",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/IES-BoilerRoom/solana-svm-cpi-conformance/issues/1",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4341",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://algora.io",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4341",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://polar.sh",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4341",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/IES-BoilerRoom/pcie-tlp-credit-flow-gate/issues/1",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4340",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/IES-BoilerRoom/solana-svm-cpi-conformance/issues/2",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4339",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/IES-BoilerRoom/pcie-tlp-credit-flow-gate/issues/2",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4338",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://opire.dev",
-    "found_in": "https://github.com/WholeTroutMedia/agent-conformance-quarantine/issues/1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://hanzo.ai/lz4/v4",
-    "found_in": "https://github.com/hanzo-go/lz4/issues/1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/hanzo-go/lz4`,",
-    "found_in": "https://github.com/hanzo-go/lz4/issues/1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://proxy.golang.org/hanzo.ai/lz4/v4/@v/list`",
-    "found_in": "https://github.com/hanzo-go/lz4/issues/1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://pomerado.ai/",
-    "found_in": "https://news.ycombinator.com/item?id=50455811",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://youtu.be/Bi4jci7rgHo",
-    "found_in": "https://news.ycombinator.com/item?id=50455811",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/Pomerado/pomerado",
-    "found_in": "https://news.ycombinator.com/item?id=50455811",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://laminar.sh",
-    "found_in": "https://news.ycombinator.com/item?id=50154029",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://laminar.sh/blog/flow-1",
-    "found_in": "https://news.ycombinator.com/item?id=50154029",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://youtu.be/KJa3h6ZJNLQ",
-    "found_in": "https://news.ycombinator.com/item?id=50154029",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://mainbrella.com/",
-    "found_in": "https://news.ycombinator.com/item?id=49971503",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
     "url": "https://github.com/mainbrella/backend",
     "found_in": "https://news.ycombinator.com/item?id=49971503",
     "status": "not_validated",
@@ -1056,6 +840,206 @@
     "found_at": "2026-11-14T17:27:37+00:00",
     "found_in": "https://www.bing.com/search?format=rss&q=%22paid%22%20%22telegram%20bot%22%20%22client%22",
     "query": "\"paid\" \"telegram bot\" \"client\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://daniele-michelin.com/assets/n8n/xray.json",
+    "found_in": "https://community.n8n.io/t/i-built-an-n8n-workflow-that-shows-the-blast-radius-of-any-n8n-workflow-what-can-send-money-email-or-delete-data-at-3-am/328617",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://app.mediatofu.com",
+    "found_in": "https://community.n8n.io/t/how-to-compress-or-trim-video-in-n8n-cloud-with-mediatofu-s-ffmpeg-api/328564",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://api.mediatofu.com/v1/tools/video/compress",
+    "found_in": "https://community.n8n.io/t/how-to-compress-or-trim-video-in-n8n-cloud-with-mediatofu-s-ffmpeg-api/328564",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://api.mediatofu.com/v1/tools/video/trim",
+    "found_in": "https://community.n8n.io/t/how-to-compress-or-trim-video-in-n8n-cloud-with-mediatofu-s-ffmpeg-api/328564",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://silent-fail-alerts.vercel.app",
+    "found_in": "https://community.n8n.io/t/would-you-pay-29-mo-to-know-when-a-clients-workflow-fails-silently/328555",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://daniele-michelin.com/assets/n8n/internet-puls.json",
+    "found_in": "https://community.n8n.io/t/i-put-a-real-n8n-workflow-behind-a-public-button-7-apis-merge-llm-live-replay/328544",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://linktr.ee/iamvaar",
+    "found_in": "https://community.n8n.io/t/i-built-a-free-html-to-pdf-n8n-community-node/328542",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://nicolas-alexandre.com",
+    "found_in": "https://news.ycombinator.com/item?id=50489117",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://apps.apple.com/app/id6762809091",
+    "found_in": "https://forum.obsidian.md/t/vaultjot-dictate-on-your-apple-watch-get-a-markdown-note-in-your-vault-free-ios-app/121910",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://vaultjot.app/help/",
+    "found_in": "https://forum.obsidian.md/t/vaultjot-dictate-on-your-apple-watch-get-a-markdown-note-in-your-vault-free-ios-app/121910",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://lingcat.arispex.com",
+    "found_in": "https://www.v2ex.com/t/1257098",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://cdn.nodeimage.com/i/SfMRLYuWRvC4MppFdXlx0rv8OstishiD.webp",
+    "found_in": "https://www.v2ex.com/t/1257098",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://testflight.apple.com/join/q6jBzfhT",
+    "found_in": "https://www.v2ex.com/t/1257098",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://zgocloud.org/pid=134",
+    "found_in": "https://www.v2ex.com/t/1257088",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://zgocloud.org/pid=136",
+    "found_in": "https://www.v2ex.com/t/1257088",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://zgocloud.org/pid=142",
+    "found_in": "https://www.v2ex.com/t/1257088",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://youtu.be/GFafCfwqNf4",
+    "found_in": "https://news.ycombinator.com/item?id=50473419",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://apps.apple.com/app/globus/id6798046450",
+    "found_in": "https://news.ycombinator.com/item?id=50499065",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://vetorlogico.com",
+    "found_in": "https://www.tabnews.com.br/VetorGames/pitch-v-e-t-o-r-a-ruptura-motor-proprio-em-html5-canvas-video-sincronizado-e-dialogo-dinamico-em-7-idiomas",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://cashinstyle.com/",
+    "found_in": "https://www.reddit.com/r/beermoneyglobal/comments/1xvtdrf/cashinstyle_the_simple_straightforward_rewards/",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://www.domain.com/",
+    "title": "Domain Names, Site Builder, Hosting, and More | Domain.com",
+    "snippet": "Finding and buying the perfect domain is as easy as 1-2-3 with Domain.com. We'll even help get you online with our DIY and Pro site builder and marketing tools.",
+    "found_at": "2026-11-14T17:51:48+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
+    "query": "\"domain parking\" \"revenue\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.namecheap.com/",
+    "title": "Buy a domain name - Register cheap domain names from $0.99 - Namecheap",
+    "snippet": "Register domain names at Namecheap. Buy cheap domain names and enjoy 24/7 support. With over 18 million domains under management, you know you’re in good hands.",
+    "found_at": "2026-11-14T17:51:48+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
+    "query": "\"domain parking\" \"revenue\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.domain.com.au/",
+    "title": "Domain.com.au | Real Estate & Properties For Sale & Rent",
+    "snippet": "Search houses & apartments for Sale & Rent. Find real estate agents & auction results. Create home alerts & read Australian property market news on Domain.",
+    "found_at": "2026-11-14T17:51:48+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
+    "query": "\"domain parking\" \"revenue\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.godaddy.com/",
+    "title": "GoDaddy Official Site: Get a Domain & Launch Your Website.",
+    "snippet": "Your brand starts with the perfect domain. Make it yours today and build a professional website that grows with you. Join 20M+ who trust GoDaddy.",
+    "found_at": "2026-11-14T17:51:48+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
+    "query": "\"domain parking\" \"revenue\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.cloudflare.com/domains/",
+    "title": "Cloudflare Registrar - Search and Buy Domains at Cost",
+    "snippet": "Find a domain for what you want to build. Start something new or bring a domain you already own to Cloudflare.",
+    "found_at": "2026-11-14T17:51:48+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
+    "query": "\"domain parking\" \"revenue\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.domain.com/name-search",
+    "title": "Search and Buy Available Domain Names",
+    "snippet": "Use our domain search tool to instantly check availability and find the perfect domain name for your website. Easy, fast, and accurate results.",
+    "found_at": "2026-11-14T17:51:48+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
+    "query": "\"domain parking\" \"revenue\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.godaddy.com/domains",
+    "title": "Domain Name Search | Find & Register an Available Domain with GoDaddy",
+    "snippet": "Use GoDaddy's Domain Name Search tool and register the domain you've been looking for. Buy your domain from the world's largest domain registrar.",
+    "found_at": "2026-11-14T17:51:48+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
+    "query": "\"domain parking\" \"revenue\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.hostinger.com/domain-name-search",
+    "title": "Domain Name Search – Check and Buy a Domain In Minutes - Hostinger",
+    "snippet": "Use the domain checker to search for domain availability. Check the search results instantly and buy a domain name for your online project today.",
+    "found_at": "2026-11-14T17:51:48+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
+    "query": "\"domain parking\" \"revenue\"",
     "status": "search_excerpt_only",
     "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
   }

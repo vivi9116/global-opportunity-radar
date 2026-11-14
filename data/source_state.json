@@ -8,27 +8,27 @@
     "hn_0": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:33+00:00"
+      "last_success_at": "2026-11-14T20:52:59+00:00"
     },
     "hn_1": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:34+00:00"
+      "last_success_at": "2026-11-14T20:53:00+00:00"
     },
     "zenn": {
       "etag": null,
-      "last_modified": "Sat, 14 Nov 2026 17:37:35 GMT",
-      "last_success_at": "2026-11-14T18:00:27+00:00"
+      "last_modified": "Sat, 14 Nov 2026 18:39:25 GMT",
+      "last_success_at": "2026-11-14T20:53:01+00:00"
     },
     "hn_2": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:35+00:00"
+      "last_success_at": "2026-11-14T20:53:00+00:00"
     },
     "tabnews": {
-      "etag": "W/\"rimr8ha42x3qw5\"",
+      "etag": "W/\"s1keyfpbhz43ik\"",
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:36+00:00"
+      "last_success_at": "2026-11-14T20:53:02+00:00"
     },
     "ruby_china": {
       "etag": "W/\"46b61f66369555fa8b4e05d2020a0738\"",
@@ -38,7 +38,7 @@
     "hn_3": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:35+00:00"
+      "last_success_at": "2026-11-14T20:53:00+00:00"
     },
     "sidehustlenation": {
       "etag": null,
@@ -47,17 +47,17 @@
     "sitepoint": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:36+00:00"
+      "last_success_at": "2026-11-14T20:53:02+00:00"
     },
     "hn_4": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:35+00:00"
+      "last_success_at": "2026-11-14T20:53:01+00:00"
     },
     "devto": {
-      "etag": "W/\"5f49c30f8cece491816588b3416ae23a\"",
+      "etag": "W/\"93fc9dcc05bd7a60719000a0b0a50a13\"",
       "last_modified": null,
-      "last_success_at": "2026-11-14T17:27:34+00:00"
+      "last_success_at": "2026-11-14T20:53:02+00:00"
     },
     "nichepursuits": {
       "etag": "\"ca8b9d029722960514f9129b2d8e62ef\"",
@@ -67,22 +67,22 @@
     "freelancer_active": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:36+00:00"
+      "last_success_at": "2026-11-14T20:53:03+00:00"
     },
     "hn_5": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:36+00:00"
+      "last_success_at": "2026-11-14T20:53:01+00:00"
     },
     "github_bounties": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:36+00:00"
+      "last_success_at": "2026-11-14T20:53:03+00:00"
     },
     "vc_ru": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:35+00:00"
+      "last_success_at": "2026-11-14T20:53:01+00:00"
     },
     "problogger_jobs": {
       "etag": null,
@@ -92,62 +92,62 @@
     "hn_6": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:36+00:00"
+      "last_success_at": "2026-11-14T20:53:01+00:00"
     },
     "afflift_public": {
       "etag": null,
-      "last_modified": "Sat, 14 Nov 2026 18:06:37 GMT",
-      "last_success_at": "2026-11-14T18:06:37+00:00"
+      "last_modified": "Sat, 14 Nov 2026 20:53:03 GMT",
+      "last_success_at": "2026-11-14T20:53:03+00:00"
     },
     "discourse_marketplace": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:37+00:00"
+      "last_success_at": "2026-11-14T20:53:03+00:00"
     },
     "hn_comments_0": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:37+00:00"
+      "last_success_at": "2026-11-14T20:53:02+00:00"
     },
     "warrior_marketing": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:38+00:00"
+      "last_success_at": "2026-11-14T20:53:03+00:00"
     },
     "digitalpoint_services": {
       "etag": null,
-      "last_modified": "Sat, 14 Nov 2026 18:06:38 GMT",
-      "last_success_at": "2026-11-14T18:06:37+00:00"
+      "last_modified": "Sat, 14 Nov 2026 20:53:04 GMT",
+      "last_success_at": "2026-11-14T20:53:03+00:00"
     },
     "xbiz_business": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:38+00:00"
+      "last_success_at": "2026-11-14T20:53:03+00:00"
     },
     "v2ex_latest": {
-      "etag": "W/\"92d34086c187ce1179c4e84a3a1ef431676a16d7\"",
+      "etag": "W/\"17b1f6c1d8af0a263a356fa6528d0541dd3635b7\"",
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:38+00:00"
+      "last_success_at": "2026-11-14T20:53:04+00:00"
     },
     "obsidian_business": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:37+00:00"
+      "last_success_at": "2026-11-14T20:53:03+00:00"
     },
     "hn_comments_1": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:37+00:00"
+      "last_success_at": "2026-11-14T20:53:02+00:00"
     },
     "xbiz_business_features": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:38+00:00"
+      "last_success_at": "2026-11-14T20:53:04+00:00"
     },
     "producthunt": {
-      "etag": "W/\"a3260794fbbc757977a7ed90b8ddf5ef\"",
-      "last_modified": "Sat, 14 Nov 2026 18:06:04 GMT",
-      "last_success_at": "2026-11-14T18:06:38+00:00"
+      "etag": "W/\"392f66e5c920537393ce5672e5efcda7\"",
+      "last_modified": "Sat, 14 Nov 2026 20:49:40 GMT",
+      "last_success_at": "2026-11-14T20:53:04+00:00"
     },
     "remotive": {
       "etag": null,
@@ -162,7 +162,7 @@
     "n8n_latest": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:38+00:00"
+      "last_success_at": "2026-11-14T20:53:04+00:00"
     },
     "arbeitnow": {
       "etag": null,
@@ -172,7 +172,7 @@
     "make_latest": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:38+00:00"
+      "last_success_at": "2026-11-14T20:53:04+00:00"
     },
     "weworkremotely": {
       "etag": "W/\"6e52b94b176165756d866ae11978bfd6\"",
@@ -181,8 +181,8 @@
     },
     "wordpress_support": {
       "etag": null,
-      "last_modified": "Sat, 14 Nov 2026 17:56:09 GMT",
-      "last_success_at": "2026-11-14T18:06:38+00:00"
+      "last_modified": "Sat, 14 Nov 2026 20:51:32 GMT",
+      "last_success_at": "2026-11-14T20:53:04+00:00"
     },
     "monetag_posts": {
       "etag": null,
@@ -197,7 +197,7 @@
     "lowendtalk_niches": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:34+00:00"
+      "last_success_at": "2026-11-14T20:52:59+00:00"
     },
     "reddit_group_0": {
       "etag": null,
@@ -207,7 +207,7 @@
     "roblox_creators": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:34+00:00"
+      "last_success_at": "2026-11-14T20:52:59+00:00"
     },
     "crakrevenue_blog": {
       "etag": "W/\"9dfef8f5fe5fb881fb742d87b1561a94\"",
@@ -217,12 +217,12 @@
     "itchio_devlogs": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:34+00:00"
+      "last_success_at": "2026-11-14T20:53:00+00:00"
     },
     "namepros_domains": {
       "etag": null,
-      "last_modified": "Sat, 14 Nov 2026 18:06:35 GMT",
-      "last_success_at": "2026-11-14T18:06:35+00:00"
+      "last_modified": "Sat, 14 Nov 2026 20:53:01 GMT",
+      "last_success_at": "2026-11-14T20:53:00+00:00"
     },
     "domainnamewire": {
       "etag": null,
@@ -235,24 +235,24 @@
       "last_success_at": "2026-11-14T17:27:32+00:00"
     },
     "trustmrr_public": {
-      "etag": "\"160mpb0xnwpw2h9\"",
+      "etag": "\"bnb7s7a5gyw2kq\"",
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:35+00:00"
+      "last_success_at": "2026-11-14T20:53:01+00:00"
     },
     "polymarket_public": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:35+00:00"
+      "last_success_at": "2026-11-14T20:53:01+00:00"
     },
     "sidehustle_podcast": {
       "etag": null,
-      "last_modified": "Sat, 14 Nov 2026 17:59:28 GMT",
-      "last_success_at": "2026-11-14T18:06:35+00:00"
+      "last_modified": "Sat, 14 Nov 2026 18:15:10 GMT",
+      "last_success_at": "2026-11-14T20:53:01+00:00"
     },
     "cnode": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T18:06:35+00:00"
+      "last_success_at": "2026-11-14T20:53:01+00:00"
     },
     "global_query_0": {
       "etag": null,
@@ -265,7 +265,7 @@
     "reddit_group_1": {
       "etag": null,
       "last_modified": null,
-      "last_success_at": "2026-11-14T17:51:14+00:00"
+      "last_success_at": "2026-11-14T20:52:59+00:00"
     },
     "global_query_2": {
       "etag": null,
@@ -295,17 +295,29 @@
     "global_query_7": {
       "etag": null,
       "last_modified": null
+    },
+    "public_translation": {
+      "etag": null,
+      "last_modified": null
+    },
+    "global_query_8": {
+      "etag": null,
+      "last_modified": null
+    },
+    "global_query_9": {
+      "etag": null,
+      "last_modified": null
     }
   },
   "host_backoff": {
     "www.reddit.com": 1794674655.8483922,
-    "www.blackhatworld.com": 1794680856.156937,
-    "adsterra.com": 1794680852.4683847,
-    "www.sidehustlenation.com": 1794680854.4810185,
+    "www.blackhatworld.com": 1794693184.2651427,
+    "adsterra.com": 1794693180.9547973,
+    "www.sidehustlenation.com": 1794693182.8444037,
     "translate.googleapis.com": 1794681081.1821177
   },
   "rotation_cursor": {
-    "reddit": 4
+    "reddit": 5
   },
   "host_pause_reason": {
     "adsterra.com": "HTTP403，实际响应为人机验证页（Attention Required! | Cloudflare）；需站点正常验证或授权接口。",
@@ -313,5 +325,5 @@
     "www.blackhatworld.com": "HTTP403，实际响应为人机验证页（Just a moment...）；需站点正常验证或授权接口。",
     "translate.googleapis.com": "源站明确返回429限流，已暂停同一来源。"
   },
-  "discovery_query_cursor": 8
+  "discovery_query_cursor": 10
 }

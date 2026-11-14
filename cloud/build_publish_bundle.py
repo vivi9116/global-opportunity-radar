@@ -26,7 +26,8 @@ def build(destination=None):
         if (ROOT/'data'/name).is_file():copy(ROOT/'data'/name)
     # Start cloud without local cached source status/backoff or locally collected bodies.
     (destination/'data').mkdir(exist_ok=True)
-    (destination/'data/source_state.json').write_text('{"sources":{},"host_backoff":{}}\n',encoding='utf-8')
+    if not (destination/'data/source_state.json').exists():
+        (destination/'data/source_state.json').write_text('{"sources":{},"host_backoff":{}}\n',encoding='utf-8')
     manifest={'note':'首次上传仅包含程序与标明待核验的参考资料；真实公开结果由云端首次运行生成。','files':copied}
     (ROOT/'private').mkdir(exist_ok=True)
     (ROOT/'private/publish_manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')

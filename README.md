@@ -1,5 +1,7 @@
 # 全球赚钱机会监控台 v9.3
 
+云端入口：[监控网页](https://vivi9116.github.io/global-opportunity-radar/) · [真实运行记录](https://github.com/vivi9116/global-opportunity-radar/actions) · [公开仓库](https://github.com/vivi9116/global-opportunity-radar)。首次部署的完整任务已于2026-11-15（新加坡时间）成功；每轮抓不到的具体来源仍在监控页单独列出。
+
 以用户提供的 v9.3 工程为底稿重建。保留深色大字、三页签与三栏详情；每条记录默认仅显示标题，点击原生折叠项展开。公开来源不等于可信收入：预算、薪资、作者自述收入分别标记，没有独立到账证据时不声称已验证成交。
 
 ## 本地运行

@@ -131,11 +131,12 @@ class Engine:
         value['reference_signals']=load(self.data/'reference_projects.json',[]);value['cloud']=self.cloud_status()
         value['collecting']=self.lock.locked();return value
     def cloud_status(self):
-        return {'configured':bool(os.environ.get('GITHUB_REPOSITORY') or load(self.root/'cloud_config.json',{}).get('repository')),'workflow_file':'.github/workflows/collect.yml','last_run_record':load(self.data/'cloud_last_run.json',None),'note':'工作流文件存在不等于云端已经部署或运行；采集步骤记录不代表整个任务已成功。'}
+        config=load(self.root/'cloud_config.json',{})
+        return {'configured':bool(os.environ.get('GITHUB_REPOSITORY') or config.get('repository')),'mode':'cloud' if os.environ.get('GITHUB_ACTIONS')=='true' or config.get('mode')=='cloud' else 'local','workflow_file':'.github/workflows/collect.yml','last_run_record':load(self.data/'cloud_last_run.json',None),'note':'工作流文件存在不等于云端已经部署或运行；采集步骤记录不代表整个任务已成功。'}
     def sync_cloud(self):
         config=load(self.root/'cloud_config.json',{});repo=config.get('repository','')
         if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+',repo):raise ValueError('云端仓库配置无效')
-        incoming={};client=HTTPClient(self.state)
+        incoming={};client=HTTPClient(self.state,max_bytes=15000000)
         for name in ['latest.json','source_health.json','discovery_candidates.json']:
             raw,meta=client.get('https://raw.githubusercontent.com/'+repo+'/main/data/'+name,'cloud_'+name)
             incoming[name]=json.loads(raw) if raw is not None else load(self.data/name,None)

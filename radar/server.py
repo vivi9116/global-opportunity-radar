@@ -33,11 +33,13 @@ class Handler(BaseHTTPRequestHandler):
         if urllib.parse.urlsplit(self.path).path!='/api/refresh':return self.send({'error':'Not found'},404)
         busy=self.server.engine.lock.locked()
         if not busy:self.server.wake.set()
-        return self.send({'accepted':not busy,'message':'已有采集进行中' if busy else '已安排扫描；缓存与来源暂停规则仍然有效'},202)
+        cloud=load(self.server.engine.root/'cloud_config.json',{}).get('mode')=='cloud'
+        return self.send({'accepted':not busy,'message':'已有采集进行中' if busy else '已安排同步云端快照；不会从本机访问各来源' if cloud else '已安排扫描；缓存与来源暂停规则仍然有效'},202)
     def log_message(self,fmt,*args):pass
 
 def serve(port=8765,interval=1200):
     engine=Engine();wake=threading.Event();stop=threading.Event()
+    interval=300 if load(engine.root/'cloud_config.json',{}).get('mode')=='cloud' else max(300,interval)
     def worker():
         latest=engine.snapshot().get('updated_at')
         if latest:

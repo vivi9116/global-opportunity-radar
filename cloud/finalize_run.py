@@ -14,6 +14,7 @@ def main():
     record={'run_id':os.environ['GITHUB_RUN_ID'],
         'run_url':f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}',
         'collector_outcome':os.environ.get('SCAN_OUTCOME','unknown'),
+        'trigger_event':os.environ.get('GITHUB_EVENT_NAME','unknown'),
         'recorded_at':utc_now(),'status':'这是采集步骤结果；推送和整个任务是否成功，仍以GitHub运行页最终结论为准。'}
     save(engine.data/'cloud_last_run.json',record)
     data=engine.snapshot();data['cloud']=engine.cloud_status();save(engine.data/'latest.json',data)
@@ -24,6 +25,7 @@ def main():
         with open(summary,'a',encoding='utf-8') as out:
             out.write('## Actual collection results\n\n')
             out.write(f'Collector: {record["collector_outcome"]}; platforms responding: {health.get("successful_platforms",0)}; stored records: {data.get("live_count",0)}\n\n')
+            out.write(f'Trigger: {record["trigger_event"]}; translation: {json.dumps(data.get("translation",{}),ensure_ascii=False)}\n\n')
             out.write('| Source | Status | HTTP | Kept | Reason |\n|---|---|---|---|---|\n')
             for source in health.get('sources',[]):
                 cells=[source['name'],source['status'],str(source.get('http_status') or 'not obtained'),str(source.get('kept_count',0)),source.get('message','')]

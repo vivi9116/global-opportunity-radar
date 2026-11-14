@@ -84,7 +84,9 @@ def translate(records,cache,state,max_requests=40):
             report['requests']+=1;raw,meta=client.get(url,'public_translation')
             data=json.loads(raw);translated=''.join(row[0] or '' for row in data[0])
             parts=split_translation(translated,len(batch))
-            for (key,text),chinese in zip(batch,parts):cache[key]={'text':chinese,'source_text':text,'provider':report['provider']};report['new_fields']+=1
+            for (key,text),chinese in zip(batch,parts):
+                if not chinese or not numbers_preserved(text,chinese):continue
+                cache[key]={'text':chinese,'source_text':text,'provider':report['provider']};report['new_fields']+=1
         except (FetchFailure,ValueError,TypeError,KeyError,IndexError) as exc:
             report['failures'].append(str(exc)[:180])
             if isinstance(exc,FetchFailure) and exc.status in {'timeout','network_error'} and report['requests']<max_requests:

@@ -10,6 +10,7 @@ def apply(item,source=None):
     text=item.get('raw_title_en','')+' '+item.get('_body',item.get('pain_point_zh',''))
     preferred=track in {'nsfw_adult','gray_arb','bounty_direct','pain_saas','market_watch'} or bool(source.get('preferred_theme')) or bool(TOPIC.search(text)) or bool(LONG_TAIL.search(text))
     if kind=='job_posting' or re.search(r'full.time|permanent position|senior.*engineer|nurse practitioner',item.get('raw_title_en',''),re.I):preferred=False
+    if re.search(r'\b(?:nominated|nomination|awards?|executive appointment|appointed|joins as|conference recap)\b|获奖|提名|颁奖|高管任命',item.get('raw_title_en',''),re.I):preferred=False
     if item.get('platform_id')=='trustmrr':
         metric=next((m['value'] for m in item.get('platform_metrics',[]) if m['label']=='MRR'),'')
         match=re.search(r'[\d,]+(?:\.\d+)?',metric)

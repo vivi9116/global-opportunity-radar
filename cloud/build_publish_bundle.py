@@ -23,6 +23,9 @@ def build(destination=None):
         for file in (ROOT/name).rglob('*'):
             if file.is_file() and '__pycache__' not in file.parts and file.suffix not in {'.pyc','.zip','.log'}:copy(file)
     for name in PUBLIC_DATA:
+        # A later deployment must preserve translations produced by cloud runs.
+        # Seed the cache only for a new checkout; git pull keeps it current later.
+        if name=='translation_cache.json' and (destination/'data'/name).exists():continue
         if (ROOT/'data'/name).is_file():copy(ROOT/'data'/name)
     # Start cloud without local cached source status/backoff or locally collected bodies.
     (destination/'data').mkdir(exist_ok=True)

@@ -17,6 +17,18 @@ QUERIES=[
  '"public dataset" "license" "revenue"','"paid beta test" "payout"',
  '"Minecraft" "commission" "plugin"','"Discord bot" "paid client"',
  '"digital download" "first sale"','"website flipping" "sold"',
+ '"SpigotMC" "premium plugin" "sales"','"BuiltByBit" "commission" "plugin"',
+ '"Chrome extension" "first paying"','"Whop" "first payout"',
+ '"Ko-fi" "commissions" "earned"','"Gumroad" "first sale" "template"',
+ '"voice over" "localization" "paid"','"podcast editing" "first client"',
+ '"niche newsletter" "sponsor" "revenue"','"directory" "paid listing" "first"',
+ '"domain lease" "income"','"affiliate" "rejected traffic" "case study"',
+ '"creator" "affiliate payouts" "Fanvue"','"adult affiliate" "localization"',
+ '"paid research" "participants" "payment"','"user testing" "payout" "country"',
+ '"vendiendo" "bot" "clientes"','"ganhei" "comissões" "afiliado"',
+ '"заработал" "плагин"','"vente" "plugin" "premier client"',
+ '"副業" "素材販売" "売上"','"템플릿" "판매" "수익"',
+ '"plugin" "pembayaran" "klien"','"commission" "VTuber" "asset"',
 ]
 
 def discover(state,candidates):

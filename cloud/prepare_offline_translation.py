@@ -12,6 +12,7 @@ import re
 ROOT=Path(__file__).resolve().parents[1]
 URL='https://object.pouta.csc.fi/Tatoeba-MT-models/eng-zho/opus-2020-07-17.zip'
 EXPECTED_BYTES=288947487
+EXPECTED_SHA256='ab90e5583fa3ec46d8c5c50f106cbd65221978cd052c7e2059981439325ae24b'
 
 def main():
     if os.environ.get('GITHUB_ACTIONS')!='true':raise SystemExit('Model preparation runs on GitHub Actions only, not on the desktop.')
@@ -31,6 +32,7 @@ def main():
             if size>350000000:raise ValueError('Model archive exceeded the expected bound.')
             stream.write(chunk);digest.update(chunk)
     if size!=EXPECTED_BYTES:raise ValueError('Official archive size changed; review before using different model weights.')
+    if digest.hexdigest()!=EXPECTED_SHA256:raise ValueError('Official archive hash changed; review before converting different model weights.')
     source.mkdir(exist_ok=True)
     with zipfile.ZipFile(archive) as bundle:
         for entry in bundle.infolist():

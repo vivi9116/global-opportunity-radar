@@ -14,6 +14,7 @@ from radar.fetch import HTTPClient,FetchFailure,retry_delay,challenge_title
 from radar.html_sources import warrior,trustmrr
 from radar.translation import split_translation,translate,numbers_preserved
 from radar.analysis import financial_evidence
+from radar.editorial import apply as editorial_apply
 
 class RepairTests(unittest.TestCase):
     def test_actual_bot_page_is_a_challenge_even_with_http200(self):
@@ -51,6 +52,11 @@ class RepairTests(unittest.TestCase):
     def test_numeric_translation_guard_rejects_changed_money(self):
         self.assertTrue(numbers_preserved('Budget $1,000 for 20 rows','预算1000美元，20行'))
         self.assertFalse(numbers_preserved('Budget $60','预算600美元'))
+    def test_adult_award_news_does_not_fill_the_opportunity_board(self):
+        item={'raw_title_en':'Holly Randall Nominated for XBIZ Exec Award','track':'nsfw_adult','kind':'business_discussion'}
+        self.assertFalse(editorial_apply(item)['editorial_match'])
+        item['raw_title_en']='How creator affiliate payouts and localization work'
+        self.assertTrue(editorial_apply(item)['editorial_match'])
     def test_csv_sample_flags_ambiguity_instead_of_losing_rows(self):
         file=Path(__file__).resolve().parents[1]/'assets/csv_merge_sample.py';spec=importlib.util.spec_from_file_location('csv_sample',file);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
         with tempfile.TemporaryDirectory() as tmp:

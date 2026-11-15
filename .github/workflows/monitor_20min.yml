@@ -1,0 +1,70 @@
+name: Global pain and opportunity monitor v10.2
+
+on:
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: global-opportunity-monitor-v10-2
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install declared dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+      - name: Validate factual extraction and UI files
+        run: |
+          python opportunity_monitor_24h.py --self-test
+          python -m unittest discover -s tests -v
+      - name: Collect public sources and structure every new record
+        env:
+          PYTHONIOENCODING: utf-8
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CHATURBATE_WM: ${{ secrets.CHATURBATE_WM }}
+        run: python opportunity_monitor_24h.py --cloud-once
+      - name: Commit the actual public snapshot
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          git config user.name 'global-radar-bot'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add live_signals.json source_health.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update verified opportunity snapshot [skip ci]'
+            git pull --rebase origin "${GITHUB_REF_NAME:-main}"
+            git push origin "${GITHUB_REF_NAME:-main}"
+          fi
+      - name: Write factual run summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          live=json.loads(Path('live_signals.json').read_text())
+          health=json.loads(Path('source_health.json').read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as out:
+              out.write('## v10.2 actual result\n\n')
+              out.write(f"Records: {live.get('stats',{}).get('total',0)}; new: {live.get('stats',{}).get('new_this_run',0)}; LLM: {live.get('stats',{}).get('llm_enriched',0)}; rules: {live.get('stats',{}).get('rule_enriched',0)}.\n\n")
+              out.write('| Source | Status | HTTP | Parsed | Message |\n|---|---|---:|---:|---|\n')
+              for s in health.get('sources',[]):
+                  cells=[s['name'],s['status'],str(s.get('http_status') or 'not obtained'),str(s.get('parsed_count',0)),s.get('message','')]
+                  out.write('| '+' | '.join(v.replace('|','/').replace('\n',' ') for v in cells)+' |\n')
+          PY

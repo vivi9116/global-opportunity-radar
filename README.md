@@ -1,45 +1,30 @@
-# 全球赚钱野路子监控台 · v9.2参考布局 / v9.3云端引擎
+# 全球痛点与真实赚钱机会 24h 自动监控工作台 v10.2
 
-云端入口：[监控网页](https://vivi9116.github.io/global-opportunity-radar/) · [真实运行记录](https://github.com/vivi9116/global-opportunity-radar/actions) · [公开仓库](https://github.com/vivi9116/global-opportunity-radar)。首次部署的完整任务已于2026-11-15（新加坡时间）成功；每轮抓不到的具体来源仍在监控页单独列出。
+页面只展示实际公开来源抓取结果。金额、`$bid`、`$paid`、平台指标与作者自述分别标记；没有成交数字就显示“原帖未披露具体成交单数”。主页面的百分比是“可行性/证据完整度”，不是成功率承诺。
 
-以用户提供的v9.3工程为底稿，按最新`24h_v9_2_20.html`的全宽深色、玫红按钮、六页导航、六格统计与大白话三栏重建。默认先显示标题，展开才加载详细内容；默认看板优先成人联盟、CPA/流量、杂活、工具、域名、创作者与其它小众门道。普通全职岗位移入扩展资料。预算、卖方报价、平台MRR和作者自述收入分别标记，不冒充独立核验到账。
+## 云端运行
 
-原HTML完整内容按数据保存在本机私有档案，没有运行其中脚本。15个参考路子单独标记，旧版预填回款和成功率没有导入账本。从48个多语言长尾查询中每轮轮换两个，继续寻找游戏插件、浏览器扩展、虚拟形象素材、工具买断、付费测试、授权翻译、域名租赁、成人联盟等新门道；搜索摘要只是待核对入口，不计入已经接通的平台。颁奖、提名和高管任命放入扩展资料，避免用成人行业新闻凑赚钱项目。
+`.github/workflows/monitor_20min.yml` 配置为每20分钟尝试运行，也支持手动触发。GitHub计划任务可能排队、延迟或跳过，因此页面会显示最近一次实际完成时间和运行触发方式。
 
-## 本地运行
+可选Secrets：
 
-在本目录运行 `python opportunity_monitor_24h.py --serve --port 8765`。Windows 双击 `start_local_workbench.bat` 会用隐藏、低优先级进程启动。需要查看时自己打开 http://127.0.0.1:8765/ 。程序不会启动、切换或操控浏览器，不连接 Chrome 9222，不读取浏览器登录资料。仅使用 Python 标准库，无需安装 Selenium。
+- `GEMINI_API_KEY`：Gemini结构化输出。
+- `GROQ_API_KEY`：Groq严格JSON Schema输出。
+- `DEEPSEEK_API_KEY` 或 `OPENAI_API_KEY`：OpenAI兼容JSON输出。
+- `CHATURBATE_WM`：只有官方联盟代码存在时才请求其公开联盟房间API。
 
-`python opportunity_monitor_24h.py --once` 采集一次；`--self-test` 检查证据与接口处理。扫描默认每20分钟一轮，页面读取缓存不会触发新扫描。429、403或验证响应会暂停同一网站；不会更换代理、破解验证码或循环尝试。
+未配置大模型Key时，每条新帖子仍由规则引擎生成完整字段，并明确标记 `structured_by: rules-v10.2`。API限流或输出校验失败也会逐条回退，不会留下空白卡片。
 
-## 范围与真实性
+## 来源边界
 
-`sources.json` 是可编辑来源注册表，没有22个平台的固定上限。当前启用37个平台，覆盖小众论坛、公开赏金、脚本与表格杂活、成人商业、广告/CPA、域名、插件、模组、数字交付、公开收入表格与预测市场数据。平台数、社区/栏目数、有效响应和保留线索分别统计；没有全网全覆盖保证。用户选择优先完成云端公开来源，BHW验证和本机登录补采尚未启用。
+Reddit 16个社区用4个联合公开RSS请求读取；HN使用Algolia公开接口；V2EX使用公开API；BHW和DLsite只发送普通公开请求。遇到403/429会记入 `source_health.json`，不会轮换代理、伪装浏览器指纹或破解验证。成人商业内容只分析授权、结算、营销与创作者服务；不生成欺骗审核、爬虫分流或未授权素材方案。
 
-Reddit改为三组联合订阅，每轮只轮到一组，429时遵守暂停；不是连续发18个请求。CNode改用官网公布的`/rss`；Warrior读取公开最新讨论HTML，并注明只取得列表摘要；VC.ru只对瞬态网络失败有限重试，TLS校验保留。Side Hustle博客遇验证时，官方播客RSS作为同品牌的公开补充，不能声称博客也已接通。CrakRevenue等较早但有用的官方资料作为“长期参考”保留，显示原始日期，当前Offer需另核。
+## 本地验证
 
-中文使用云端离线英中模型、翻译缓存与大白话执行拆解。模型只在GitHub运行器下载和计算，不在你的电脑安装或运行。英文以外的内容仍使用缓存或公共翻译入口；入口限流、数字未保留等失败会显示待补数量。原题、来源和金额证据保留原文。机器翻译可能出错，金额以原始证据为准。小工具收入榜只展示平台原始MRR字段，不推算净利润；预测报价只读官方接口，不预填0手续费或稳赚收益。
+```powershell
+python opportunity_monitor_24h.py --self-test
+python opportunity_monitor_24h.py --cloud-once
+python opportunity_monitor_24h.py --serve --port 8765
+```
 
-每条内容保留原始标题、来源链接、发布时间、抓取时间、正文是否取得、来源摘录、证据缺口。中文执行拆解是依据可见内容和任务类型生成的策略建议，不是替作者补写的成交故事，也不是逐句人工翻译。英文事实引用保留原文供核对。每条有获客生态、具体样例、报价/验收/支付步骤和8个维度的逆向商业分析。
-
-成人类别分析经营、授权、结算与平台生态；灰色类别分析流量、授权和平台限制，不能把欺骗、侵权或绕过权限包装成实操优势。未接入的登录站、私密群、付费数据列明未接入，不捏造其被封原因。原v9.1“印度、东欧竞争、30分钟/10分钟截图”的用户回忆保留为未核验的经验提醒，并落实为真实小样响应目标，不承诺拿单。
-
-`private/` 留在本机，含原始响应、历史SQLite、旧版迁移证据、日志、发布清单；服务器不提供这些路径。只有白名单公开快照进入 `site/`。个人邮箱和识别到的凭据不会进入公开记录。
-
-## GitHub Actions 真正云端采集
-
-`.github/workflows/collect.yml` 每小时UTC第11、31、51分钟调度一次，也可在Actions手动运行。运行器执行Python采集、测试，记录逐来源状态并提交公开快照。即使本机关闭也能运行，但必须先把工程上传到指定仓库默认分支、启用Actions并完成一次真实运行。仅生成YAML或本地测试，不能叫已部署。
-
-公开仓库的标准托管运行器免费。私有仓库额度、额外存储与高级运行器另按GitHub账户规则。此工作流不使用收费API；Actions缓存只保留公开翻译模型权重，Pages发布使用仅保留1天的压缩快照，不承诺账户超额存储也免费。调度可能延迟、排队甚至丢弃，公共仓库60天无活动可能被禁用；不是每秒常驻监控，不能保证发帖10分钟内发现。
-
-离线模型来源为[Helsinki-NLP/opus-mt-en-zh](https://huggingface.co/Helsinki-NLP/opus-mt-en-zh)（Apache-2.0），使用其模型卡链接的官方2020-07-17权重，通过[CTranslate2 Marian转换器](https://opennmt.net/CTranslate2/guides/marian.html)在云端转为int8。下载字节数、实际SHA256、语言标记写入模型缓存的provenance.json；模型准备和中文样句校验在Actions日志公开。模型权重不进入仓库或Pages。
-
-先运行 `python cloud/build_publish_bundle.py`，复核 `private/publish_manifest.json`，再上传 `private/publish_bundle/` 内容到授权仓库默认分支。该包不含原始上传文件、本机数据、账号、密钥和历史正文；首次云端运行会生成真实结果。工作流需要仓库 `contents: write` 权限以提交数据。若分支保护或账户策略禁止推送，任务会失败，必须按真实日志修正，不能忽略。
-
-仓库的 `site/index.html` 是静态快照。启用Pages的Actions发布模式后，采集任务会同步部署云端网页；该网页无需本机开机即可读取。每个云端记录有原始run链接，页面仅声称有步骤记录，完整结果以GitHub任务最终结论为准。本地 `cloud_config.json` 设为 `mode: cloud` 后，静默服务只同步云端公开快照，不再从本机扫描各平台。
-
-官方依据：[Actions计费](https://docs.github.com/en/actions/concepts/billing-and-usage)、[调度行为](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)、[定时任务停用](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows)。
-
-## 数据来源说明
-
-Remote OK数据保留原始招聘链接与平台标注，遵循其[公开JSON/RSS说明](https://remoteok.com/faq)。招聘和广告页面不代表雇主或收入已经核验。HN使用Algolia公开搜索结果，缺正文的新闻标题不作为收入案例；WordPress/自动化社区免费求助不自动当作付费委托。GitHub赏金标签需核对具体领取条件。每次实测的HTTP、解析和筛选结果在“来源状态”页公开。
+本地服务不会自动打开浏览器。

@@ -1,12 +1,103 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>全球赚钱野路子 24h 监控台 · 大白话实操版</title><link rel="stylesheet" href="styles.css"></head><body>
-<header><div class="header-row"><div class="brand"><div class="brand-icon">💰</div><div><div class="title-line"><h1>全球赚钱野路子 24h 监控台</h1><span class="pill rose"><span class="dot"></span>云端每20分钟计划抓新线索</span><button id="coverageBadge" class="pill amber" data-tab="platforms">正在核对接通情况</button></div><p class="subtitle">全屏大字 · 纯大白话 · 成人联盟／CPA与流量／老外杂活／小工具／域名／游戏插件／创作者后台／平台奖励……继续找新路子</p></div></div><div class="header-actions"><div class="poll-box"><button id="autoButton">⏸ 暂停页面刷新</button><select id="pollInterval" aria-label="页面刷新间隔"><option value="1200">20分钟刷新页面</option><option value="600">10分钟刷新页面</option><option value="300">5分钟刷新页面</option></select><strong id="timerText">20:00</strong></div><button id="refreshButton" class="primary">⚡ 刷新云端这批新路子</button><button id="exportButton">💾 导出这批数据</button><button id="snapshotButton" class="green">📥 下载当前快照网页</button></div></div>
-<nav><button class="active" data-tab="radar">📡 1. 赚钱野路子实时看板（<span id="navSignalCount">—</span>条）</button><button data-tab="factory">🏭 2. 下载配套工具／样品／回复材料</button><button data-tab="poly" class="cyan-text">💎 3. 预测网站公开报价观察</button><button data-tab="history">📜 4. 以前抓过的批次</button><button data-tab="learning">🧠 5. 记账本：哪条路真收到钱</button><button data-tab="platforms">🌐 6. 全球来源清单与接通情况</button></nav></header>
-<main><section class="kpis"><div class="glass rose-border"><b class="rose-text">🔞 成人联盟／订阅生意</b><div class="number" id="kpiAdult">—</div><small>拉新、分成、创作者后台服务</small></div><div class="glass purple-border"><b class="purple-text">🕵️ CPA／流量／老域名</b><div class="number" id="kpiGray">—</div><small>流量怎么变钱，成本在哪</small></div><div class="glass amber-border"><b class="amber-text">💰 帮老外干杂活</b><div class="number" id="kpiBounty">—</div><small>脚本、表格、机器人、定制小活</small></div><div class="glass blue-border"><b class="blue-text">🧰 小工具／数字交付</b><div class="number" id="kpiTools">—</div><small>买断功能、插件、素材、本地化</small></div><div class="glass cyan-border"><b class="cyan-text">🌱 继续冒出来的新门道</b><div class="number" id="kpiOther">—</div><small>新平台、新需求，按证据往下挖</small></div><div class="glass"><b>🌐 本轮有效响应平台</b><div class="number" id="platformCount">—</div><small id="recordSummary">平台、栏目与成交分别算</small></div></section>
-<div class="run-line"><span id="gatewayStatus" class="pill amber">正在读取真实云端快照</span><span id="updatedAt" class="muted">尚未读到这一批结果</span></div>
-<section id="tab-radar"><div class="glass controls"><div class="chips"><button data-track="all" class="selected">全部野路子</button><button data-track="nsfw_adult" class="rose-text">🔞 成人与订阅拉新</button><button data-track="gray_arb" class="purple-text">🕵️ CPA／灰色流量／域名</button><button data-track="bounty_direct" class="amber-text">💰 老外花钱找人干活</button><button data-track="pain_saas" class="blue-text">🧰 表格／脚本／买断小工具</button><button data-track="global_business">🌱 其他新门道</button></div><div class="filter-row"><select id="scopeFilter"><option value="preferred">优先看赚钱门道</option><option value="all">全部资料（含历史岗位）</option><option value="money">含金额／报价／MRR字段</option></select><select id="originFilter"><option value="all">新抓记录＋参考路子</option><option value="live">只看抓到的内容</option><option value="reference">只看参考思路</option></select><input id="search" placeholder="搜：成人联盟、CPA、Telegram、老域名、小插件、截图、首单……" aria-label="搜索路子"><button id="collapseAll">收起全部</button><select id="trackFilter" hidden><option value="all">全部</option><option value="nsfw_adult">成人</option><option value="gray_arb">流量</option><option value="bounty_direct">杂活</option><option value="pain_saas">小工具</option><option value="global_business">其他</option></select></div><p class="small muted">先看标题，感兴趣再点开。每条按“钱从谁口袋出 → 你交什么 → 第一笔怎么试 → 客户去哪找 → 哪些坑别踩”展开；原帖没给的金额不补。</p></div><div id="cardsContainer"></div><div class="more-row"><span id="visibleCount" class="muted"></span><button id="loadMore">再看40条</button></div></section>
-<section id="tab-factory" class="hidden"><div class="glass section-pad"><div class="title-line"><h2>🏭 把选中的路子，变成一份能开工的材料</h2><span id="boundBadge" class="pill blue">先选一条路子</span></div><p class="muted">在卡片下方点“拿这条做样品”，或从这里选项目。先把真实样品做出来，再拿材料去谈交付和报价。</p><select id="factoryProject" class="wide" aria-label="选择材料对应的项目"></select><div class="download-row"><button id="downloadPlan" class="green">📥 本项目大白话实操清单（.md）</button><button id="downloadAcceptance" class="primary">📥 本项目样品验收对照表（.html）</button><a id="downloadCSV" class="button purple" href="assets/csv_merge_sample.py" download>📥 两份CSV表格合并样例（.py）</a></div><p class="small muted">CSV工具按字段做标准化精确匹配，重复键会标成“待核对”。通用样例要按订单验收条件调整，先拿小文件跑通。</p><div class="box"><h3 class="green-text">💬 给原帖楼主的回复草稿：先摆真实样品，再问一个关键条件</h3><p class="small muted">把方括号替换成你实际做过的内容，再自己发给对方。</p><textarea id="outreachPreview" rows="8" aria-label="回复草稿"></textarea><button id="copyOutreach">复制回复草稿</button><span id="factoryStatus" class="small muted"></span></div><div id="factoryDetails"></div></div></section>
-<section id="tab-poly" class="hidden"><div class="glass section-pad"><h2>💎 预测网站：先看真实报价，再谈有没有价差可做</h2><p>下面来自 Polymarket 官方公开市场接口。挂牌价差不等于能成交的利润，费用、挂单深度、库存和地区资格要另看原站。</p><div class="scroll"><table><thead><tr><th>市场</th><th>买一／卖一</th><th>挂牌价差</th><th>最小股数／刻度</th><th>接口费用标记</th></tr></thead><tbody id="marketRows"></tbody></table></div><p class="small muted">没有可读报价时显示空缺；这里展示公开数据，不预填模拟盘口或收益。</p></div></section>
-<section id="tab-history" class="hidden"><div class="glass section-pad"><h2>📜 这一批是从哪次云端采集来的</h2><div class="scroll"><table><thead><tr><th>完成时间</th><th>执行地点</th><th>记录／方向匹配</th><th>有效平台</th><th>原始任务</th></tr></thead><tbody id="historyRows"></tbody></table></div></div></section>
-<section id="tab-learning" class="hidden"><div class="glass section-pad"><h2>🧠 自己的收款记账本</h2><p>只记你自己实际收到的钱。数据保存在这个浏览器里，导出后自己保存。</p><form id="ledgerForm" class="ledger-form"><input id="ledgerProject" placeholder="哪条路／哪个客户" required><input id="ledgerAmount" type="number" min="0.01" step="0.01" placeholder="实际到账" required><select id="ledgerCurrency"><option>USD</option><option>CNY</option><option>EUR</option><option>USDT</option><option>JPY</option></select><input id="ledgerNote" placeholder="交了什么、耗时、手续费等"><button class="green" type="submit">记一笔真实回款</button></form><p id="ledgerTotals" class="notice"></p><div class="scroll"><table><thead><tr><th>时间</th><th>项目</th><th>到账</th><th>备注</th></tr></thead><tbody id="ledgerRows"></tbody></table></div><button id="exportLedger">导出自己的账本</button></div></section>
-<section id="tab-platforms" class="hidden"><div class="glass section-pad"><h2>🌐 哪些接通了，哪些还卡着，为什么</h2><p id="coverageNote" class="muted">读取本轮状态中……</p><div class="scroll"><table><thead><tr><th>平台／入口</th><th>本轮状态</th><th>HTTP／读取／保留</th><th>实际原因与时间</th></tr></thead><tbody id="sourcesBody"></tbody></table></div></div><div class="glass section-pad"><h2>☁️ 云端是不是在真跑</h2><div id="cloudDetails"></div><p class="small muted">公开仓库标准运行器执行，计划每小时UTC第11、31、51分钟抓一轮；可能排队或延迟。页面刷新只读取快照。</p><p class="small"><a href="https://github.com/vivi9116/global-opportunity-radar/actions" target="_blank" rel="noopener noreferrer">打开真实运行记录</a> · <a href="https://docs.github.com/en/actions/concepts/billing-and-usage" target="_blank" rel="noopener noreferrer">GitHub计费说明</a></p><p id="translationStatus" class="small muted"></p></div><div class="glass section-pad"><h2>🌱 继续往全球小众平台挖新路子</h2><p class="small muted">轮换搜索接单、创作者分成、游戏插件、域名、工具、地区与语言市场等方向。下面先列新发现的入口；搜索摘要没有当成原帖全文或收款证明，也不计入已接通平台。</p><div id="discoveryList"></div></div></section>
-<footer>原文说法、平台公开数字、报价和你的实际到账分别看。旧版有用思路保留为参考；原帖、生态细节和逆向拆解都在标题下面。</footer></main><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>全球痛点与真实赚钱机会 24h 自动监控工作台 v10.2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{color-scheme:dark}html{font-size:14px}body{margin:0;background:#0b0f19;color:#e5e7eb;font-family:Inter,"Microsoft YaHei",system-ui,sans-serif}
+    .panel{background:linear-gradient(145deg,#131b2e,#0f1523);border:1px solid #263249;box-shadow:0 8px 28px #02061755}
+    .card summary{list-style:none}.card summary::-webkit-details-marker{display:none}.card[open]{border-color:#43577d}.card[open] .chev{transform:rotate(180deg)}
+    .drawer{border-top:1px solid #27344d}.field{background:#0a1020;border:1px solid #25324a}.pill{font-size:12px;line-height:1.1}
+    .title{font-size:15.5px;line-height:1.45}.muted{color:#94a3b8}.truth{border-left:3px solid #22c55e}.risk{border-left:3px solid #f59e0b}.reverse{border-left:3px solid #a855f7}
+    button,input{font:inherit}.compact-scroll{scrollbar-color:#334155 #0b0f19}.compact-scroll::-webkit-scrollbar{width:8px}.compact-scroll::-webkit-scrollbar-thumb{background:#334155;border-radius:8px}
+  </style>
+</head>
+<body class="min-h-screen">
+<main class="w-full px-2.5 py-2.5 xl:px-4">
+  <header class="panel rounded-xl px-3.5 py-3 mb-2.5">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div><h1 class="text-[18px] font-extrabold text-white tracking-tight">🌍 全球痛点与真实赚钱机会 24h 自动监控工作台 <span class="text-sky-400">v10.2</span></h1>
+        <p class="text-xs muted mt-1">公开原帖全文/摘要 → 事实校验 → LLM或规则引擎结构化 → 大白话落地拆解。金额与成交不靠脑补。</p></div>
+      <div class="flex flex-wrap gap-1.5 text-xs">
+        <span id="updated" class="pill px-2.5 py-1.5 rounded-md bg-slate-950 border border-slate-700">最近完成：读取中</span>
+        <span id="runType" class="pill px-2.5 py-1.5 rounded-md bg-indigo-950 border border-indigo-700 text-indigo-200">触发：读取中</span>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-1.5 mt-3">
+      <div class="field rounded-lg px-2.5 py-2"><div class="text-[11px] muted">当前保留</div><b id="kTotal" class="text-lg text-white">0</b></div>
+      <div class="field rounded-lg px-2.5 py-2"><div class="text-[11px] muted">本轮抓回</div><b id="kFetched" class="text-lg text-cyan-300">0</b></div>
+      <div class="field rounded-lg px-2.5 py-2"><div class="text-[11px] muted">本轮新帖</div><b id="kNew" class="text-lg text-emerald-300">0</b></div>
+      <div class="field rounded-lg px-2.5 py-2"><div class="text-[11px] muted">LLM拆解</div><b id="kLlm" class="text-lg text-violet-300">0</b></div>
+      <div class="field rounded-lg px-2.5 py-2"><div class="text-[11px] muted">规则兜底</div><b id="kRules" class="text-lg text-amber-300">0</b></div>
+      <div class="field rounded-lg px-2.5 py-2"><div class="text-[11px] muted">来源有效</div><b id="kSources" class="text-lg text-sky-300">0</b></div>
+      <div class="field rounded-lg px-2.5 py-2"><div class="text-[11px] muted">来源失败</div><b id="kFailed" class="text-lg text-rose-300">0</b></div>
+    </div>
+  </header>
+
+  <section class="panel rounded-xl px-3 py-2.5 mb-2.5 flex flex-wrap items-center justify-between gap-2">
+    <div id="filters" class="flex flex-wrap gap-1.5">
+      <button data-track="all" class="flt px-2.5 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold">全部机会</button>
+      <button data-track="bounty_direct" class="flt px-2.5 py-1.5 rounded-lg bg-slate-800 text-emerald-300 text-xs font-bold">💰 悬赏/外包</button>
+      <button data-track="pain_saas" class="flt px-2.5 py-1.5 rounded-lg bg-slate-800 text-indigo-300 text-xs font-bold">💻 软件痛点</button>
+      <button data-track="gray_arb" class="flt px-2.5 py-1.5 rounded-lg bg-slate-800 text-amber-300 text-xs font-bold">🧭 流量/跨境</button>
+      <button data-track="nsfw_adult" class="flt px-2.5 py-1.5 rounded-lg bg-slate-800 text-rose-300 text-xs font-bold">🔞 成人商业</button>
+      <button id="sourceToggle" class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-sky-300 text-xs font-bold">📡 来源实况</button>
+    </div>
+    <div class="flex flex-wrap gap-1.5 items-center">
+      <input id="search" class="w-64 max-w-[78vw] px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs outline-none focus:border-sky-500" placeholder="搜索标题、痛点、平台、逆向思路">
+      <button id="collapseAll" class="px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs">➖ 仅看标题</button>
+      <button id="expandAll" class="px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs">➕ 展开全部详情</button>
+      <button id="refresh" class="px-2.5 py-1.5 rounded-lg bg-sky-700 hover:bg-sky-600 text-xs font-bold">↻ 读取最新快照</button>
+    </div>
+  </section>
+
+  <section id="sourcePanel" class="panel rounded-xl px-3 py-3 mb-2.5 hidden">
+    <div class="flex justify-between gap-3"><div><h2 class="font-bold text-white">来源实况</h2><p class="text-xs muted mt-1">配置入口不等于抓取成功；403、429、未配置和解析失败逐项保留。</p></div><button id="sourceClose" class="text-slate-400">✕</button></div>
+    <div class="overflow-x-auto mt-2 compact-scroll"><table class="w-full text-xs"><thead><tr class="text-left text-slate-400 border-b border-slate-700"><th class="py-2">来源</th><th>状态</th><th>HTTP</th><th>读到</th><th>说明</th></tr></thead><tbody id="sourceRows"></tbody></table></div>
+  </section>
+
+  <div id="notice" class="panel rounded-xl px-3 py-3 text-sm text-slate-300">正在读取公开快照……</div>
+  <section id="cards" class="hidden w-full grid grid-cols-1 xl:grid-cols-2 gap-2.5"></section>
+</main>
+
+<template id="cardTemplate">
+  <details class="card panel rounded-xl overflow-hidden">
+    <summary class="cursor-pointer px-3 py-2.5 hover:bg-slate-800/40">
+      <div class="flex items-start gap-2.5">
+        <span class="seq shrink-0 w-7 h-7 rounded-lg bg-slate-950 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300"></span>
+        <div class="min-w-0 grow"><div class="flex flex-wrap gap-1.5 mb-1"><span class="platform pill px-2 py-1 rounded-full bg-slate-900 border border-slate-700 text-sky-300"></span><span class="score pill px-2 py-1 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-300"></span><span class="moneytime pill px-2 py-1 rounded-full bg-amber-950 border border-amber-800 text-amber-300"></span><span class="engine pill px-2 py-1 rounded-full bg-violet-950 border border-violet-800 text-violet-300"></span></div><h2 class="title font-bold text-slate-100"></h2><p class="summary text-xs muted mt-1 truncate"></p></div>
+        <span class="chev text-slate-500 transition-transform">⌄</span>
+      </div>
+    </summary>
+    <div class="drawer px-3 py-3 space-y-2.5">
+      <section class="field truth rounded-lg p-3"><h3 class="font-bold text-emerald-300 text-xs mb-1">真实成交与数据核验</h3><p data-field="deal_fact_zh" class="whitespace-pre-line"></p></section>
+      <section class="field rounded-lg p-3"><h3 class="font-bold text-sky-300 text-xs mb-1">① 用户正在吐槽什么真实痛点？</h3><p data-field="pain_point_zh" class="whitespace-pre-line"></p><details class="mt-2"><summary class="text-xs text-slate-400 cursor-pointer">查看来源证据摘录</summary><blockquote data-field="evidence_excerpt" class="mt-1.5 text-xs text-slate-400 border-l-2 border-slate-700 pl-2"></blockquote></details></section>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+        <section class="field rounded-lg p-3"><h3 class="font-bold text-indigo-300 text-xs mb-1">② 谁解决了它赚到钱？</h3><p data-field="solver_case_zh" class="whitespace-pre-line"></p></section>
+        <section class="field rounded-lg p-3"><h3 class="font-bold text-cyan-300 text-xs mb-1">正向落地 1-2-3</h3><p data-field="action_plan_zh" class="whitespace-pre-line"></p></section>
+      </div>
+      <section class="field risk rounded-lg p-3"><h3 class="font-bold text-amber-300 text-xs mb-1">⚡ ③ 平台生态、响应窗口与避坑细节</h3><p data-field="platform_ecology_tip_zh" class="whitespace-pre-line"></p></section>
+      <section class="field reverse rounded-lg p-3"><h3 class="font-bold text-violet-300 text-xs mb-1">🔄 ④ 深度逆向赚钱思路</h3><p data-field="reverse_money_idea_zh" class="whitespace-pre-line"></p></section>
+      <div class="flex flex-wrap gap-2 items-center text-xs muted"><span class="scope"></span><span class="published"></span><span class="fetched"></span><a class="sourceLink text-sky-400 hover:underline" target="_blank" rel="noopener noreferrer">打开原始来源 ↗</a></div>
+      <p class="structNote text-[11px] text-slate-500"></p>
+    </div>
+  </details>
+</template>
+
+<script>
+const state={records:[],health:{sources:[],summary:{}},track:'all'};
+const $=id=>document.getElementById(id);const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const date=v=>{if(!v)return '未提供';const d=new Date(v);return Number.isNaN(d.valueOf())?v:d.toLocaleString('zh-CN',{hour12:false})};
+const safeUrl=v=>{try{const u=new URL(v);return /^https?:$/.test(u.protocol)?u.href:'#'}catch{return '#'}};
+async function readJson(path){const r=await fetch(path+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error(path+' HTTP '+r.status);return r.json()}
+function renderStats(data){const s=data.stats||{},h=state.health.summary||{};$('kTotal').textContent=s.total||0;$('kFetched').textContent=s.fetched_this_run||0;$('kNew').textContent=s.new_this_run||0;$('kLlm').textContent=s.llm_enriched||0;$('kRules').textContent=s.rule_enriched||0;$('kSources').textContent=h.responding_sources||0;$('kFailed').textContent=h.failed_sources||0;$('updated').textContent='最近完成：'+date(data.updated_at);const e=data.run?.trigger_event;$('runType').textContent='触发：'+(e==='schedule'?'GitHub定时':e==='workflow_dispatch'?'手动云端验收':e||'尚未运行')}
+function renderSources(){const rows=(state.health.sources||[]).map(s=>`<tr class="border-b border-slate-800 align-top"><td class="py-2 pr-3 text-slate-200">${esc(s.name)}</td><td class="pr-3 ${s.status==='ok'?'text-emerald-300':'text-amber-300'}">${esc(s.status)}</td><td class="pr-3">${esc(s.http_status??'未取得')}</td><td class="pr-3">${esc(s.parsed_count??0)}</td><td class="py-2 text-slate-400">${esc(s.message)}</td></tr>`).join('');$('sourceRows').innerHTML=rows||'<tr><td colspan="5" class="py-3 muted">尚无来源状态。</td></tr>'}
+function textBlob(r){return [r.title_zh,r.raw_title,r.summary_one_line,r.source_platform,r.deal_fact_zh,r.pain_point_zh,r.platform_ecology_tip_zh,r.reverse_money_idea_zh].join(' ').toLowerCase()}
+function setField(card,name,value){const node=card.querySelector(`[data-field="${name}"]`);if(node)node.textContent=value||'未提供'}
+function makeCard(r,index){const card=$('cardTemplate').content.firstElementChild.cloneNode(true);card.dataset.track=r.track||'';card.querySelector('.seq').textContent=String(index+1).padStart(2,'0');card.querySelector('.platform').textContent=r.source_platform||r.platform;card.querySelector('.score').textContent=`可行性/证据 ${r.feasibility_pct??0}%`;card.querySelector('.moneytime').textContent=r.time_to_money||'见钱周期未验证';card.querySelector('.engine').textContent=String(r.structured_by||'rules').startsWith('llm:')?'LLM结构化':'规则兜底';card.querySelector('.title').textContent=r.title_zh||r.raw_title;card.querySelector('.summary').textContent=r.summary_one_line||r.deal_fact_zh;['deal_fact_zh','pain_point_zh','solver_case_zh','action_plan_zh','platform_ecology_tip_zh','reverse_money_idea_zh','evidence_excerpt'].forEach(f=>setField(card,f,r[f]));card.querySelector('.scope').textContent='正文范围：'+(r.body_scope||'未标明');card.querySelector('.published').textContent='发布：'+date(r.published_at);card.querySelector('.fetched').textContent='抓取：'+date(r.fetched_at);const a=card.querySelector('.sourceLink');a.href=safeUrl(r.source_url);card.querySelector('.structNote').textContent=(r.feasibility_note||'')+' '+(r.structured_note||'');return card}
+function render(){const q=$('search').value.trim().toLowerCase();const rows=state.records.filter(r=>(state.track==='all'||r.track===state.track)&&(!q||textBlob(r).includes(q)));$('cards').replaceChildren(...rows.map(makeCard));$('notice').classList.toggle('hidden',rows.length>0);$('cards').classList.toggle('hidden',rows.length===0);$('notice').textContent=state.records.length?`当前筛选没有匹配项。总数据 ${state.records.length} 条。`:'当前没有真实采集记录；不会显示预填演示收益。'}
+async function load(){try{const [data,health]=await Promise.all([readJson('./live_signals.json'),readJson('./source_health.json')]);state.records=Array.isArray(data.records)?data.records:[];state.health=health||{};renderStats(data);renderSources();render()}catch(e){$('notice').classList.remove('hidden');$('cards').classList.add('hidden');$('notice').textContent='读取快照失败：'+e.message+'。这不代表来源网站关闭。'}}
+document.querySelectorAll('.flt').forEach(b=>b.onclick=()=>{state.track=b.dataset.track;document.querySelectorAll('.flt').forEach(x=>x.classList.toggle('bg-blue-600',x===b));render()});$('search').oninput=render;$('collapseAll').onclick=()=>document.querySelectorAll('.card').forEach(x=>x.open=false);$('expandAll').onclick=()=>document.querySelectorAll('.card').forEach(x=>x.open=true);$('refresh').onclick=load;$('sourceToggle').onclick=()=>$('sourcePanel').classList.toggle('hidden');$('sourceClose').onclick=()=>$('sourcePanel').classList.add('hidden');load();setInterval(load,20*60*1000);
+</script>
+</body></html>

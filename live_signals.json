@@ -1,0 +1,7 @@
+{
+  "version": "10.2",
+  "updated_at": null,
+  "records": [],
+  "stats": {"total": 0, "new_this_run": 0, "llm_enriched": 0, "rule_enriched": 0},
+  "note": "尚未完成首次云端采集；空列表不会用演示数据冒充真实帖子。"
+}

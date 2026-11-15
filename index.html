@@ -51,7 +51,7 @@
         ⏱ 20分钟(1200s)轮询: <strong id="timerText" class="text-white font-mono">20:00</strong>
       </span>
       <button onclick="manualRefresh()" class="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold cursor-pointer">
-        ⚡ 立即全网爆量刷新 (单次并发扫 500+ 条)
+        ⚡ ⚡ 立即全网无上限刷新 (65+ 全球源全量拉取)
       </button>
     </div>
   </header>
@@ -216,7 +216,7 @@ You don't need a $49/mo subscription for this — I can either send you the full
 const POLL_INTERVAL_SEC = 1200;
 let countdown = POLL_INTERVAL_SEC;
 let currentFilter = 'all';
-let displayLimit = 80; // 默认首屏渲染 80 条，点底部按钮可一键展开几百上千条
+let displayLimit = 999999; // 默认首屏渲染 80 条，点底部按钮可一键展开几百上千条
 const openCardIds = new Set(["base_01", "base_02"]);
 
 const GLOBAL_DEEP_BASE = [
@@ -427,7 +427,7 @@ async function fetchAllGlobalStreams() {
   await Promise.allSettled([
     // 并发跑 Reddit JSONP
     ...redditSubs.map(async (s) => {
-      const posts = await fetchRedditJsonp(s.sub, 35);
+      const posts = await fetchRedditJsonp(s.sub, 100);
       posts.forEach(d => {
         if (!d || !d.title) return;
         const item = sanitizeAndUpgradeSignal({
@@ -447,7 +447,7 @@ async function fetchAllGlobalStreams() {
     // 并发跑 HN
     ...hnQueries.map(async (ep) => {
       try {
-        const res = await fetch(`https://hn.algolia.com/api/v1/search_by_date?query=${ep.q}&tags=story&hitsPerPage=40`);
+        const res = await fetch(`https://hn.algolia.com/api/v1/search_by_date?query=${ep.q}&tags=story&hitsPerPage=100`);
         if (!res.ok) return;
         const data = await res.json();
         (data.hits || []).forEach(h => {

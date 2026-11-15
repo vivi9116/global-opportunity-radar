@@ -21,6 +21,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 import argparse
+from bs4 import BeautifulSoup
 
 try:
     from curl_cffi import requests as cffi_requests
@@ -157,6 +158,15 @@ def init_db():
             created_ts INTEGER
         )
     """)
+    columns = {row[1] for row in c.execute("PRAGMA table_info(signals)")}
+    if "created_ts" not in columns:
+        c.execute("ALTER TABLE signals ADD COLUMN created_ts INTEGER DEFAULT 0")
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS notified_bounties (
+            id TEXT PRIMARY KEY,
+            notified_at TEXT
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -186,6 +196,7 @@ def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en="")
         f"🔗 原帖直链：{source_url}"
     )
 
+    pushed_any = False
     pushplus_token = os.environ.get("PUSHPLUS_TOKEN", "").strip()
     if pushplus_token:
         try:
@@ -196,19 +207,57 @@ def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en="")
                 "template": "html"
             }).encode("utf-8")
             req = urllib.request.Request("http://www.pushplus.plus/send", data=pp_data, headers={"Content-Type": "application/json"})
-            urllib.request.urlopen(req, timeout=10)
-        except Exception:
-            pass
+            urllib.request.urlopen(req, timeout=10).read()
+            pushed_any = True
+            print(f"[PUSHPLUS SUCCESS] {clean_title[:50]}")
+        except Exception as exc:
+            print(f"[PUSHPLUS WARN] {type(exc).__name__}: {exc}")
 
     webhook_url = os.environ.get("WEBHOOK_URL", "").strip()
     if webhook_url:
         try:
             wb_payload = {"msg_type": "text", "content": {"text": plain_summary}} if ("feishu" in webhook_url) else {"msgtype": "text", "text": {"content": plain_summary}}
             req = urllib.request.Request(webhook_url, data=json.dumps(wb_payload).encode("utf-8"), headers={"Content-Type": "application/json"})
-            urllib.request.urlopen(req, timeout=10)
-        except Exception:
-            pass
-    return True
+            response_text = urllib.request.urlopen(req, timeout=10).read().decode("utf-8", errors="ignore")
+            if "feishu" in webhook_url or "larksuite" in webhook_url:
+                response_data = json.loads(response_text or "{}")
+                response_code = response_data.get("code", response_data.get("StatusCode", 0))
+                if response_code not in (0, "0", None):
+                    raise RuntimeError(f"Feishu code={response_code}: {response_data.get('msg') or response_data.get('StatusMessage')}")
+            pushed_any = True
+            print(f"[WEBHOOK SUCCESS] {clean_title[:50]}")
+        except Exception as exc:
+            print(f"[WEBHOOK WARN] {type(exc).__name__}: {exc}")
+    if not pushplus_token and not webhook_url:
+        print("[PUSH SKIP] PUSHPLUS_TOKEN 与 WEBHOOK_URL 均未配置")
+    return pushed_any
+
+
+def call_gemini_fast_bounty_dm(raw_title, raw_body, author_name=""):
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        print("[GEMINI SKIP] GEMINI_API_KEY 未配置")
+        return None
+    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").strip()
+    prompt = f"""请根据下面这条新悬赏单返回严格 JSON，不要 Markdown：
+{{"title_zh":"中文一句话任务与预算摘要","sample_3min_zh":"3分钟可执行的小样步骤","custom_dm_en":"70词以内、点名具体需求的英文私信"}}
+作者：{author_name}
+标题：{raw_title}
+正文：{raw_body[:1600]}"""
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{urllib.parse.quote(model, safe='')}:generateContent?key={urllib.parse.quote(api_key)}"
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json", "temperature": 0.25},
+        }
+        request = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
+        response = json.loads(urllib.request.urlopen(request, timeout=20).read().decode("utf-8"))
+        result = json.loads(response["candidates"][0]["content"]["parts"][0]["text"])
+        print(f"[GEMINI SUCCESS] {raw_title[:50]}")
+        return result if isinstance(result, dict) else None
+    except Exception as exc:
+        print(f"[GEMINI WARN] {type(exc).__name__}: {exc}")
+        return None
 
 
 def extract_honest_deal_fact(text_blob, ups=0, comments=0):
@@ -231,7 +280,7 @@ def extract_honest_deal_fact(text_blob, ups=0, comments=0):
 
 def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, sourceUrl, defaultTrack, ups, cmts):
     blob = f"{rawTitle} {rawBody}"
-    cleanTitle = rawTitle.replace(/^\[[^\]]+\]\s*|^【[^']】\s*/, "").strip()
+    cleanTitle = re.sub(r'^\[[^\]]+\]\s*|^【[^】]+】\s*', '', rawTitle).strip()
     return {
         "pain_point_zh": f"【来自 {sourceLabel} 的实时标的：《{cleanTitle}》】\n● 原帖摘要：{rawBody[:250]}\n● 互动指标：{ups}赞 · {cmts}评论",
         "solver_case_zh": f"顺应当前热度，围绕该标的提供『买断制极简工具』、『人工代配置服务』或『跨国信息差搬运』快速变现。",
@@ -242,8 +291,8 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
 
 
 def sanitizeAndUpgradeSignal(rawItem):
-    title = cleanHtmlText(rawItem.get("title_zh") or rawItem.get("title") or "")
-    pain = cleanHtmlText(rawItem.get("pain_point_zh") or rawItem.get("selftext") or "")
+    title = clean_raw_html(rawItem.get("title_zh") or rawItem.get("title") or "")
+    pain = clean_raw_html(rawItem.get("pain_point_zh") or rawItem.get("selftext") or "")
     if not title:
         return None
     if re.search(r'\[offer\]|\[for\s*hire\]', title, re.I):
@@ -258,7 +307,7 @@ def sanitizeAndUpgradeSignal(rawItem):
         "track": rawItem.get("track", "pain_saas"),
         "title_zh": title,
         "summary_one_line": rawItem.get("summary_one_line") or f"实时高热收录",
-        "deal_fact_zh": rawItem.get("deal_fact_zh") or f"🔥 实时核验",
+        "deal_fact_zh": rawItem.get("deal_fact_zh") or extract_honest_deal_fact(f"{title} {pain}", rawItem.get("ups", 0), rawItem.get("num_comments", 0)),
         "pain_point_zh": u["pain_point_zh"],
         "solver_case_zh": u["solver_case_zh"],
         "platform_ecology_tip_zh": u["platform_ecology_tip_zh"],
@@ -283,8 +332,145 @@ def fetch_reddit_jsonp_py(sub, mode="new", limit=35):
         raw = http_get(url, timeout=12)
         data = json.loads(raw)
         return [c["data"] for c in data.get("data", {}).get("children", [])]
-    except Exception:
+    except Exception as exc:
+        print(f"[SOURCE WARN] Reddit r/{sub}: {type(exc).__name__}: {exc}")
         return []
+
+
+def _iso_timestamp(value, fallback):
+    try:
+        return int(datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp())
+    except (TypeError, ValueError):
+        return fallback
+
+
+def fetch_additional_sources(now_ts):
+    items = []
+
+    for query in ("willing to pay", "too expensive alternative", "first sale MRR", "freelance automation scraping"):
+        try:
+            url = "https://hn.algolia.com/api/v1/search_by_date?tags=story&hitsPerPage=30&query=" + urllib.parse.quote(query)
+            data = json.loads(http_get(url, timeout=15))
+            for hit in data.get("hits", []):
+                object_id = str(hit.get("objectID") or "")
+                title = clean_raw_html(hit.get("title") or hit.get("story_title") or "")
+                if not object_id or not title:
+                    continue
+                item = sanitizeAndUpgradeSignal({
+                    "id": f"hn_{object_id}", "created_ts": _iso_timestamp(hit.get("created_at"), now_ts - 3600),
+                    "track": "pain_saas", "ups": hit.get("points") or 0, "num_comments": hit.get("num_comments") or 0,
+                    "title_zh": f"【Hacker News】{title}", "pain_point_zh": hit.get("story_text") or title,
+                    "source_platform": "Hacker News Algolia", "source_url": f"https://news.ycombinator.com/item?id={object_id}",
+                    "solver_url": f"https://news.ycombinator.com/item?id={object_id}",
+                })
+                if item:
+                    items.append(item)
+            print(f"[SOURCE OK] Hacker News: {query}")
+        except Exception as exc:
+            print(f"[SOURCE WARN] Hacker News {query}: {type(exc).__name__}: {exc}")
+
+    for node in ("jobs", "outsourcing"):
+        try:
+            data = json.loads(http_get(f"https://www.v2ex.com/api/topics/show.json?node_name={node}", timeout=15))
+            for topic in data:
+                topic_id = str(topic.get("id") or "")
+                title = clean_raw_html(topic.get("title") or "")
+                if not topic_id or not title:
+                    continue
+                source_url = topic.get("url") or f"https://www.v2ex.com/t/{topic_id}"
+                item = sanitizeAndUpgradeSignal({
+                    "id": f"v2ex_{topic_id}", "created_ts": int(topic.get("created") or now_ts),
+                    "track": "bounty_direct", "num_comments": topic.get("replies") or 0,
+                    "title_zh": f"【V2EX {node}】{title}",
+                    "pain_point_zh": topic.get("content_rendered") or topic.get("content") or title,
+                    "source_platform": f"V2EX {node}", "source_url": source_url, "solver_url": source_url,
+                })
+                if item:
+                    items.append(item)
+            print(f"[SOURCE OK] V2EX {node}")
+        except Exception as exc:
+            print(f"[SOURCE WARN] V2EX {node}: {type(exc).__name__}: {exc}")
+
+    try:
+        dlsite_url = "https://www.dlsite.com/maniax/ranking/day?sort=sale&order=desc"
+        soup = BeautifulSoup(http_get(dlsite_url, timeout=20), "lxml")
+        dlsite_count = 0
+        for row in soup.select("table.ranking_worklist tr"):
+            links = [a for a in row.select("a[href*='/work/=/product_id/']") if "btn_free_sample" not in (a.get("class") or []) and a.get_text(" ", strip=True)]
+            if not links:
+                continue
+            anchor = links[0]
+            title = clean_raw_html(anchor.get_text(" ", strip=True))
+            source_url = urllib.parse.urljoin(dlsite_url, anchor.get("href", ""))
+            body = clean_raw_html(row.get_text(" ", strip=True))
+            product_match = re.search(r"/product_id/([^/.]+)", source_url)
+            product_id = product_match.group(1) if product_match else str(abs(hash(source_url)))
+            item = sanitizeAndUpgradeSignal({
+                "id": f"dlsite_{product_id}", "created_ts": now_ts - 3600, "track": "nsfw_adult",
+                "title_zh": f"【DLsite R18 日榜】{title}", "pain_point_zh": body,
+                "deal_fact_zh": extract_honest_deal_fact(body), "source_platform": "DLsite R18 日榜",
+                "source_url": source_url, "solver_url": source_url,
+            })
+            if item:
+                items.append(item)
+                dlsite_count += 1
+        print(f"[SOURCE OK] DLsite: {dlsite_count}")
+    except Exception as exc:
+        print(f"[SOURCE WARN] DLsite: {type(exc).__name__}: {exc}")
+
+    for kind, forum, track in (("journey", "my-journey-discussions.167", "gray_arb"), ("hire", "hire-a-freelancer.76", "bounty_direct")):
+        try:
+            feed_url = f"https://www.blackhatworld.com/forums/{forum}/index.rss"
+            soup = BeautifulSoup(http_get(feed_url, timeout=20), "xml")
+            bhw_count = 0
+            for entry in soup.find_all(["entry", "item"]):
+                title_node = entry.find("title")
+                link_node = entry.find("link")
+                title = clean_raw_html(title_node.get_text(" ", strip=True) if title_node else "")
+                source_url = (link_node.get("href") if link_node and link_node.has_attr("href") else link_node.get_text(strip=True) if link_node else "")
+                content_node = entry.find("content") or entry.find("description") or entry.find("summary")
+                body = clean_raw_html(content_node.decode_contents() if content_node else "")
+                if not title or not source_url:
+                    continue
+                item = sanitizeAndUpgradeSignal({
+                    "id": f"bhw_{kind}_{abs(hash(source_url))}", "created_ts": now_ts - 7200, "track": track,
+                    "title_zh": f"【BlackHatWorld {kind}】{title}", "pain_point_zh": body,
+                    "source_platform": f"BlackHatWorld {kind}", "source_url": source_url, "solver_url": source_url,
+                })
+                if item:
+                    items.append(item)
+                    bhw_count += 1
+            print(f"[SOURCE OK] BlackHatWorld {kind}: {bhw_count}")
+        except Exception as exc:
+            print(f"[SOURCE WARN] BlackHatWorld {kind}: {type(exc).__name__}: {exc}")
+
+    wm = os.environ.get("CHATURBATE_WM", "").strip()
+    if not wm:
+        print("[SOURCE SKIP] Chaturbate: CHATURBATE_WM 未配置")
+    else:
+        try:
+            url = "https://chaturbate.com/api/public/affiliates/onlinerooms/?wm=" + urllib.parse.quote(wm) + "&format=json"
+            data = json.loads(http_get(url, timeout=20))
+            rooms = data.get("results", []) if isinstance(data, dict) else data
+            for room in rooms[:100]:
+                username = str(room.get("username") or "")
+                if not username:
+                    continue
+                viewers = int(room.get("num_users") or 0)
+                source_url = room.get("chat_room_url") or f"https://chaturbate.com/{username}/"
+                item = sanitizeAndUpgradeSignal({
+                    "id": f"cb_{username}", "created_ts": now_ts, "track": "nsfw_adult", "ups": viewers,
+                    "title_zh": f"【Chaturbate 在线房间】{username}",
+                    "pain_point_zh": f"当前在线 {viewers} 人；标签：{' / '.join(room.get('tags') or [])}",
+                    "deal_fact_zh": f"✅ 官方API实时在线人数：{viewers}", "source_platform": "Chaturbate官方联盟API",
+                    "source_url": source_url, "solver_url": source_url,
+                })
+                if item:
+                    items.append(item)
+            print(f"[SOURCE OK] Chaturbate: {len(rooms[:100])}")
+        except Exception as exc:
+            print(f"[SOURCE WARN] Chaturbate: {type(exc).__name__}: {exc}")
+    return items
 
 
 def run_fast_bounty_and_radar():
@@ -292,6 +478,7 @@ def run_fast_bounty_and_radar():
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     now_ts = int(time.time())
     all_fetched = []
+    alert_candidates = []
 
     print(f"[{now_str}] 🚀 正在执行满血 65+ 频道全网扫描 (悬赏按最新倒序)...")
 
@@ -309,12 +496,14 @@ def run_fast_bounty_and_radar():
                 "ups": d.get("ups", 0),
                 "num_comments": d.get("num_comments", 0),
                 "title_zh": f"【{label}】{title}",
+                "pain_point_zh": d.get("selftext") or title,
                 "source_platform": label,
                 "source_url": "https://www.reddit.com" + d.get("permalink", ""),
                 "solver_url": "https://www.reddit.com" + d.get("permalink", "")
             })
             if item:
                 all_fetched.append(item)
+                alert_candidates.append((item, d.get("author", ""), title, clean_raw_html(d.get("selftext") or "")))
 
     # 2. 抓 GitHub 实时新悬赏单
     try:
@@ -330,25 +519,20 @@ def run_fast_bounty_and_radar():
                 "ups": (iss.get("reactions") or {}).get("total_count", 1),
                 "num_comments": iss.get("comments", 0),
                 "title_zh": f"【GitHub 实时新悬赏】{iss['title']}",
+                "pain_point_zh": iss.get("body") or iss["title"],
                 "source_platform": "GitHub 实时悬赏",
                 "source_url": iss["html_url"],
                 "solver_url": iss["html_url"]
             })
             if item:
                 all_fetched.append(item)
+                alert_candidates.append((item, "", iss["title"], clean_raw_html(iss.get("body") or "")))
     except Exception:
         pass
 
     # 3. 抓其他全网痛点、野路子与成人频道 (Reddit 36个版块代表)
-    full_subs = [
-        ("SaaS", "pain_saas", "Reddit r/SaaS (软件痛点月榜)"),
-        ("SideProject", "pain_saas", "Reddit r/SideProject (副业爆款月榜)"),
-        ("beermoney", "gray_arb", "Reddit r/beermoney (网赚实测月榜)"),
-        ("sidehustle", "gray_arb", "Reddit r/sidehustle (野路子副业月榜)"),
-        ("NSFWCreators", "nsfw_adult", "Reddit r/NSFWCreators (成人引流月榜)")
-    ]
-    for sub, track, label in full_subs:
-        posts = fetch_reddit_jsonp_py(sub, "top_month", 25)
+    for sub, track, label, mode in REDDIT_TARGET_SUBS[len(FAST_BOUNTY_SUBS):]:
+        posts = fetch_reddit_jsonp_py(sub, mode, 25)
         for d in posts:
             title = clean_raw_html(d.get("title", ""))
             if not title:
@@ -360,6 +544,7 @@ def run_fast_bounty_and_radar():
                 "ups": d.get("ups", 0),
                 "num_comments": d.get("num_comments", 0),
                 "title_zh": f"【{label}】{title}",
+                "pain_point_zh": d.get("selftext") or title,
                 "source_platform": label,
                 "source_url": "https://www.reddit.com" + d.get("permalink", ""),
                 "solver_url": "https://www.reddit.com" + d.get("permalink", "")
@@ -367,8 +552,29 @@ def run_fast_bounty_and_radar():
             if item:
                 all_fetched.append(item)
 
+    all_fetched.extend(fetch_additional_sources(now_ts))
+
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    notified_ids = {row[0] for row in c.execute("SELECT id FROM notified_bounties")}
+    pushed_count = 0
+    for item, author, raw_title, raw_body in sorted(alert_candidates, key=lambda row: row[0].get("created_ts", 0), reverse=True):
+        age_minutes = max(0, (now_ts - int(item.get("created_ts") or 0)) / 60)
+        if item["id"] in notified_ids or age_minutes > 60 or pushed_count >= 5:
+            continue
+        ai_result = call_gemini_fast_bounty_dm(raw_title, raw_body, author)
+        custom_dm = ""
+        if ai_result:
+            if ai_result.get("title_zh"):
+                item["title_zh"] = f"【⚡急单】{clean_raw_html(ai_result['title_zh'])}"
+            if ai_result.get("sample_3min_zh"):
+                item["action_plan_zh"] = clean_raw_html(ai_result["sample_3min_zh"])
+            custom_dm = clean_raw_html(ai_result.get("custom_dm_en") or "")
+        if send_multichannel_bounty_alert(item, author_name=author, custom_dm_en=custom_dm):
+            c.execute("INSERT OR REPLACE INTO notified_bounties VALUES (?, ?)", (item["id"], now_str))
+            notified_ids.add(item["id"])
+            pushed_count += 1
+    print(f"[PUSH SUMMARY] candidates={len(alert_candidates)} pushed={pushed_count}")
     for item in all_fetched:
         c.execute("""
             INSERT OR REPLACE INTO signals VALUES (
@@ -421,12 +627,13 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cloud-once", action="store_true")
+    parser.add_argument("--bounty-fast", action="store_true")
     parser.add_argument("--serve", action="store_true")
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
 
     os.chdir(BASE_DIR)
-    if args.cloud_once or args.serve:
+    if args.cloud_once or args.bounty_fast or args.serve:
         run_fast_bounty_and_radar()
         if args.serve:
             print(f"🚀 本地无上限满血工作台已启动: http://127.0.0.1:{args.port}/")

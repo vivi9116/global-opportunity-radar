@@ -33,6 +33,7 @@ jobs:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
           BARK_URL: ${{ secrets.BARK_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CHATURBATE_WM: ${{ secrets.CHATURBATE_WM }}
           PROXY_URL: ${{ secrets.PROXY_URL }}
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: |

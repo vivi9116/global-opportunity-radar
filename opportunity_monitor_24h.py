@@ -2,17 +2,20 @@
 # -*- coding: utf-8 -*-
 """
 ================================================================================
-全球痛点与真实赚钱机会 24h 自动监控引擎 (v10.8 双轨制：60秒悬赏秒推TG + 20分钟大盘)
+全球痛点与真实赚钱机会 24h 自动监控引擎 (v10.9 微信/飞书/钉钉/Bark 免翻墙秒推版)
 ================================================================================
-双轨运行逻辑：
+双轨运行逻辑 + 全平台免翻墙实时通知：
 1. 【快轨：60秒悬赏猎手 (--bounty-fast / --bounty-daemon)】
-   - 每 60 秒极速轮询 Reddit 5大现金急单版块 (slavelabour / forhire / DoneDirtCheap /
-     hireaprogrammer / freelance_forhire) 的 /new.json + GitHub 最新 Open Bounties。
-   - 严格剔除 [Offer]/[For Hire] 同行求职水贴，只抓刚发出的雇主真金白银发包贴 ([Task]/[Hiring])。
-   - 一旦发现数据库里未推送过的新急单，2秒内调用 Gemini API 生成针对该单的【定制英文破冰话术】与
-     【5分钟样本制作指南】，立即通过 Telegram Bot API 弹窗推送到你手机！
+   - 每 60 秒极速扫描 Reddit 5大现金急单版块 (slavelabour / forhire / DoneDirtCheap /
+     hireaprogrammer / freelance_forhire) + GitHub 最新 Open Bounties。
+   - 自动剔除 [Offer]/[For Hire] 求职水贴，只抓雇主真金白银发包的 [Task]/[Hiring]。
+   - 一旦发现新急单，2秒内生成【定制英文破冰私信】与【3分钟打样方案】，并自动推送到：
+     ✅ 微信 (PushPlus / Server酱)
+     ✅ 飞书 / 钉钉 / 企业微信 / Discord 群机器人 (Webhook)
+     ✅ iPhone Bark 锁屏强提醒
+     ✅ Telegram (可选保留)
 2. 【慢轨：20分钟全网大盘 (--cloud-once / --serve)】
-   - 每 20 分钟 (1200秒) 扫描全网近 30 天高热痛点、野路子套利与 DLsite/Chaturbate 成人榜。
+   - 每 20 分钟扫描全网近 30 天高热痛点、野路子套利与 DLsite/Chaturbate 成人榜，逐贴非模板化拆解。
 ================================================================================
 """
 
@@ -53,7 +56,6 @@ FAKE_GURU_BLACKLIST = [
     "free webinar", "masterclass", "coaching program"
 ]
 
-# 快轨（60秒轮询）：专门监控需要在 10 分钟内抢单的现金悬赏源
 FAST_BOUNTY_SUBS = [
     ("slavelabour", "bounty_direct", "Reddit r/slavelabour (微任务现金急单)"),
     ("forhire", "bounty_direct", "Reddit r/forhire (全球自由职业雇佣)"),
@@ -62,7 +64,6 @@ FAST_BOUNTY_SUBS = [
     ("freelance_forhire", "bounty_direct", "Reddit r/freelance_forhire (自由职业急单)")
 ]
 
-# 慢轨（20分钟轮询）：全网近30天高热痛点、野路子套利与成人实销榜
 REDDIT_TARGET_SUBS = [
     *[(s[0], s[1], s[2], "new") for s in FAST_BOUNTY_SUBS],
     ("webscraping", "bounty_direct", "Reddit r/webscraping (爬虫代抓与反爬求助)", "top_month"),
@@ -168,7 +169,6 @@ def init_db():
             deliverable_type TEXT
         )
     """)
-    # 专门记录已推送过 Telegram 的悬赏单 ID，绝不重复轰炸你的手机
     c.execute("""
         CREATE TABLE IF NOT EXISTS tg_notified_bounties (
             id TEXT PRIMARY KEY,
@@ -180,19 +180,14 @@ def init_db():
 
 
 # ==============================================================================
-# Telegram 实时秒级推送器（带雇主私信直链 + 一键复制英文截胡话术）
+# 免翻墙全通道秒级推送器（支持：微信 PushPlus / Server酱 / 飞书 / 钉钉 / 企业微信 / Bark / TG）
 # ==============================================================================
-def send_telegram_bounty_alert(bounty_item, author_name="", custom_dm_en=""):
-    tg_token = os.environ.get("TG_BOT_TOKEN", "").strip()
-    tg_chat_id = os.environ.get("TG_CHAT_ID", "").strip()
-    if not tg_token or not tg_chat_id:
-        return False
-
+def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en=""):
     clean_title = bounty_item.get("title_zh", "")
     source_url = bounty_item.get("source_url", "")
     deal_fact = bounty_item.get("deal_fact_zh", "")
-    pain_txt = bounty_item.get("pain_point_zh", "")[:260]
-    action_txt = bounty_item.get("action_plan_zh", "")[:240]
+    pain_txt = bounty_item.get("pain_point_zh", "")[:280]
+    action_txt = bounty_item.get("action_plan_zh", "")[:260]
 
     dm_url = f"https://www.reddit.com/message/compose/?to={author_name}" if author_name else source_url
     if not custom_dm_en:
@@ -202,35 +197,106 @@ def send_telegram_bounty_alert(bounty_item, author_name="", custom_dm_en=""):
             "I can deliver the complete files within 1-2 hours. Let me know if you want to check the sample!"
         )
 
-    msg_html = (
-        f"🚨 <b>【10分钟黄金抢单窗 · 新悬赏急单】</b>\n"
-        f"━━━━━━━━━━━━━━━━━━\n"
-        f"📌 <b>标题</b>：{html.escape(clean_title)}\n"
-        f"💰 <b>核验</b>：{html.escape(deal_fact)}\n\n"
-        f"📝 <b>雇主具体要求</b>：\n{html.escape(pain_txt)}\n\n"
-        f"⚡ <b>3分钟秒拿单动作</b>：\n{html.escape(action_txt)}\n\n"
-        f"💬 <b>长按复制下面这段英文私信直接甩给雇主</b>：\n"
-        f"<code>{html.escape(custom_dm_en)}</code>\n\n"
-        f"🔗 <a href=\"{source_url}\">👉 1. 点此打开原帖回 $bid 占坑</a>\n"
-        f"📩 <a href=\"{dm_url}\">👉 2. 点此直接给雇主 ({html.escape(author_name or '楼主')}) 发私信锁单</a>"
+    plain_summary = (
+        f"🚨【10分钟黄金抢单窗 · 新悬赏急单】\n"
+        f"📌 标题：{clean_title}\n"
+        f"💰 核验：{deal_fact}\n\n"
+        f"📝 雇主具体要求：\n{pain_txt}\n\n"
+        f"⚡ 3分钟秒拿单动作：\n{action_txt}\n\n"
+        f"💬 直接复制这段英文私信甩给雇主：\n{custom_dm_en}\n\n"
+        f"🔗 原帖占坑直链：{source_url}\n"
+        f"📩 私信雇主直链：{dm_url}"
     )
 
-    api_url = f"https://api.telegram.org/bot{tg_token}/sendMessage"
-    payload = urllib.parse.urlencode({
-        "chat_id": tg_chat_id,
-        "text": msg_html,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": "true"
-    }).encode("utf-8")
+    pushed_any = False
 
-    try:
-        req = urllib.request.Request(api_url, data=payload)
-        urllib.request.urlopen(req, timeout=10)
-        print(f"[TG PUSH SUCCESS] 已推送新悬赏单至 Telegram: {clean_title[:40]}")
-        return True
-    except Exception as e:
-        print(f"[TG PUSH WARN] 推送失败 (请检查 TG_BOT_TOKEN 和 TG_CHAT_ID): {e}")
-        return False
+    # 通道 1：微信 PushPlus (pushplus.plus，国内免翻墙直接弹窗到个人微信)
+    pushplus_token = os.environ.get("PUSHPLUS_TOKEN", "").strip()
+    if pushplus_token:
+        try:
+            pp_data = json.dumps({
+                "token": pushplus_token,
+                "title": f"🚨新悬赏急单: {clean_title[:35]}",
+                "content": plain_summary.replace("\n", "<br>"),
+                "template": "html"
+            }).encode("utf-8")
+            req = urllib.request.Request("http://www.pushplus.plus/send", data=pp_data, headers={"Content-Type": "application/json"})
+            urllib.request.urlopen(req, timeout=10)
+            print(f"[WECHAT PUSHPLUS SUCCESS] 已推送到微信: {clean_title[:35]}")
+            pushed_any = True
+        except Exception as e:
+            print(f"[PUSHPLUS WARN] {e}")
+
+    # 通道 2：微信 Server酱 (sct.ftqq.com，备选微信免翻墙推送)
+    serverchan_key = os.environ.get("SERVERCHAN_KEY", "").strip()
+    if serverchan_key:
+        try:
+            sc_data = urllib.parse.urlencode({
+                "title": f"🚨新悬赏急单: {clean_title[:35]}",
+                "desp": plain_summary
+            }).encode("utf-8")
+            req = urllib.request.Request(f"https://sctapi.ftqq.com/{serverchan_key}.send", data=sc_data)
+            urllib.request.urlopen(req, timeout=10)
+            print(f"[SERVERCHAN SUCCESS] 已推送到微信: {clean_title[:35]}")
+            pushed_any = True
+        except Exception as e:
+            print(f"[SERVERCHAN WARN] {e}")
+
+    # 通道 3：飞书 / 钉钉 / 企业微信 / Discord 群机器人 Webhook (免翻墙、零成本、无条数限制)
+    webhook_url = os.environ.get("WEBHOOK_URL", "").strip()
+    if webhook_url:
+        try:
+            if "feishu.cn" in webhook_url or "larksuite.com" in webhook_url:
+                wb_payload = {"msg_type": "text", "content": {"text": plain_summary}}
+            elif "dingtalk.com" in webhook_url:
+                wb_payload = {"msgtype": "text", "text": {"content": plain_summary}}
+            elif "discord.com" in webhook_url:
+                wb_payload = {"content": plain_summary[:1900]}
+            else:
+                wb_payload = {"msgtype": "text", "text": {"content": plain_summary}}
+
+            req = urllib.request.Request(
+                webhook_url,
+                data=json.dumps(wb_payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"}
+            )
+            urllib.request.urlopen(req, timeout=10)
+            print(f"[WEBHOOK SUCCESS] 已推送至群机器人: {clean_title[:35]}")
+            pushed_any = True
+        except Exception as e:
+            print(f"[WEBHOOK WARN] {e}")
+
+    # 通道 4：iPhone Bark 锁屏强弹窗 (api.day.app)
+    bark_url = os.environ.get("BARK_URL", "").strip()
+    if bark_url:
+        try:
+            bark_endpoint = bark_url.rstrip("/") + "/send" if not bark_url.endswith("/send") else bark_url
+            bark_payload = json.dumps({
+                "title": f"🚨悬赏急单: {clean_title[:30]}",
+                "body": f"{deal_fact}\n私信话术: {custom_dm_en}",
+                "url": source_url,
+                "sound": "birdsong"
+            }).encode("utf-8")
+            req = urllib.request.Request(bark_endpoint, data=bark_payload, headers={"Content-Type": "application/json"})
+            urllib.request.urlopen(req, timeout=10)
+            print(f"[BARK SUCCESS] 已推送至 iPhone: {clean_title[:35]}")
+            pushed_any = True
+        except Exception as e:
+            print(f"[BARK WARN] {e}")
+
+    # 通道 5：兼容保留 Telegram (若以后恢复可用)
+    tg_token = os.environ.get("TG_BOT_TOKEN", "").strip()
+    tg_chat_id = os.environ.get("TG_CHAT_ID", "").strip()
+    if tg_token and tg_chat_id:
+        try:
+            api_url = f"https://api.telegram.org/bot{tg_token}/sendMessage"
+            payload = urllib.parse.urlencode({"chat_id": tg_chat_id, "text": plain_summary}).encode("utf-8")
+            urllib.request.urlopen(urllib.request.Request(api_url, data=payload), timeout=8)
+            pushed_any = True
+        except Exception:
+            pass
+
+    return pushed_any
 
 
 def extract_honest_deal_fact(text_blob, ups=0, comments=0):
@@ -364,7 +430,6 @@ def generate_unique_non_template_analysis(raw_title, raw_body, source_label, sou
 
 
 def call_gemini_fast_bounty_dm(raw_title, raw_body, author_name):
-    """当抓到最新悬赏急单时，用 Gemini 在 2 秒内生成专门针对这单的英文破冰私信 + 3分钟打样方案"""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not api_key:
         return None
@@ -416,9 +481,6 @@ def enrich_item_one_to_one(item_id, default_track, raw_title, raw_body, source_l
     }
 
 
-# ==============================================================================
-# 快轨核心函数：60秒极速扫描全球悬赏急单 + 发现新单立即推送到你的 Telegram！
-# ==============================================================================
 def run_fast_bounty_sniper():
     init_db()
     conn = sqlite3.connect(DB_PATH)
@@ -430,7 +492,7 @@ def run_fast_bounty_sniper():
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     new_bounties = []
 
-    print(f"[{now_str}] ⚡ 正在执行 60 秒悬赏急单快轨扫描 (目标: 10分钟黄金窗截胡)...")
+    print(f"[{now_str}] ⚡ 正在执行 60 秒悬赏急单快轨扫描 (支持微信/飞书/钉钉/Bark免翻墙秒推)...")
     for sub, track, label in FAST_BOUNTY_SUBS:
         try:
             r_url = f"https://www.reddit.com/r/{sub}/new.json?limit=20"
@@ -444,7 +506,6 @@ def run_fast_bounty_sniper():
 
                 if not raw_title:
                     continue
-                # 严格剔除 [Offer] / [For Hire] 同行求职贴，只抓雇主发钱的 [Task] / [Hiring]
                 if re.search(r'^\s*\[?\s*(?:offer|for\s*hire)\s*\]?', raw_title, re.IGNORECASE):
                     continue
 
@@ -471,7 +532,6 @@ def run_fast_bounty_sniper():
             )
         """, item)
 
-        # 如果是新抓到的悬赏单（首次启动时只推最新鲜的前 2 单作为连通测试，之后每出一单新单立即秒推！）
         age_minutes = (time.time() - created_utc) / 60.0 if created_utc else 5
         should_push = (bid not in notified_ids) and ((not is_first_boot and age_minutes <= 60) or (is_first_boot and idx < 2))
 
@@ -485,13 +545,12 @@ def run_fast_bounty_sniper():
                     item["action_plan_zh"] = ai_dm["sample_3min_zh"]
                 custom_dm_en = ai_dm.get("custom_dm_en", "")
 
-            sent_ok = send_telegram_bounty_alert(item, author_name=author, custom_dm_en=custom_dm_en)
+            sent_ok = send_multichannel_bounty_alert(item, author_name=author, custom_dm_en=custom_dm_en)
             c.execute("INSERT OR REPLACE INTO tg_notified_bounties VALUES (?, ?)", (bid, now_str))
             notified_ids.add(bid)
             if sent_ok:
                 pushed_count += 1
         elif is_first_boot:
-            # 首次启动将历史老单标记为已读，防止一次性刷屏几十条旧单
             c.execute("INSERT OR REPLACE INTO tg_notified_bounties VALUES (?, ?)", (bid, now_str))
 
     conn.commit()
@@ -504,13 +563,13 @@ def run_fast_bounty_sniper():
         "updated_at": now_str,
         "poll_interval_sec": 60,
         "this_cycle_fetched": len(new_bounties),
-        "tg_pushed_this_cycle": pushed_count,
+        "pushed_this_cycle": pushed_count,
         "live_count": len(rows),
         "signals": rows
     }
     with open(JSON_OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False)
-    print(f"[{now_str}] ⚡ 快轨扫描完成：捕获急单 {len(new_bounties)} 条，本次推送到 Telegram {pushed_count} 条。")
+    print(f"[{now_str}] ⚡ 快轨扫描完成：捕获急单 {len(new_bounties)} 条，本次成功推送到手机/微信 {pushed_count} 条。")
     return payload
 
 
@@ -540,7 +599,6 @@ def fetch_single_reddit_sub(sub_tuple, now_str):
 
 
 def run_scan_cycle():
-    """20分钟慢轨全量扫描（同时先跑一遍快轨悬赏推送）"""
     run_fast_bounty_sniper()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
     all_fetched = []
@@ -588,16 +646,25 @@ def run_scan_cycle():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--bounty-fast", action="store_true", help="仅运行一次60秒悬赏快轨并推送TG")
-    parser.add_argument("--bounty-daemon", action="store_true", help="常驻进程：每60秒扫一次悬赏推TG，每20分钟扫一次全网大盘")
-    parser.add_argument("--cloud-once", action="store_true", help="跑一次全量扫描+悬赏推送")
-    parser.add_argument("--serve", action="store_true")
-    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--bounty-fast", action="store_true")
+    parser.add_argument("--bounty-daemon", action="store_true")
+    parser.add_argument("--cloud-once", action="store_true")
     args = parser.parse_args()
 
     os.chdir(BASE_DIR)
     if args.bounty_fast:
         run_fast_bounty_sniper()
         sys.exit(0)
-
-    if args.bounty_daemon
+    if args.bounty_daemon:
+        last_full_scan = 0
+        while True:
+            try:
+                if time.time() - last_full_scan >= 1200:
+                    run_scan_cycle()
+                    last_full_scan = time.time()
+                else:
+                    run_fast_bounty_sniper()
+            except Exception as e:
+                print(e)
+            time.sleep(60)
+    run_scan_cycle()

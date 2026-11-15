@@ -105,7 +105,7 @@ def load_proxies():
     return proxies
 
 
-def http_get(url, timeout=14):
+def http_get(url, timeout=14, headers=None):
     scraper_key = os.environ.get("SCRAPER_API_KEY", "").strip()
     target_url = url
     if scraper_key and any(d in url for d in ("blackhatworld.com", "reddit.com", "etsy.com", "upwork.com")):
@@ -114,17 +114,21 @@ def http_get(url, timeout=14):
     proxies = load_proxies()
     chosen_proxy = random.choice(proxies) if (proxies and not scraper_key) else None
 
-    if HAS_CURL_CFFI:
-        px_dict = {"http": chosen_proxy, "https": chosen_proxy} if chosen_proxy else None
-        resp = cffi_requests.get(target_url, impersonate="chrome124", proxies=px_dict, timeout=timeout)
-        return resp.text
-
-    headers = {
+    request_headers = {
         "User-Agent": random.choice(USER_AGENTS),
         "Accept": "application/json, text/html, application/xml;q=0.9, */*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,ja;q=0.7"
     }
-    req = urllib.request.Request(target_url, headers=headers)
+    if headers:
+        request_headers.update(headers)
+
+    if HAS_CURL_CFFI:
+        px_dict = {"http": chosen_proxy, "https": chosen_proxy} if chosen_proxy else None
+        resp = cffi_requests.get(target_url, impersonate="chrome124", headers=request_headers, proxies=px_dict, timeout=timeout)
+        resp.raise_for_status()
+        return resp.text
+
+    req = urllib.request.Request(target_url, headers=request_headers)
     if chosen_proxy:
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({"http": chosen_proxy, "https": chosen_proxy}))
     else:
@@ -238,7 +242,7 @@ def call_gemini_fast_bounty_dm(raw_title, raw_body, author_name=""):
     if not api_key:
         print("[GEMINI SKIP] GEMINI_API_KEY 未配置")
         return None
-    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").strip()
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
     prompt = f"""请根据下面这条新悬赏单返回严格 JSON，不要 Markdown：
 {{"title_zh":"中文一句话任务与预算摘要","sample_3min_zh":"3分钟可执行的小样步骤","custom_dm_en":"70词以内、点名具体需求的英文私信"}}
 作者：{author_name}
@@ -326,15 +330,56 @@ def sanitizeAndUpgradeSignal(rawItem):
 
 
 def fetch_reddit_jsonp_py(sub, mode="new", limit=35):
+    errors = []
+    reddit_headers = {
+        "User-Agent": "GlobalOpportunityRadar/1.0 (+https://github.com/vivi9116/global-opportunity-radar)",
+        "Accept": "application/json"
+    }
+    path = f"top.json?t=month&limit={limit}&raw_json=1" if mode == "top_month" else f"new.json?limit={limit}&raw_json=1"
+    for host in ("www.reddit.com", "old.reddit.com"):
+        try:
+            raw = http_get(f"https://{host}/r/{sub}/{path}", timeout=12, headers=reddit_headers)
+            data = json.loads(raw)
+            posts = [c["data"] for c in data.get("data", {}).get("children", [])]
+            if posts:
+                return posts
+            errors.append(f"{host}: empty JSON")
+        except Exception as exc:
+            errors.append(f"{host}: {type(exc).__name__}: {exc}")
+
     try:
-        path = f"top.json?t=month&limit={limit}" if mode == "top_month" else f"new.json?limit={limit}"
-        url = f"https://www.reddit.com/r/{sub}/{path}"
-        raw = http_get(url, timeout=12)
-        data = json.loads(raw)
-        return [c["data"] for c in data.get("data", {}).get("children", [])]
+        listing = "top" if mode == "top_month" else "new"
+        query = f"?t=month&limit={limit}" if mode == "top_month" else f"?limit={limit}"
+        rss_url = f"https://www.reddit.com/r/{sub}/{listing}/.rss{query}"
+        soup = BeautifulSoup(http_get(rss_url, timeout=12, headers={"Accept": "application/atom+xml, application/rss+xml"}), "xml")
+        posts = []
+        for entry in soup.find_all(["entry", "item"]):
+            title_node = entry.find("title")
+            link_node = entry.find("link")
+            title = clean_raw_html(title_node.get_text(" ", strip=True) if title_node else "")
+            source_url = link_node.get("href", "") if link_node and link_node.has_attr("href") else link_node.get_text(strip=True) if link_node else ""
+            content_node = entry.find("content") or entry.find("description") or entry.find("summary")
+            body = clean_raw_html(content_node.decode_contents() if content_node else "")
+            post_match = re.search(r"/comments/([^/]+)", source_url)
+            if not title or not source_url or not post_match:
+                continue
+            author_node = entry.find("author")
+            author_name = clean_raw_html(author_node.get_text(" ", strip=True) if author_node else "")
+            author_name = re.sub(r"^/?u/", "", author_name, flags=re.I)
+            date_node = entry.find("updated") or entry.find("published") or entry.find("pubDate")
+            posts.append({
+                "id": post_match.group(1), "title": title, "selftext": body,
+                "author": author_name, "created_utc": _iso_timestamp(date_node.get_text(strip=True) if date_node else "", int(time.time())),
+                "ups": 0, "num_comments": 0, "permalink": urllib.parse.urlparse(source_url).path,
+            })
+        if posts:
+            print(f"[SOURCE OK] Reddit r/{sub}: RSS fallback {len(posts)}")
+            return posts
+        errors.append("RSS: empty feed")
     except Exception as exc:
-        print(f"[SOURCE WARN] Reddit r/{sub}: {type(exc).__name__}: {exc}")
-        return []
+        errors.append(f"RSS: {type(exc).__name__}: {exc}")
+    print(f"[SOURCE WARN] Reddit r/{sub}: {' | '.join(errors)}")
+    return []
 
 
 def _iso_timestamp(value, fallback):
@@ -440,7 +485,34 @@ def fetch_additional_sources(now_ts):
                 if item:
                     items.append(item)
                     bhw_count += 1
-            print(f"[SOURCE OK] BlackHatWorld {kind}: {bhw_count}")
+            if bhw_count == 0:
+                forum_url = f"https://www.blackhatworld.com/forums/{forum}/"
+                page = BeautifulSoup(http_get(forum_url, timeout=20), "lxml")
+                for row in page.select(".structItem--thread")[:30]:
+                    anchor = row.select_one('.structItem-title a[data-tp-primary="on"]') or row.select_one('.structItem-title a[href*="/threads/"]')
+                    if not anchor:
+                        continue
+                    title = clean_raw_html(anchor.get_text(" ", strip=True))
+                    source_url = urllib.parse.urljoin(forum_url, anchor.get("href", ""))
+                    body = clean_raw_html(row.get_text(" ", strip=True))
+                    thread_match = re.search(r"/threads/(?:[^/]*\.)?(\d+)", source_url)
+                    if not title or not source_url:
+                        continue
+                    item = sanitizeAndUpgradeSignal({
+                        "id": f"bhw_{kind}_{thread_match.group(1) if thread_match else abs(hash(source_url))}",
+                        "created_ts": now_ts - 7200, "track": track,
+                        "title_zh": f"【BlackHatWorld {kind}】{title}", "pain_point_zh": body,
+                        "source_platform": f"BlackHatWorld {kind}", "source_url": source_url, "solver_url": source_url,
+                    })
+                    if item:
+                        items.append(item)
+                        bhw_count += 1
+                if bhw_count:
+                    print(f"[SOURCE OK] BlackHatWorld {kind}: HTML fallback {bhw_count}")
+                else:
+                    print(f"[SOURCE WARN] BlackHatWorld {kind}: RSS 与公开页面均返回 0 条")
+            else:
+                print(f"[SOURCE OK] BlackHatWorld {kind}: {bhw_count}")
         except Exception as exc:
             print(f"[SOURCE WARN] BlackHatWorld {kind}: {type(exc).__name__}: {exc}")
 

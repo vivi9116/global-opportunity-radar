@@ -1,391 +1,5 @@
 [
   {
-    "url": "https://zgocloud.org/pid=134",
-    "found_in": "https://www.v2ex.com/t/1257088",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://zgocloud.org/pid=136",
-    "found_in": "https://www.v2ex.com/t/1257088",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://zgocloud.org/pid=142",
-    "found_in": "https://www.v2ex.com/t/1257088",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://youtu.be/GFafCfwqNf4",
-    "found_in": "https://news.ycombinator.com/item?id=50473419",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://apps.apple.com/app/globus/id6798046450",
-    "found_in": "https://news.ycombinator.com/item?id=50499065",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://vetorlogico.com",
-    "found_in": "https://www.tabnews.com.br/VetorGames/pitch-v-e-t-o-r-a-ruptura-motor-proprio-em-html5-canvas-video-sincronizado-e-dialogo-dinamico-em-7-idiomas",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://cashinstyle.com/",
-    "found_in": "https://www.reddit.com/r/beermoneyglobal/comments/1xvtdrf/cashinstyle_the_simple_straightforward_rewards/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.domain.com/",
-    "title": "Domain Names, Site Builder, Hosting, and More | Domain.com",
-    "snippet": "Finding and buying the perfect domain is as easy as 1-2-3 with Domain.com. We'll even help get you online with our DIY and Pro site builder and marketing tools.",
-    "found_at": "2026-11-14T17:51:48+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
-    "query": "\"domain parking\" \"revenue\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
-    "url": "https://www.namecheap.com/",
-    "title": "Buy a domain name - Register cheap domain names from $0.99 - Namecheap",
-    "snippet": "Register domain names at Namecheap. Buy cheap domain names and enjoy 24/7 support. With over 18 million domains under management, you know you’re in good hands.",
-    "found_at": "2026-11-14T17:51:48+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
-    "query": "\"domain parking\" \"revenue\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
-    "url": "https://www.domain.com.au/",
-    "title": "Domain.com.au | Real Estate & Properties For Sale & Rent",
-    "snippet": "Search houses & apartments for Sale & Rent. Find real estate agents & auction results. Create home alerts & read Australian property market news on Domain.",
-    "found_at": "2026-11-14T17:51:48+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
-    "query": "\"domain parking\" \"revenue\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
-    "url": "https://www.godaddy.com/",
-    "title": "GoDaddy Official Site: Get a Domain & Launch Your Website.",
-    "snippet": "Your brand starts with the perfect domain. Make it yours today and build a professional website that grows with you. Join 20M+ who trust GoDaddy.",
-    "found_at": "2026-11-14T17:51:48+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
-    "query": "\"domain parking\" \"revenue\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
-    "url": "https://www.cloudflare.com/domains/",
-    "title": "Cloudflare Registrar - Search and Buy Domains at Cost",
-    "snippet": "Find a domain for what you want to build. Start something new or bring a domain you already own to Cloudflare.",
-    "found_at": "2026-11-14T17:51:48+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
-    "query": "\"domain parking\" \"revenue\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
-    "url": "https://www.domain.com/name-search",
-    "title": "Search and Buy Available Domain Names",
-    "snippet": "Use our domain search tool to instantly check availability and find the perfect domain name for your website. Easy, fast, and accurate results.",
-    "found_at": "2026-11-14T17:51:48+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
-    "query": "\"domain parking\" \"revenue\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
-    "url": "https://www.godaddy.com/domains",
-    "title": "Domain Name Search | Find & Register an Available Domain with GoDaddy",
-    "snippet": "Use GoDaddy's Domain Name Search tool and register the domain you've been looking for. Buy your domain from the world's largest domain registrar.",
-    "found_at": "2026-11-14T17:51:48+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
-    "query": "\"domain parking\" \"revenue\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
-    "url": "https://www.hostinger.com/domain-name-search",
-    "title": "Domain Name Search – Check and Buy a Domain In Minutes - Hostinger",
-    "snippet": "Use the domain checker to search for domain availability. Check the search results instantly and buy a domain name for your online project today.",
-    "found_at": "2026-11-14T17:51:48+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22domain%20parking%22%20%22revenue%22",
-    "query": "\"domain parking\" \"revenue\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
-    "url": "https://cyberbrics.info/the-largest-personal-data-leakage-in...",
-    "found_in": "https://news.ycombinator.com/item?id=50490925",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://www.copyright.gov/ai/Copyright-and-Artificial-Intell...",
-    "found_in": "https://news.ycombinator.com/item?id=50473123",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "http://www.sadtrombone.com",
-    "found_in": "https://news.ycombinator.com/item?id=50465777",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://en.wikipedia.org/wiki/RedSwoosh",
-    "found_in": "https://news.ycombinator.com/item?id=50465777",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://mail.example.com",
-    "found_in": "https://news.ycombinator.com/item?id=50456921",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://nitromta.com/docs/compatibility/",
-    "found_in": "https://news.ycombinator.com/item?id=50456921",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://nitromta.com/docs/benchmarks/",
-    "found_in": "https://news.ycombinator.com/item?id=50456921",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://support.google.com/googleplay/android-developer/answer/17594752",
-    "found_in": "https://news.ycombinator.com/item?id=50375898",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://app.wonderchat.io/llms.txt",
-    "found_in": "https://news.ycombinator.com/item?id=50479411",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://wonderchat.io/",
-    "found_in": "https://news.ycombinator.com/item?id=50479411",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://lelouch.dev/blog/you-are-probably-not-dumb/",
-    "found_in": "https://news.ycombinator.com/item?id=50469605",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/andy-spike/armin",
-    "found_in": "https://news.ycombinator.com/item?id=50469605",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://pomerado.ai/",
-    "found_in": "https://news.ycombinator.com/item?id=50455811",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://youtu.be/Bi4jci7rgHo",
-    "found_in": "https://news.ycombinator.com/item?id=50455811",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/Pomerado/pomerado",
-    "found_in": "https://news.ycombinator.com/item?id=50455811",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://laminar.sh",
-    "found_in": "https://news.ycombinator.com/item?id=50154029",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://laminar.sh/blog/flow-1",
-    "found_in": "https://news.ycombinator.com/item?id=50154029",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://youtu.be/KJa3h6ZJNLQ",
-    "found_in": "https://news.ycombinator.com/item?id=50154029",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://mainbrella.com/",
-    "found_in": "https://news.ycombinator.com/item?id=49971503",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://hereforsomeone.org.uk",
-    "found_in": "https://www.sitepoint.com/community/t/i-ve-built-a-mental-health-support-website-and-would-really-appreciate-a-designer-s-advice/491592",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://berean-biblechurch.org/study/",
-    "found_in": "https://www.sitepoint.com/community/t/block-does-not-resize-as-expected-on-mobile-browser/491444",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/tenstorrent/tt-metal/pull/34985",
-    "found_in": "https://github.com/tenstorrent/tt-metal/issues/65437",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://docs.tenstorrent.com/bounty_terms.html",
-    "found_in": "https://github.com/tenstorrent/tt-metal/issues/65437",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://janzeer.org,",
-    "found_in": "https://github.com/janzeerOrg/janzeer-cli/issues/2",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/janzeerOrg/janzeer-cli/releases.",
-    "found_in": "https://github.com/janzeerOrg/janzeer-cli/issues/2",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/IES-BoilerRoom/solana-svm-cpi-conformance/issues/1",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4341",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://algora.io",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4341",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://polar.sh",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4341",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/IES-BoilerRoom/pcie-tlp-credit-flow-gate/issues/1",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4340",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/IES-BoilerRoom/solana-svm-cpi-conformance/issues/2",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4339",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/IES-BoilerRoom/pcie-tlp-credit-flow-gate/issues/2",
-    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4338",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://opire.dev",
-    "found_in": "https://github.com/WholeTroutMedia/agent-conformance-quarantine/issues/1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://hanzo.ai/lz4/v4",
-    "found_in": "https://github.com/hanzo-go/lz4/issues/1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://github.com/hanzo-go/lz4`,",
-    "found_in": "https://github.com/hanzo-go/lz4/issues/1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://proxy.golang.org/hanzo.ai/lz4/v4/@v/list`",
-    "found_in": "https://github.com/hanzo-go/lz4/issues/1",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://chromewebstore.google.com/detail/kknfboekekeaagdoineimnebhlmiohpb",
-    "found_in": "https://www.reddit.com/r/adops/comments/1xw2oym/sidepanel_debugger_for_floodlight_trade_desk/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://nauticalnames.net/",
-    "found_in": "https://www.reddit.com/r/passive_income/comments/1xvpahj/does_anyone_here_run_a_website_like_this_for/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://foldinglink.com",
-    "found_in": "https://www.reddit.com/r/passive_income/comments/1xux4sz/creators_wanted_for_referral_and_paid_brand/",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://vsys.host/news/two-kyiv-data-centers-hit-within-hours-incident-report-and-recovery-status",
-    "found_in": "https://lowendtalk.com/discussion/221478/vsys-host-ua-data-centers-what-happened-and-where-recovery-stands",
-    "status": "not_validated",
-    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
-  },
-  {
-    "url": "https://create.roblox.com/",
-    "title": "Roblox Creator Hub",
-    "snippet": "Unlock your imagination with Roblox Creator Hub - the ultimate platform for building and publishing games. Join a vibrant community of creators today and publish your ideas to millions of people around the world.",
-    "found_at": "2026-11-14T18:01:21+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
-    "query": "\"creator rewards\" \"payout\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
-    "url": "https://www.creator.co/",
-    "title": "Creator · Powering Brand-Influencer Partnerships",
-    "snippet": "Creator.co brings creator discovery, outreach, campaign management, content approvals, payouts, and performance tracking into one place, with in-house experts available when brands need additional support.",
-    "found_at": "2026-11-14T18:01:21+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
-    "query": "\"creator rewards\" \"payout\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
-    "url": "https://dictionary.cambridge.org/dictionary/english/creator",
-    "title": "CREATOR | English meaning - Cambridge Dictionary",
-    "snippet": "CREATOR definition: 1. someone who makes something new: 2. a divine being who created someone or something or created…. Learn more.",
-    "found_at": "2026-11-14T18:01:21+00:00",
-    "found_in": "https://www.bing.com/search?format=rss&q=%22creator%20rewards%22%20%22payout%22",
-    "query": "\"creator rewards\" \"payout\"",
-    "status": "search_excerpt_only",
-    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
-  },
-  {
     "url": "https://www.merriam-webster.com/dictionary/creator",
     "title": "CREATOR Definition & Meaning - Merriam-Webster",
     "snippet": "The meaning of CREATOR is one that creates usually by bringing something new or original into being; especially Creator : god.",
@@ -1212,6 +826,412 @@
     "found_at": "2026-11-14T20:53:30+00:00",
     "found_in": "https://www.bing.com/search?format=rss&q=%22lifetime%20deal%22%20%22first%20customers%22",
     "query": "\"lifetime deal\" \"first customers\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://apps.apple.com/app/id6762809091",
+    "found_in": "https://forum.obsidian.md/t/vaultjot-dictate-on-your-apple-watch-get-a-markdown-note-in-your-vault-free-ios-app/121910",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://vaultjot.app/help/",
+    "found_in": "https://forum.obsidian.md/t/vaultjot-dictate-on-your-apple-watch-get-a-markdown-note-in-your-vault-free-ios-app/121910",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://daniele-michelin.com/assets/n8n/xray.json",
+    "found_in": "https://community.n8n.io/t/i-built-an-n8n-workflow-that-shows-the-blast-radius-of-any-n8n-workflow-what-can-send-money-email-or-delete-data-at-3-am/328617",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://app.mediatofu.com",
+    "found_in": "https://community.n8n.io/t/how-to-compress-or-trim-video-in-n8n-cloud-with-mediatofu-s-ffmpeg-api/328564",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://api.mediatofu.com/v1/tools/video/compress",
+    "found_in": "https://community.n8n.io/t/how-to-compress-or-trim-video-in-n8n-cloud-with-mediatofu-s-ffmpeg-api/328564",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://api.mediatofu.com/v1/tools/video/trim",
+    "found_in": "https://community.n8n.io/t/how-to-compress-or-trim-video-in-n8n-cloud-with-mediatofu-s-ffmpeg-api/328564",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://silent-fail-alerts.vercel.app",
+    "found_in": "https://community.n8n.io/t/would-you-pay-29-mo-to-know-when-a-clients-workflow-fails-silently/328555",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://daniele-michelin.com/assets/n8n/internet-puls.json",
+    "found_in": "https://community.n8n.io/t/i-put-a-real-n8n-workflow-behind-a-public-button-7-apis-merge-llm-live-replay/328544",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://linktr.ee/iamvaar",
+    "found_in": "https://community.n8n.io/t/i-built-a-free-html-to-pdf-n8n-community-node/328542",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/the3kingleo-cmyk/ruth/issues/9",
+    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4299",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://github.com/the3kingleo-cmyk/ruth/issues/6",
+    "found_in": "https://github.com/zhangjiayang6835-cyber/bounty-plaza/issues/4302",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://janzeer.org/docs.",
+    "found_in": "https://github.com/janzeerOrg/janzeer-sdk-go/issues/1",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://beautykitchen.net",
+    "found_in": "https://www.freelancer.com/projects/woocommerce/Secure-WooCommerce-Upgrade-Refresh",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://www.moroccoinspiringtours.com/.",
+    "found_in": "https://www.freelancer.com/projects/internet-marketing/SEO-Optimization-for-Touristic-Website",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://lingcat.arispex.com",
+    "found_in": "https://www.v2ex.com/t/1257098",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://cdn.nodeimage.com/i/SfMRLYuWRvC4MppFdXlx0rv8OstishiD.webp",
+    "found_in": "https://www.v2ex.com/t/1257098",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://testflight.apple.com/join/q6jBzfhT",
+    "found_in": "https://www.v2ex.com/t/1257098",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/L3Harris",
+    "found_in": "https://news.ycombinator.com/item?id=50502404",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://www.theguardian.com/us-news/2026/nov/04/datacenters-...",
+    "found_in": "https://news.ycombinator.com/item?id=50502096",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://api.infrai.cc/v1",
+    "found_in": "https://dev.to/jamesanderson3589/custom-domain-recovery-2-dns-ownership-rules-for-saas-tenant-onboarding-317c",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://preview.redd.it/0u6rc3rven1i1.png",
+    "found_in": "https://www.reddit.com/r/passive_income/comments/1xwe7m1/almost_hit_200_with_a_vibe_coded_website_my_first/",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://purevoltage.com/black-friday-sale",
+    "found_in": "https://lowendtalk.com/discussion/222865/purevoltage-pre-black-friday-%CF%9F-nyc-dedicated-from-60-mo-%CF%9F-free-double-bandwidth-giveaways",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://centrixnodes.net/vps/17",
+    "found_in": "https://lowendtalk.com/discussion/223320/us-pre-black-friday-sale-50-off-intel-vps-monthly-yearly-vps-from-2-13-mo-free-10gbps",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://centrixnodes.net/vps/98",
+    "found_in": "https://lowendtalk.com/discussion/223320/us-pre-black-friday-sale-50-off-intel-vps-monthly-yearly-vps-from-2-13-mo-free-10gbps",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://centrixnodes.net/vps/33",
+    "found_in": "https://lowendtalk.com/discussion/223320/us-pre-black-friday-sale-50-off-intel-vps-monthly-yearly-vps-from-2-13-mo-free-10gbps",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://xnhs.link/let15",
+    "found_in": "https://lowendtalk.com/discussion/223058/xeniahosting-com-optimized-network-new-guarantees-vps-up-to-25g-it",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://xeniahosting.com/en/looking-glass",
+    "found_in": "https://lowendtalk.com/discussion/223058/xeniahosting-com-optimized-network-new-guarantees-vps-up-to-25g-it",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://status.xeniahosting.com/",
+    "found_in": "https://lowendtalk.com/discussion/223058/xeniahosting-com-optimized-network-new-guarantees-vps-up-to-25g-it",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://lg-newyork.cdnshark.com/",
+    "found_in": "https://lowendtalk.com/discussion/223120/cdnshark-beta-program-looking-for-25-testers-cdn-vps-hosting-email-storage-1-year-included",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://bgp.tools/as/19054",
+    "found_in": "https://lowendtalk.com/discussion/223120/cdnshark-beta-program-looking-for-25-testers-cdn-vps-hosting-email-storage-1-year-included",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://www.cdnshark.com/beta",
+    "found_in": "https://lowendtalk.com/discussion/223120/cdnshark-beta-program-looking-for-25-testers-cdn-vps-hosting-email-storage-1-year-included",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://netzdachs.com/fair-use",
+    "found_in": "https://lowendtalk.com/discussion/223241/netzdachs-de-dedicated-servers-from-49-99-mo-instant-ryzen-7700-7800x3d-1-gbps-no-setup",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://netzdachs.com/store/dedicated-servers",
+    "found_in": "https://lowendtalk.com/discussion/223241/netzdachs-de-dedicated-servers-from-49-99-mo-instant-ryzen-7700-7800x3d-1-gbps-no-setup",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://cloud.deluxhost.net",
+    "found_in": "https://lowendtalk.com/discussion/222883/deluxhost-net-pre-black-friday-x-series-back-from-6-yr-storage-vps-storage-boxes-nl",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://docs.deluxhost.net/",
+    "found_in": "https://lowendtalk.com/discussion/222883/deluxhost-net-pre-black-friday-x-series-back-from-6-yr-storage-vps-storage-boxes-nl",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://servitro.com/frankfurt",
+    "found_in": "https://lowendtalk.com/discussion/222738/frankfurt-vps-at-12-year-50-giveaway-another-servitro-let-deal",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://status.servitro.com/",
+    "found_in": "https://lowendtalk.com/discussion/222738/frankfurt-vps-at-12-year-50-giveaway-another-servitro-let-deal",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://vpspioneer.com/cloud-vps",
+    "found_in": "https://lowendtalk.com/discussion/223277/new-location-bursa-tuerkiye-kvm-vps-15-off-for-life-bonus-vcore-or-20gb-disk",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://lg-tr.vpspioneer.com",
+    "found_in": "https://lowendtalk.com/discussion/223277/new-location-bursa-tuerkiye-kvm-vps-15-off-for-life-bonus-vcore-or-20gb-disk",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://vpspioneer.com",
+    "found_in": "https://lowendtalk.com/discussion/223277/new-location-bursa-tuerkiye-kvm-vps-15-off-for-life-bonus-vcore-or-20gb-disk",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://greencloudvps.com/billing/store/13th-birthday-sale",
+    "found_in": "https://lowendtalk.com/discussion/222534/greencloud-is-turning-13-exclusive-deals-giveaways-quizzes-games",
+    "status": "not_validated",
+    "reason": "从原帖发现；尚未验证可用入口、内容质量或访问许可，不计入已监控。"
+  },
+  {
+    "url": "https://www.nexusmods.com/",
+    "title": "Nexus Mods - Mods and Community",
+    "snippet": "Auto-install hundreds of mods to get next-level graphics, new gameplay and endless amounts of new content. Mods and collections for 5,789 games. Get massively improved graphics for classics and even brand new games. Browse our mod collectio",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22mod%20creator%22%20%22revenue%20share%22",
+    "query": "\"mod creator\" \"revenue share\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://modrinth.com/",
+    "title": "Modrinth",
+    "snippet": "Scaley Scaley is a Minecraft Fabric mod for stretched resolution, custom FOV, and view-model tweaks. It lets you run aspect ratios like 4:3, bypass vanilla FOV limits, and customize held item positions and rotations for both hands directly ",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22mod%20creator%22%20%22revenue%20share%22",
+    "query": "\"mod creator\" \"revenue share\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.curseforge.com/",
+    "title": "CurseForge - Mods & Addons Leading Community",
+    "snippet": "Discover the world's largest mod repository on CurseForge, serving popular games and communities like Minecraft, WoW, The Sims 4, and more.",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22mod%20creator%22%20%22revenue%20share%22",
+    "query": "\"mod creator\" \"revenue share\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://modpizza.com/",
+    "title": "Pizza With Personality | MOD Pizza",
+    "snippet": "Create your own personal pizza at MOD Pizza today! And it's always unlimited toppings for one price, what will YOU build?",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22mod%20creator%22%20%22revenue%20share%22",
+    "query": "\"mod creator\" \"revenue share\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://mod.com/",
+    "title": "MOD | Rx Energy Drink for Sustained Wakefulness | Delivered to you",
+    "snippet": "MOD products are for individuals aged 21 to 79 living in the United States who are looking for a boost in cognition and energy to combat excessive daytime sleepiness related to Shift Work Sleep Disorder.",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22mod%20creator%22%20%22revenue%20share%22",
+    "query": "\"mod creator\" \"revenue share\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.nexusmods.com/mods",
+    "title": "Mods - Nexus Mods",
+    "snippet": "Windows app with interactive 2D and 3D maps, save-based collection tracking, player location, personal pins, teleporting and developer mode tools. Includes automatic game connection setup. Now you can dodge by quickly flicking the analog st",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22mod%20creator%22%20%22revenue%20share%22",
+    "query": "\"mod creator\" \"revenue share\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.curseforge.com/minecraft",
+    "title": "Minecraft Mods & Modpacks - CurseForge",
+    "snippet": "Here, you'll be able to easily find and download the best Minecraft mods and modpacks around. From mods that change Minecraft's game interface, through mods that optimize its gameplay, or even mods that offer various tools for improved buil",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22mod%20creator%22%20%22revenue%20share%22",
+    "query": "\"mod creator\" \"revenue share\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.wemod.com/",
+    "title": "WeMod | PC Game Mods, Maps, and Trainers in One App",
+    "snippet": "Join millions of players using WeMod to customize their favorite games with thousands of free mods, maps, and trainers. Customize supported games and control every aspect of your experience. Whether you’re speedrunning, practicing, or story",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22mod%20creator%22%20%22revenue%20share%22",
+    "query": "\"mod creator\" \"revenue share\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.niche.com/",
+    "title": "Find the School that Fits You Best - Niche",
+    "snippet": "Finding the right school shouldn’t be hard. From K‑12 to college to grad school, we make it easy to discover and connect with the best ones for you. Get accepted without an application. No application. No waiting. With Direct Admissions, co",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22niche%20directory%22%20%22sponsor%22",
+    "query": "\"niche directory\" \"sponsor\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.niche.com/about/",
+    "title": "Niche – Discover the schools and neighborhoods that are right for you.",
+    "snippet": "With in-depth profiles on every school and college in America, over 140 million reviews and ratings, and powerful search and data tools, Niche helps millions of students and families find and enroll in the right school for them.",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22niche%20directory%22%20%22sponsor%22",
+    "query": "\"niche directory\" \"sponsor\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.merriam-webster.com/dictionary/niche",
+    "title": "NICHE Definition & Meaning - Merriam-Webster",
+    "snippet": "Creatures in the genus Rickettsia occupy a niche between bacteria and viruses. They carry much of their own cellular equipment and are vulnerable to antibiotics, but like viruses they need to invade living cells in order to grow.",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22niche%20directory%22%20%22sponsor%22",
+    "query": "\"niche directory\" \"sponsor\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://dictionary.cambridge.org/dictionary/english/niche",
+    "title": "NICHE | English meaning - Cambridge Dictionary",
+    "snippet": "NICHE definition: 1. a job or position that is very suitable for someone, especially one that they like: 2. an area…. Learn more.",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22niche%20directory%22%20%22sponsor%22",
+    "query": "\"niche directory\" \"sponsor\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://www.dictionary.com/browse/niche",
+    "title": "NICHE Definition & Meaning | Dictionary.com",
+    "snippet": "A niche is a place or position that’s particularly appropriate for someone or something, especially due to being very specific and different from others. Niche often refers to a position or interest that allows someone or something to thriv",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22niche%20directory%22%20%22sponsor%22",
+    "query": "\"niche directory\" \"sponsor\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Niche",
+    "title": "Niche - Wikipedia",
+    "snippet": "Look up niche in Wiktionary, the free dictionary. This disambiguation page lists articles associated with the title Niche. If an internal link incorrectly led you here, you may wish to change the link to point directly to the intended artic",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22niche%20directory%22%20%22sponsor%22",
+    "query": "\"niche directory\" \"sponsor\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://s.niche.com/",
+    "title": "Niche Blog – Find articles by Niche covering K-12 schools, places to ...",
+    "snippet": "Find Your Niche The go-to resource for students and parents navigating K–12 and college choices. Explore expert guides, real student insights, and data-backed research on admissions, financial aid, and what comes next. Everything you need t",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22niche%20directory%22%20%22sponsor%22",
+    "query": "\"niche directory\" \"sponsor\"",
+    "status": "search_excerpt_only",
+    "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Niche_(company)",
+    "title": "Niche (company) - Wikipedia",
+    "snippet": "Niche functions as a two-sided platform with free access for prospective students and over 15,000 school clients who pay for services to help them market to these users, including placing advertising and promotional material on the site.",
+    "found_at": "2026-11-15T01:00:17+00:00",
+    "found_in": "https://www.bing.com/search?format=rss&q=%22niche%20directory%22%20%22sponsor%22",
+    "query": "\"niche directory\" \"sponsor\"",
     "status": "search_excerpt_only",
     "reason": "搜索发现的新路子/来源；尚未读取原站全文、核验日期或收款，不计入已接通平台。"
   }

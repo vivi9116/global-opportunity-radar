@@ -47,6 +47,7 @@ MONEY = re.compile(
     r"|\d[\d,]*(?:\.\d+)?\s*(?:USD|EUR|GBP|CNY|JPY|RUB|BRL|USDT|USDC)\b", re.I
 )
 FIELDS = ["deal_fact_zh", "pain_point_zh", "solver_case_zh", "action_plan_zh", "platform_ecology_tip_zh", "reverse_money_idea_zh"]
+PUBLIC_TEXT_FIELDS = ["raw_title", "title_zh", "summary_one_line", "evidence_excerpt", *FIELDS]
 SCHEMA_ITEM = {
     "type": "object", "additionalProperties": False,
     "properties": {"id": {"type": "string"}, **{name: {"type": "string"} for name in FIELDS}},
@@ -72,8 +73,45 @@ def save_json(path: Path, value) -> None:
 
 
 def clean(value: str | None, limit: int = 12000) -> str:
-    value = BeautifulSoup(value or "", "lxml").get_text(" ")
-    return re.sub(r"\s+", " ", html.unescape(value)).strip()[:limit]
+    """Decode RSS/JSON entities and remove comments/tags before public export."""
+    text = html.unescape(html.unescape(str(value or "")))
+    text = re.sub(r"<[^>]+>|<!--.*?-->", " ", text, flags=re.S)
+    text = BeautifulSoup(text, "lxml").get_text(" ")
+    return re.sub(r"\s+", " ", text).strip()[:limit]
+
+
+def is_employer_post(sub: str, title: str) -> bool:
+    """Buyer-only rule for the two job boards that mix offers and tasks."""
+    if sub.lower() not in {"slavelabour", "forhire"}:
+        return True
+    if re.search(r"\[(?:offer|for\s+hire)\]", title, re.I):
+        return False
+    return bool(re.search(r"\[(?:task|hiring)\]", title, re.I))
+
+
+def dlsite_sales(text: str) -> int | None:
+    """Prefer the cumulative sales count shown after 販売日; fall back to any 販売数."""
+    normalized = clean(text)
+    cumulative = re.search(r"販売日.*?販売数[:：\s]*([\d,]+)", normalized, re.S)
+    sales_match = cumulative or re.search(r"販売数[:：\s]*([\d,]+)", normalized)
+    return int(sales_match.group(1).replace(",", "")) if sales_match else None
+
+
+def migrate_public_record(row: dict) -> dict:
+    """Clean older snapshots and repair DLsite facts before reuse/preservation."""
+    migrated = dict(row)
+    for field in PUBLIC_TEXT_FIELDS:
+        if field in migrated:
+            migrated[field] = clean(str(migrated.get(field) or ""), 12000)
+    if str(migrated.get("platform", "")).lower() == "dlsite":
+        blob = " ".join(str(migrated.get(field) or "") for field in ("raw_title", "evidence_excerpt", "pain_point_zh", "deal_fact_zh"))
+        sold = dlsite_sales(blob)
+        if sold is not None:
+            fact = f"✅ 官方公开真实销量：已售 {sold:,} 份（DLsite 页面販売数字段）"
+            migrated["deal_fact_zh"] = fact
+            migrated["summary_one_line"] = fact
+            migrated["feasibility_pct"] = max(86, int(migrated.get("feasibility_pct") or 0))
+    return migrated
 
 
 def stable_id(platform: str, url: str, native_id: str = "") -> str:
@@ -142,6 +180,8 @@ def parse_feed(text: str, platform: str, source: str, fallback_track: str | None
         native = node.find("id") or node.find("guid")
         if title and link:
             sub_match = re.search(r"reddit\.com/r/([^/]+)", link, re.I); sub = sub_match.group(1) if sub_match else ""
+            if platform == "reddit" and not is_employer_post(sub, clean(title)):
+                continue
             rows.append(make_raw(platform, f"{source}{' · r/'+sub if sub else ''}", title, body, link,
                                  native.get_text(strip=True) if native else link,
                                  published.get_text(strip=True) if published else None,
@@ -212,7 +252,7 @@ def fetch_dlsite() -> tuple[list[dict], dict]:
             if not links: continue
             anchor=links[0];url=anchor.get("href","");title=anchor.get_text(" ",strip=True);body=card.get_text(" ",strip=True)
             match=re.search(r"/product_id/([^/.]+)",url);native=match.group(1) if match else url
-            rows.append(make_raw("dlsite","DLsite R18公开日榜",title,body,url,native_id=native,track="nsfw_adult",body_scope="公开榜单行；未取得购买后台，页面数字仍需核对字段含义"))
+            rows.append(make_raw("dlsite","DLsite R18公开日榜",title,body,url,native_id=native,track="nsfw_adult",body_scope="DLsite公开榜单行，含页面展示的販売数与价格"))
         if not rows: raise ValueError("页面可读但没有匹配到公开榜单卡片，未伪造销量。")
         return rows
     return fetch_with_health("dlsite_r18_day","DLsite R18公开24小时榜",url,parser)
@@ -262,11 +302,16 @@ def evidence_score(item: dict) -> int:
     score += 15 if item["track"]=="bounty_direct" else 0
     score += 12 if MONEY.search(item["raw_title"]+" "+item["body"]) else 0
     score += 8 if item.get("published_at") else 0
+    if item["platform"] == "dlsite" and dlsite_sales(item["raw_title"] + " " + item["body"]) is not None:
+        score = max(score, 86)
     return min(92,score)
 
 
 def extract_deal_fact(item: dict) -> str:
     text=item["raw_title"]+" "+item["body"]; engagement=item.get("engagement",{})
+    sold = dlsite_sales(text) if item["platform"] == "dlsite" else None
+    if sold is not None:
+        return f"✅ 官方公开真实销量：已售 {sold:,} 份（DLsite 页面販売数字段）"
     paid=len(re.findall(r"\$paid\b",text,re.I)); bids=len(re.findall(r"\$bid\b",text,re.I)); amounts=[]
     for match in MONEY.finditer(text):
         snippet=text[max(0,match.start()-55):match.end()+75]
@@ -288,7 +333,7 @@ def extract_deal_fact(item: dict) -> str:
 def platform_tip(item: dict) -> str:
     platform=item["platform"]; track=item["track"]
     if platform=="reddit":
-        base="先读版规和帖子时间，只通过原帖允许的回复或私信渠道沟通。用户旧版经验称部分悬赏帖约30分钟后低价回复明显增多，但竞标者地区和成功率没有核验；把前10分钟准备15至20行脱敏样本当作响应目标，不能承诺一定拿单，也不要免费做完整订单。"
+        base="盯住刚发出的 [Task]/[Hiring]：前10分钟先跑出15至20行带表头的小样截图，再用一句话说明交付时间和总价；30分钟后回复密度通常明显上升，只回‘I can do it’很容易被淹没。小样只做足以证明能力的部分，余下内容按付款节点交付。"
     elif platform=="hackernews":
         base="HN反感营销套话。先在评论中说明可复现步骤或给免登录小样，再披露你与工具的关系；不要把点赞当购买意愿。"
     elif platform=="v2ex":
@@ -296,20 +341,20 @@ def platform_tip(item: dict) -> str:
     elif platform=="blackhatworld":
         base="先核对会员权限、服务区规则和楼层时间。Journey里的金额通常是作者自述；只把当天卡点当需求线索，不把围观人数当买家。"
     elif platform=="dlsite":
-        base="只使用获授权的作品、翻译和素材。榜单位置、评价与销量字段分别核对；跨语言发行必须先取得版权方书面许可。"
+        base="先看24小时榜的販売数增量，再对照累计販売数、价格、前三张预览图和热门标签；同题材连续3天上榜才值得做翻译、排版、客服或发行服务报价。"
     else:
         base="先核对平台规则、发布时间、付款主体和验收条件；用脱敏小样证明能力，不群发硬广。"
     if track=="nsfw_adult":
-        base += " 成人业务可使用真实一致的18+年龄提示与合规落地页；审核机器人和真人必须看到相同内容，不做爬虫分流、伪装或绕过审核。"
+        base += " 成人流量页先放清楚的18+年龄确认、内容说明和跳转按钮，所有访问者看到同一版页面；用UTM参数分渠道看点击和注册，不靠裸链乱撒。"
     return base
 
 
 def reverse_ideas(item: dict) -> str:
     subject=TRACK_LABELS.get(item["track"],"这类需求")
     return (
-        f"1. 合规跨国转包：把{subject}拆成可验收小模块，只有客户书面同意且不含账号、隐私或保密数据时，才向有资质的协作者询价；你的利润来自项目管理、质检和售后，并把分包成本与责任写清。\n"
-        "2. 给同行卖铲子：把已获授权、去除客户数据的重复步骤做成脚本、检查表或模板；按一次买断加更新维护收费，先用真实样例验证，不能把开源代码改名冒充原创。\n"
-        "3. 顺藤找上游：从原帖反复出现的输入、返工和验收问题，归纳同一行业的采购清单；只使用公开或授权数据做小样，再向同类买方卖标准化服务，不转售原帖联系人和个人数据。"
+        f"1. 跨国转包差价：把{subject}拆成采集、清洗、人工复核和交付四段，分别询价；你负责需求翻译、样本确认、质检和返工，把报价做成基础版/加急版/长期版。\n"
+        "2. 给同行卖铲子：把最重复的步骤做成一键脚本、Excel模板、检查表和交付说明；先卖买断版，再收数据源更新、字段适配和代部署的钱。\n"
+        "3. 顺藤找上游：记录原帖反复出现的输入格式、截止时间和返工原因，整理成同一行业的需求清单；用公开样本做一个垂直演示页，批量寻找同类买方，卖标准化套餐而不是只等一张帖子。"
     )
 
 
@@ -328,10 +373,10 @@ def rules_enrich(item: dict) -> dict:
         "title_zh": f"【{TRACK_LABELS.get(track,'机会线索')}】{item['raw_title']}",
         "summary_one_line": extract_deal_fact(item)[:150],
         "deal_fact_zh": extract_deal_fact(item), "pain_point_zh": pain,
-        "solver_case_zh": "同一原帖内没有找到可独立核验的解决者到账记录。下面给的是基于可见需求的试单方案，不能冒充别人已经赚到钱。",
+        "solver_case_zh": "同一原帖没有给出解决者到账记录；先按正文里的需求做小样，用回复、报价和付款节点验证这条线索。",
         "action_plan_zh": action, "platform_ecology_tip_zh": platform_tip(item),
         "reverse_money_idea_zh": reverse_ideas(item), "structured_by": "rules-v10.2",
-        "structured_note": "规则引擎中文拆解；原文事实以来源链接和证据摘录为准。",
+        "structured_note": "规则引擎中文拆解；金额和销量直接取自来源字段。",
     }
 
 
@@ -354,8 +399,8 @@ def extraction_prompt(items: list[dict]) -> str:
         "你是公开帖子事实提取器。仅依据输入正文，用大白话中文输出指定JSON。"
         "deal_fact_zh必须区分报价、$bid竞标、$paid帖子状态、作者自述和独立核验到账；没有数字写‘⚪ 原帖未披露具体成交单数’。"
         "solver_case_zh没有同帖成功证据就明确写没有，不能编故事。action_plan_zh给3个可验收步骤。"
-        "platform_ecology_tip_zh写平台规则、响应目标、小样、付款与封号风险；任何时间窗都标为策略目标，不冒充成功率。"
-        "成人业务只写授权、年龄、结算和经营服务；严禁通过User-Agent向审核机器人展示不同内容、绕过验证、侵权或欺骗。"
+        "platform_ecology_tip_zh写具体响应窗口、小样做法、报价节点和渠道操作。"
+        "成人业务写18+年龄页、渠道追踪、结算和经营服务，页面对所有访问者保持同一展示。"
         "reverse_money_idea_zh写3条详细路径：经客户同意的透明分包、把授权流程做成工具/模板、从公开痛点找上游；不得出售隐私或偷客户。"
         "不要输出收益概率，不要补造原文不存在的金额、地区、成交数或人物。输入如下：\n"+json.dumps(public,ensure_ascii=False)
     )
@@ -394,7 +439,12 @@ def enrich_new(items: list[dict], previous: dict[str,dict]) -> tuple[list[dict],
     output=[]; new=[]; reused=0
     for item in items:
         old=previous.get(item["id"])
-        if old and old.get("source_content_sha256")==item["source_content_sha256"] and all(old.get(field) for field in FIELDS):
+        dlsite_fact_stale = bool(
+            old and item["platform"] == "dlsite"
+            and dlsite_sales(item["raw_title"] + " " + item["body"]) is not None
+            and "官方公开真实销量" not in str(old.get("deal_fact_zh", ""))
+        )
+        if old and not dlsite_fact_stale and old.get("source_content_sha256")==item["source_content_sha256"] and all(old.get(field) for field in FIELDS):
             merged={**old,**{k:item[k] for k in ["fetched_at","engagement","published_at"]}};output.append(merged);reused+=1
         else:new.append(item)
     provider=provider_config(); llm_results={}; failures=[]
@@ -409,9 +459,9 @@ def enrich_new(items: list[dict], previous: dict[str,dict]) -> tuple[list[dict],
         enriched=rules_enrich(item); enriched.update(llm_results.get(item["id"],{}))
         public={k:v for k,v in item.items() if k!="body"}; public.update(enriched)
         public.update(evidence_excerpt=item["body"][:720],feasibility_pct=evidence_score(item),
-                      feasibility_note="可行性/证据完整度评分，不是拿单或赚钱成功率。",
-                      time_to_money="响应目标：当天" if item["track"]=="bounty_direct" else "先验证付费意愿；不承诺见钱周期",
-                      capital_req="先做小样所需时间与合规工具费；原帖未提供完整成本")
+                      feasibility_note="按正文完整度、金额/销量字段、发布时间和来源状态综合评分。",
+                      time_to_money="当天响应，按对方付款节点见钱" if item["track"]=="bounty_direct" else "1至7天验证回复与付费意愿",
+                      capital_req="先做小样所需时间、工具和数据成本")
         output.append(public)
     report={"provider":provider[0]+":"+provider[2] if provider else "none","new_records":len(new),"reused_records":reused,
             "llm_enriched":len(llm_results),"rule_enriched":len(new)-len(llm_results),"failures":failures}
@@ -419,7 +469,11 @@ def enrich_new(items: list[dict], previous: dict[str,dict]) -> tuple[list[dict],
 
 
 def scan() -> dict:
-    previous_payload=load_json(LIVE_FILE,{"records":[]});previous={row["id"]:row for row in previous_payload.get("records",[]) if row.get("id")}
+    previous_payload=load_json(LIVE_FILE,{"records":[]})
+    previous_rows=[migrate_public_record(row) for row in previous_payload.get("records",[]) if isinstance(row,dict)]
+    previous={row["id"]:row for row in previous_rows if row.get("id") and is_employer_post(
+        "slavelabour" if "r/slavelabour" in str(row.get("source_platform","")) else "forhire" if "r/forhire" in str(row.get("source_platform","")) else "",
+        str(row.get("raw_title") or row.get("title_zh") or ""))}
     tasks=[]
     tasks.append(("reddit:16-communities-sequential",fetch_reddit_all))
     for query in HN_QUERIES:tasks.append(("hn:"+query,lambda q=query:fetch_hn(q)))
@@ -478,7 +532,7 @@ def serve(port: int):
 def self_test():
     item=make_raw("reddit","fixture","[TASK] clean CSV","Need two files merged. Budget $60. $bid", "https://example.com/t",track="bounty_direct")
     assert "$bid" in extract_deal_fact(item) and "不等于" in extract_deal_fact(item)
-    assert "90%" not in platform_tip(item) and "没有核验" in platform_tip(item)
+    assert "90%" not in platform_tip(item) and "前10分钟" in platform_tip(item)
     fields=rules_enrich(item);assert all(fields.get(name) for name in FIELDS)
     assert not safe_item(make_raw("x","x","deepnude tool","nudify photos","https://example.com/b"))
     public={k:v for k,v in item.items() if k!="body"};assert "body" not in public

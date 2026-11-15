@@ -10,7 +10,10 @@
     .card summary{list-style:none}.card summary::-webkit-details-marker{display:none}.card[open]{border-color:#43577d}.card[open] .chev{transform:rotate(180deg)}
     .drawer{border-top:1px solid #27344d}.field{background:#0a1020;border:1px solid #25324a}.pill{font-size:12px;line-height:1.1}
     .title{font-size:15.5px;line-height:1.45}.muted{color:#94a3b8}.truth{border-left:3px solid #22c55e}.risk{border-left:3px solid #f59e0b}.reverse{border-left:3px solid #a855f7}
-    button,input{font:inherit}.compact-scroll{scrollbar-color:#334155 #0b0f19}.compact-scroll::-webkit-scrollbar{width:8px}.compact-scroll::-webkit-scrollbar-thumb{background:#334155;border-radius:8px}
+    button,input,textarea,select{font:inherit}.compact-scroll{scrollbar-color:#334155 #0b0f19}.compact-scroll::-webkit-scrollbar{width:8px}.compact-scroll::-webkit-scrollbar-thumb{background:#334155;border-radius:8px}
+    .tabbtn{background:#111827;border:1px solid #334155;color:#cbd5e1}.tabbtn.active{background:linear-gradient(135deg,#1d4ed8,#4338ca);border-color:#60a5fa;color:white;box-shadow:0 6px 18px #1d4ed844}
+    .factory-card{background:linear-gradient(145deg,#121b2e,#0b1220);border:1px solid #2b3a55}.matrix-ok{color:#6ee7b7}.matrix-warn{color:#fcd34d}.matrix-stop{color:#fda4af}
+    .formbox{width:100%;background:#080d18;border:1px solid #334155;border-radius:.6rem;padding:.65rem .75rem;color:#e2e8f0;outline:none}.formbox:focus{border-color:#38bdf8}
   </style>
 </head>
 <body class="min-h-screen">
@@ -34,6 +37,14 @@
       <div class="field rounded-lg px-2.5 py-2"><div class="text-[11px] muted">来源失败</div><b id="kFailed" class="text-lg text-rose-300">0</b></div>
     </div>
   </header>
+
+  <nav class="panel rounded-xl p-1.5 mb-2.5 grid grid-cols-1 lg:grid-cols-3 gap-1.5" aria-label="工作台主标签">
+    <button class="tabbtn active rounded-lg px-3 py-2.5 text-sm font-extrabold text-left" data-tab="radar">📡 1. 全球赚钱机会雷达</button>
+    <button class="tabbtn rounded-lg px-3 py-2.5 text-sm font-extrabold text-left" data-tab="factory">🏭 2. 一对一落地工具生成工厂</button>
+    <button class="tabbtn rounded-lg px-3 py-2.5 text-sm font-extrabold text-left" data-tab="matrix">🔍 3. 全球 42+ 网站可抓性交底表</button>
+  </nav>
+
+  <section id="tab-radar" class="tabpage">
 
   <section class="panel rounded-xl px-3 py-2.5 mb-2.5 flex flex-wrap items-center justify-between gap-2">
     <div id="filters" class="flex flex-wrap gap-1.5">
@@ -59,6 +70,59 @@
 
   <div id="notice" class="panel rounded-xl px-3 py-3 text-sm text-slate-300">正在读取公开快照……</div>
   <section id="cards" class="hidden w-full grid grid-cols-1 xl:grid-cols-2 gap-2.5"></section>
+  </section>
+
+  <section id="tab-factory" class="tabpage hidden space-y-2.5">
+    <div class="panel rounded-xl p-3.5">
+      <div class="flex flex-wrap justify-between gap-2">
+        <div><h2 class="text-[17px] font-extrabold text-white">🏭 一对一落地工具生成工厂</h2><p class="text-xs muted mt-1">填一次项目资料，直接下载页面/监控器，或复制针对当前项目的截流话术。</p></div>
+        <span class="pill px-2.5 py-1.5 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-300">模板可靠度 A · 浏览器本地生成</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2.5 mt-3">
+        <label class="text-xs text-slate-300">项目/产品名称<input id="toolName" class="formbox mt-1" value="今日机会样本"></label>
+        <label class="text-xs text-slate-300">最终跳转网址<input id="toolUrl" class="formbox mt-1" value="https://example.com/offer"></label>
+        <label class="text-xs text-slate-300">你的交付能力<input id="toolSkill" class="formbox mt-1" value="CSV清洗、网页数据整理、自动化脚本"></label>
+        <label class="text-xs text-slate-300">报价与交付时间<input id="toolQuote" class="formbox mt-1" value="$60，24小时交付"></label>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-2.5">
+      <article class="factory-card rounded-xl p-3.5">
+        <div class="flex justify-between gap-2"><h3 class="font-extrabold text-rose-300">🔞 18+ 年龄确认二跳页</h3><span class="pill rounded-full px-2 py-1 bg-emerald-950 text-emerald-300">可靠度 A</span></div>
+        <p class="text-xs text-slate-300 mt-2 leading-5">生成手机优先的年龄确认页：项目说明、18+确认按钮、UTM参数继承、点击统计钩子。页面对全部访问者保持同一版内容。</p>
+        <button id="downloadAge" class="mt-3 px-3 py-2 rounded-lg bg-rose-700 hover:bg-rose-600 text-xs font-bold">⬇ 下载 18+二跳防封页.html</button>
+      </article>
+      <article class="factory-card rounded-xl p-3.5">
+        <div class="flex justify-between gap-2"><h3 class="font-extrabold text-amber-300">📊 99% 进度条任务页</h3><span class="pill rounded-full px-2 py-1 bg-emerald-950 text-emerald-300">可靠度 A</span></div>
+        <p class="text-xs text-slate-300 mt-2 leading-5">生成可编辑的任务进度页：已完成、待确认、交付时间、付款节点一屏展示，适合发给客户跟进。</p>
+        <button id="downloadProgress" class="mt-3 px-3 py-2 rounded-lg bg-amber-700 hover:bg-amber-600 text-xs font-bold">⬇ 下载 99%进度条任务锁.html</button>
+      </article>
+      <article class="factory-card rounded-xl p-3.5">
+        <div class="flex justify-between gap-2"><h3 class="font-extrabold text-cyan-300">⏱ 10分钟抢单监控器</h3><span class="pill rounded-full px-2 py-1 bg-emerald-950 text-emerald-300">可靠度 A-</span></div>
+        <p class="text-xs text-slate-300 mt-2 leading-5">轮询 r/slavelabour 与 r/forhire 新帖，只输出 [Task]/[Hiring]，自动丢掉 [Offer]/[For Hire]，终端响铃并打印原帖链接。</p>
+        <button id="downloadMonitor" class="mt-3 px-3 py-2 rounded-lg bg-cyan-700 hover:bg-cyan-600 text-xs font-bold">⬇ 下载 10分钟抢单监控器.py</button>
+      </article>
+      <article class="factory-card rounded-xl p-3.5">
+        <div class="flex justify-between gap-2"><h3 class="font-extrabold text-violet-300">✉️ 前10分钟样本截流话术</h3><span class="pill rounded-full px-2 py-1 bg-emerald-950 text-emerald-300">可靠度 A-</span></div>
+        <textarea id="pitchOutput" class="formbox mt-2 h-28 resize-y text-xs"></textarea>
+        <div class="flex gap-2 mt-2"><button id="makePitch" class="px-3 py-2 rounded-lg bg-violet-700 hover:bg-violet-600 text-xs font-bold">生成话术</button><button id="copyPitch" class="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-bold">复制话术</button></div>
+      </article>
+    </div>
+
+    <div class="panel rounded-xl p-3.5">
+      <h3 class="font-extrabold text-white">🔥 底座平台打法卡</h3>
+      <p class="text-xs muted mt-1">这些是平台操作模板，不计入实时抓取数量；点开即可直接套到当前帖子。</p>
+      <div id="basePlaybooks" class="grid grid-cols-1 xl:grid-cols-2 gap-2.5 mt-3"></div>
+    </div>
+  </section>
+
+  <section id="tab-matrix" class="tabpage hidden">
+    <div class="panel rounded-xl p-3.5">
+      <div class="flex flex-wrap justify-between gap-2"><div><h2 class="text-[17px] font-extrabold text-white">🔍 全球 42+ 网站可抓性交底表</h2><p class="text-xs muted mt-1">“可抓”按公开入口和本轮响应判断；登录墙、403、429、缺少官方参数会单独写明。</p></div><div class="flex gap-1.5"><span id="matrixCount" class="pill px-2.5 py-1.5 rounded-full bg-sky-950 border border-sky-800 text-sky-300"></span><span class="pill px-2.5 py-1.5 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-300">每轮动态刷新</span></div></div>
+      <input id="matrixSearch" class="formbox mt-3 max-w-xl" placeholder="搜索网站、地区、入口或当前状态">
+      <div class="overflow-x-auto mt-3 compact-scroll"><table class="w-full text-xs min-w-[940px]"><thead><tr class="text-left text-slate-400 border-b border-slate-700"><th class="p-2">网站/入口</th><th class="p-2">国家/赛道</th><th class="p-2">可靠度</th><th class="p-2">当前可抓性</th><th class="p-2">真实情况与接通办法</th></tr></thead><tbody id="matrixRows"></tbody></table></div>
+    </div>
+  </section>
 </main>
 
 <template id="cardTemplate">
@@ -86,10 +150,42 @@
 </template>
 
 <script>
+const GLOBAL_DEEP_BASE = [
+  {title:'Reddit悬赏帖前10分钟样本截流',platform:'r/slavelabour / r/forhire',reliability:'A-',deal:'只盯 [Task]/[Hiring] 买方发包贴；[Offer]/[For Hire] 直接丢掉。',tip:'新帖出来后的前10分钟，先跑出15至20行带真实表头的小样截图，再私信交付时间和总价；30分钟后回复密度通常明显上升，只回一句 “I can do it” 很容易被淹没。',reverse:'① 把采集、清洗、人工复核拆开跨区询价，赚项目管理和质检差价；② 把字段映射、去重和交付检查做成买断脚本卖给同行；③ 记录高频输入格式，做垂直行业数据处理套餐。'},
+  {title:'脏CSV与名单匹配小工具',platform:'Reddit / HN / SaaS',reliability:'A-',deal:'先从正文数清文件数量、字段、错行和截止时间；金额只按原帖显示。',tip:'不要先做万能平台，先让客户发20行脱敏样本，现场跑出合并、去重和异常行报告；把“人工陪跑一次”和“脚本买断”分开报价。',reverse:'① 低价找人工处理异常行，你负责自动化和质检；② 卖CSV清洗模板、字段映射器和错误报告生成器；③ 从客服邮件里的反复报错反推财务、电商、物流等垂直版本。'},
+  {title:'DLsite R18 販売数题材追踪',platform:'日本 DLsite R18',reliability:'A',deal:'页面出现「販売数」就直接提取累计销量；卡片显示“✅ 官方公开真实销量：已售 X 份”。',tip:'同时看24小时榜增量、累计販売数、价格、前三张预览图和热门标签；同题材连续3天上榜，再做翻译、排版、客服或发行服务报价。',reverse:'① 找会画但不会海外发行的作者，承接英文页与客服；② 卖标签跟踪表、销量日更表和竞品预览图拆解包；③ 给翻译团队卖术语库、排版脚本和批量元数据模板。'},
+  {title:'18+联盟落地页与渠道追踪',platform:'成人联盟 / X / Reddit',reliability:'B+',deal:'真实可核验的是平台公开佣金规则、点击、注册和后台结算，不把访问量写成收入。',tip:'落地页先放18+年龄确认、内容说明和清楚的跳转按钮；每个渠道用不同UTM参数，按点击→注册→结算逐层看损耗。',reverse:'① 为创作者搭建多语言落地页并按月维护；② 把UTM命名、素材尺寸和数据看板做成模板包；③ 汇总各渠道公开规则和素材规格，卖给小团队做入门作战表。'},
+  {title:'成人创作者后台杂活代运营',platform:'OnlyFansAdvice / NSFWCreators',reliability:'B+',deal:'优先找正文里写清工作量、预算、销量或退款问题的帖子。',tip:'从不碰账号密码的杂活切入：字幕、排期、元数据、销售表、客服标签和退款原因统计；先交一个可直接查看的小样。',reverse:'① 将字幕、封面、排期分给不同协作者，你负责统一质检；② 卖排期表、素材命名器和销售日报模板；③ 从退款与客服问题反推“降低重复咨询”的知识库服务。'},
+  {title:'本地商家未接来电补漏',platform:'sweatystartup / smallbusiness',reliability:'B+',deal:'正文若没有挽回金额，就记录漏接量、回拨时间和预约数，不补造营收。',tip:'拿一家店过去7天的未接来电做样本，按“5分钟内短信→确认需求→预约链接→人工回拨”跑一周，再拿预约数谈月费。',reverse:'① 用低成本短信和人工值班组合交付；② 卖行业话术、预约模板和日报；③ 从牙医、维修、家政等高客单行业复制同一流程。'},
+  {title:'HN痛点评论小样获客',platform:'Hacker News',reliability:'B+',deal:'赞和评论只算讨论热度；付费事实必须来自正文里的价格、订单或作者披露。',tip:'评论先给复现步骤、GitHub小样或免登录演示，再说明你能把哪一步做成工具；空泛推销会被直接忽略。',reverse:'① 接定制后把通用模块沉淀成产品；② 卖部署脚本、迁移检查表和运维包；③ 沿着评论里的替代品抱怨做更窄、更便宜的单功能版本。'},
+  {title:'V2EX急单快速验收',platform:'V2EX 外包 / 酷工作',reliability:'B+',deal:'先核对预算、工期、付款主体和验收字段；没有金额就保留“未披露”。',tip:'首条回复直接写你做过的相似模块、当天能给的最小样本、总价区间和交付时间；把修改轮次写在报价里。',reverse:'① 把需求拆成前端、接口、数据和测试分别询价；② 卖部署清单、接口Mock和验收模板；③ 统计重复技术栈，做固定价的小程序/数据看板套餐。'}
+];
+
+const SOURCE_MATRIX = [
+  ['Reddit r/slavelabour','美国/急单','A-','reddit','公开RSS；只留[Task]'],['Reddit r/forhire','全球/外包','A-','reddit','公开RSS；只留[Hiring]'],['Reddit r/hireaprogrammer','全球/开发','A-','reddit','公开RSS'],['Reddit r/SaaS','全球/SaaS','A-','reddit','公开RSS'],
+  ['Reddit r/SideProject','全球/独立开发','A-','reddit','公开RSS'],['Reddit r/Entrepreneur','全球/创业','A-','reddit','公开RSS'],['Reddit r/smallbusiness','美国/小企业','A-','reddit','公开RSS'],['Reddit r/sweatystartup','美国/线下服务','A-','reddit','公开RSS'],
+  ['Reddit r/juststart','全球/内容站','B+','reddit','公开RSS'],['Reddit r/beermoney','全球/零工','B+','reddit','公开RSS'],['Reddit r/sidehustle','全球/副业','B+','reddit','公开RSS'],['Reddit r/flipping','欧美/倒卖','B+','reddit','公开RSS'],
+  ['Reddit r/affiliatemarketing','全球/联盟','B+','reddit','公开RSS'],['Reddit r/SEO','全球/SEO','B+','reddit','公开RSS'],['Reddit r/NSFWCreators','全球/成人创作者','B+','reddit','公开RSS'],['Reddit r/onlyfansadvice','全球/成人经营','B+','reddit','公开RSS'],
+  ['Hacker News Algolia','全球/科技痛点','A','hackernews','官方公开检索API'],['V2EX 酷工作','中国/远程岗位','A','v2ex','公开API'],['V2EX 外包','中国/项目外包','A','v2ex','公开API'],['DLsite R18 24h榜','日本/数字内容','A','dlsite','公开榜单含販売数'],
+  ['Chaturbate在线房间','全球/成人流量','A-','chaturbate','官方联盟API；需CHATURBATE_WM'],['BlackHatWorld Journey','全球/灰度营销','C','blackhatworld','公开RSS常返回403'],['BlackHatWorld Hire','全球/营销外包','C','blackhatworld','公开RSS常返回403'],['Indie Hackers','全球/产品复盘','B','manual','公开页面结构变化频繁'],
+  ['Product Hunt','全球/新品','B','manual','公开页面；API需令牌'],['GitHub Trending','全球/开源趋势','A-','manual','公开页面可读'],['Lobsters','全球/开发者','A-','manual','公开RSS'],['DEV Community','全球/开发者','A-','manual','公开API/RSS'],
+  ['Note.com','日本/付费内容','B','manual','公开页面；部分付费正文不可读'],['Zenn','日本/技术内容','A-','manual','公开RSS'],['Qiita','日本/技术需求','A-','manual','公开API有配额'],['Etsy Trends','欧美/手作电商','C','manual','登录墙与动态接口'],
+  ['Upwork','全球/外包','C','manual','登录与反自动化限制'],['Fiverr','全球/服务电商','C','manual','动态页面与地区差异'],['Freelancer','全球/外包','B-','manual','公开列表可读，详情有限'],['PeoplePerHour','英国/外包','C','manual','Cloudflare与登录墙'],
+  ['Contra','全球/自由职业','B-','manual','公开项目页数量有限'],['Craigslist Gigs','美国/本地零工','B','manual','城市分站RSS/页面'],['Warrior Forum','全球/营销','C','manual','部分页面正文为空或需登录'],['GrowthHackers','全球/增长','C','manual','登录墙与页面变化'],
+  ['Starter Story','全球/案例','B-','manual','公开摘要，深度内容付费'],['Side Hustle Nation','美国/副业','B-','manual','RSS可用，页面偶发返回HTML壳'],['Flippa','全球/网站交易','C','manual','列表动态加载'],['Acquire.com','全球/SaaS交易','C','manual','登录后才显示关键指标'],
+  ['AppSumo','全球/软件交易','B-','manual','公开商品页可读'],['Gumroad Discover','全球/数字产品','B-','manual','页面结构变化'],['TikTok Creative Center','全球/广告选品','C','manual','动态接口与登录地区限制'],['Kalodata','全球/TikTok数据','C','manual','登录订阅后才显示完整数字'],
+  ['FastMoss','全球/TikTok数据','C','manual','登录订阅后才显示完整数字'],['Patreon','全球/会员内容','C','manual','公开主页有限，收入多不公开'],['Fanvue','全球/创作者','C','manual','公开数据有限'],['X/Twitter 搜索','全球/实时需求','C','manual','官方API收费且公开页限制'],
+  ['Telegram频道','全球/社群','C','manual','需具体公开频道与授权会话'],['Discord社区','全球/社群','C','manual','需机器人加入具体服务器'],['Facebook Groups','全球/本地商机','C','manual','登录和群组权限'],['Google Trends','全球/搜索趋势','B','manual','趋势不等于成交'],
+  ['Exploding Topics','全球/趋势','B-','manual','公开摘要，完整数据订阅制'],['BetaList','全球/早期产品','B-','manual','公开新品列表'],['MicroAcquire社区','全球/收购','C','manual','并入Acquire登录体系'],['Creative Market','全球/数字素材','C','manual','销量字段通常不公开']
+];
+
 const state={records:[],health:{sources:[],summary:{}},track:'all'};
 const $=id=>document.getElementById(id);const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=v=>{if(!v)return '未提供';const d=new Date(v);return Number.isNaN(d.valueOf())?v:d.toLocaleString('zh-CN',{hour12:false})};
 const safeUrl=v=>{try{const u=new URL(v);return /^https?:$/.test(u.protocol)?u.href:'#'}catch{return '#'}};
+function stripHtml(value){let text=String(value??'');for(let i=0;i<2;i++){const box=document.createElement('textarea');box.innerHTML=text;text=box.value}text=text.replace(/<!--[\s\S]*?-->|<[^>]+>/g,' ');const doc=new DOMParser().parseFromString(text,'text/html');return (doc.body.textContent||'').replace(/\s+/g,' ').trim()}
+function buyerOnly(r){const src=String(r.source_platform||'').toLowerCase(),title=stripHtml(r.raw_title||r.title_zh||'');if(!/(r\/slavelabour|r\/forhire)/.test(src))return true;if(/\[(offer|for\s+hire)\]/i.test(title))return false;return /\[(task|hiring)\]/i.test(title)}
+function normalizeRecord(raw){const r={...raw};['raw_title','title_zh','summary_one_line','deal_fact_zh','pain_point_zh','solver_case_zh','action_plan_zh','platform_ecology_tip_zh','reverse_money_idea_zh','evidence_excerpt'].forEach(k=>{if(k in r)r[k]=stripHtml(r[k])});if(String(r.platform).toLowerCase()==='dlsite'){const blob=[r.evidence_excerpt,r.pain_point_zh,r.deal_fact_zh,r.raw_title].join(' ');const cumulative=blob.match(/販売日[\s\S]*?販売数[:：\s]*([\d,]+)/);const any=blob.match(/販売数[:：\s]*([\d,]+)/);const hit=cumulative||any;if(hit){const n=Number(hit[1].replace(/,/g,''));if(Number.isFinite(n)){r.deal_fact_zh=`✅ 官方公开真实销量：已售 ${n.toLocaleString('en-US')} 份（DLsite 页面販売数字段）`;r.summary_one_line=r.deal_fact_zh;r.feasibility_pct=Math.max(86,Number(r.feasibility_pct)||0)}}}return r}
 async function readJson(path){const r=await fetch(path+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error(path+' HTTP '+r.status);return r.json()}
 function renderStats(data){const s=data.stats||{},h=state.health.summary||{};$('kTotal').textContent=s.total||0;$('kFetched').textContent=s.fetched_this_run||0;$('kNew').textContent=s.new_this_run||0;$('kLlm').textContent=s.llm_enriched||0;$('kRules').textContent=s.rule_enriched||0;$('kSources').textContent=h.responding_sources||0;$('kFailed').textContent=h.failed_sources||0;$('updated').textContent='最近完成：'+date(data.updated_at);const e=data.run?.trigger_event;$('runType').textContent='触发：'+(e==='schedule'?'GitHub定时':e==='workflow_dispatch'?'手动云端验收':e||'尚未运行')}
 function renderSources(){const rows=(state.health.sources||[]).map(s=>`<tr class="border-b border-slate-800 align-top"><td class="py-2 pr-3 text-slate-200">${esc(s.name)}</td><td class="pr-3 ${s.status==='ok'?'text-emerald-300':'text-amber-300'}">${esc(s.status)}</td><td class="pr-3">${esc(s.http_status??'未取得')}</td><td class="pr-3">${esc(s.parsed_count??0)}</td><td class="py-2 text-slate-400">${esc(s.message)}</td></tr>`).join('');$('sourceRows').innerHTML=rows||'<tr><td colspan="5" class="py-3 muted">尚无来源状态。</td></tr>'}
@@ -97,7 +193,22 @@ function textBlob(r){return [r.title_zh,r.raw_title,r.summary_one_line,r.source_
 function setField(card,name,value){const node=card.querySelector(`[data-field="${name}"]`);if(node)node.textContent=value||'未提供'}
 function makeCard(r,index){const card=$('cardTemplate').content.firstElementChild.cloneNode(true);card.dataset.track=r.track||'';card.querySelector('.seq').textContent=String(index+1).padStart(2,'0');card.querySelector('.platform').textContent=r.source_platform||r.platform;card.querySelector('.score').textContent=`可行性/证据 ${r.feasibility_pct??0}%`;card.querySelector('.moneytime').textContent=r.time_to_money||'见钱周期未验证';card.querySelector('.engine').textContent=String(r.structured_by||'rules').startsWith('llm:')?'LLM结构化':'规则兜底';card.querySelector('.title').textContent=r.title_zh||r.raw_title;card.querySelector('.summary').textContent=r.summary_one_line||r.deal_fact_zh;['deal_fact_zh','pain_point_zh','solver_case_zh','action_plan_zh','platform_ecology_tip_zh','reverse_money_idea_zh','evidence_excerpt'].forEach(f=>setField(card,f,r[f]));card.querySelector('.scope').textContent='正文范围：'+(r.body_scope||'未标明');card.querySelector('.published').textContent='发布：'+date(r.published_at);card.querySelector('.fetched').textContent='抓取：'+date(r.fetched_at);const a=card.querySelector('.sourceLink');a.href=safeUrl(r.source_url);card.querySelector('.structNote').textContent=(r.feasibility_note||'')+' '+(r.structured_note||'');return card}
 function render(){const q=$('search').value.trim().toLowerCase();const rows=state.records.filter(r=>(state.track==='all'||r.track===state.track)&&(!q||textBlob(r).includes(q)));$('cards').replaceChildren(...rows.map(makeCard));$('notice').classList.toggle('hidden',rows.length>0);$('cards').classList.toggle('hidden',rows.length===0);$('notice').textContent=state.records.length?`当前筛选没有匹配项。总数据 ${state.records.length} 条。`:'当前没有真实采集记录；不会显示预填演示收益。'}
-async function load(){try{const [data,health]=await Promise.all([readJson('./live_signals.json'),readJson('./source_health.json')]);state.records=Array.isArray(data.records)?data.records:[];state.health=health||{};renderStats(data);renderSources();render()}catch(e){$('notice').classList.remove('hidden');$('cards').classList.add('hidden');$('notice').textContent='读取快照失败：'+e.message+'。这不代表来源网站关闭。'}}
-document.querySelectorAll('.flt').forEach(b=>b.onclick=()=>{state.track=b.dataset.track;document.querySelectorAll('.flt').forEach(x=>x.classList.toggle('bg-blue-600',x===b));render()});$('search').oninput=render;$('collapseAll').onclick=()=>document.querySelectorAll('.card').forEach(x=>x.open=false);$('expandAll').onclick=()=>document.querySelectorAll('.card').forEach(x=>x.open=true);$('refresh').onclick=load;$('sourceToggle').onclick=()=>$('sourcePanel').classList.toggle('hidden');$('sourceClose').onclick=()=>$('sourcePanel').classList.add('hidden');load();setInterval(load,20*60*1000);
+function renderPlaybooks(){$('basePlaybooks').innerHTML=GLOBAL_DEEP_BASE.map((x,i)=>`<details class="factory-card rounded-xl overflow-hidden"><summary class="cursor-pointer p-3 flex gap-2 items-start"><span class="w-7 h-7 rounded-lg bg-slate-950 border border-slate-700 flex items-center justify-center text-xs font-bold">${String(i+1).padStart(2,'0')}</span><span class="grow"><span class="font-extrabold text-slate-100">${esc(x.title)}</span><span class="block text-xs text-sky-300 mt-1">${esc(x.platform)} · 可靠度 ${esc(x.reliability)}</span></span><span class="text-slate-500">⌄</span></summary><div class="border-t border-slate-700 p-3 space-y-2 text-xs leading-5"><p><b class="text-emerald-300">数据抓手：</b>${esc(x.deal)}</p><p><b class="text-amber-300">平台打法：</b>${esc(x.tip)}</p><p class="whitespace-pre-line"><b class="text-violet-300">逆向变现：</b>${esc(x.reverse)}</p></div></details>`).join('')}
+function sourceHealthFor(key,name){const list=state.health.sources||[];if(key==='manual')return null;const low=String(name).toLowerCase();return list.find(s=>{const n=String(s.name||'').toLowerCase();if(key==='reddit'){const m=low.match(/r\/([^\s]+)/);return m&&n.includes(m[1].replace(/[^a-z0-9_]/g,''))}return n.includes(key)})||null}
+function matrixStatus(row){const [name,,,key,note]=row,h=sourceHealthFor(key,name);if(!h)return {label:key==='manual'?'未接入自动任务':'等待状态',cls:'matrix-warn',detail:note};if(h.status==='ok')return {label:`✅ 本轮可抓 · ${h.parsed_count||0}条`,cls:'matrix-ok',detail:h.message||note};if(h.status==='rate_limited')return {label:'⚠️ 429限流',cls:'matrix-warn',detail:(h.message||'本轮限流')+'；轮转到下一次计划任务继续。'};if(h.status==='forbidden'||h.status==='challenge')return {label:`⛔ ${h.http_status||403}/验证墙`,cls:'matrix-stop',detail:h.message||note};if(h.status==='not_configured')return {label:'⚙️ 缺少官方参数',cls:'matrix-warn',detail:h.message||note};return {label:'⚠️ '+h.status,cls:'matrix-warn',detail:h.message||note}}
+function renderMatrix(){const q=$('matrixSearch').value.trim().toLowerCase();const rows=SOURCE_MATRIX.filter(r=>!q||r.join(' ').toLowerCase().includes(q)||Object.values(matrixStatus(r)).join(' ').toLowerCase().includes(q));$('matrixCount').textContent=`共 ${SOURCE_MATRIX.length} 个入口`;$('matrixRows').innerHTML=rows.map(r=>{const s=matrixStatus(r);return `<tr class="border-b border-slate-800 align-top"><td class="p-2.5 text-slate-100 font-semibold">${esc(r[0])}</td><td class="p-2.5 text-slate-300">${esc(r[1])}</td><td class="p-2.5"><span class="pill px-2 py-1 rounded-full bg-slate-900 border border-slate-700">${esc(r[2])}</span></td><td class="p-2.5 font-bold ${s.cls}">${esc(s.label)}</td><td class="p-2.5 text-slate-400 leading-5">${esc(s.detail)}</td></tr>`}).join('')}
+
+function toolValues(){return {name:stripHtml($('toolName').value)||'项目',url:safeUrl($('toolUrl').value)==='#'?'https://example.com/offer':safeUrl($('toolUrl').value),skill:stripHtml($('toolSkill').value),quote:stripHtml($('toolQuote').value)}}
+function downloadText(filename,text,type='text/plain;charset=utf-8'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800)}
+function buildAgePage(){const v=toolValues();return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(v.name)} · 18+确认</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at top,#3f1d4f,#090b13 58%);color:#fff;font:16px system-ui}.box{width:min(92vw,520px);padding:32px;border:1px solid #ffffff26;border-radius:24px;background:#101522ee;box-shadow:0 24px 70px #0008;text-align:center}h1{font-size:27px}.mark{font-size:56px}.go{display:block;margin:20px 0 10px;padding:15px;border-radius:12px;background:#e11d48;color:white;text-decoration:none;font-weight:800}.back{color:#94a3b8;font-size:13px}</style></head><body><main class="box"><div class="mark">18+</div><h1>${esc(v.name)}</h1><p>本页面含成人向内容，仅限已达到所在地法定年龄的访问者。</p><a id="go" class="go" href="${esc(v.url)}" rel="nofollow noopener">我已满18岁，继续访问</a><a class="back" href="https://www.google.com/">未满18岁，离开</a></main><script>const a=document.getElementById('go'),u=new URL(a.href),q=new URLSearchParams(location.search);['utm_source','utm_medium','utm_campaign','utm_content'].forEach(k=>{if(q.has(k))u.searchParams.set(k,q.get(k))});a.href=u.href;<\/script></body></html>`}
+function buildProgressPage(){const v=toolValues();return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(v.name)} · 任务进度</title><style>body{margin:0;background:#0b1020;color:#e5e7eb;font:15px system-ui}.wrap{max-width:700px;margin:8vh auto;padding:24px}.card{background:#131b2e;border:1px solid #334155;border-radius:20px;padding:26px}.bar{height:18px;background:#253047;border-radius:99px;overflow:hidden}.fill{width:99%;height:100%;background:linear-gradient(90deg,#22c55e,#06b6d4)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.cell{background:#0b1220;padding:14px;border-radius:12px}.tag{color:#67e8f9;font-weight:800}</style></head><body><main class="wrap"><section class="card"><p class="tag">实时任务状态</p><h1>${esc(v.name)}</h1><div class="bar"><div class="fill"></div></div><p><b>当前估算进度：99%</b> · 等待最终验收确认</p><div class="grid"><div class="cell"><small>交付能力</small><br>${esc(v.skill)}</div><div class="cell"><small>报价/时间</small><br>${esc(v.quote)}</div><div class="cell"><small>已完成</small><br>核心处理、抽样复核、交付包</div><div class="cell"><small>待确认</small><br>客户验收与尾款节点</div></div></section></main></body></html>`}
+function buildMonitorPy(){return `# -*- coding: utf-8 -*-\n\"\"\"10分钟抢单监控器：只输出 r/slavelabour 与 r/forhire 的 [Task]/[Hiring]。\"\"\"\nimport html, re, time, urllib.request, xml.etree.ElementTree as ET\nfrom datetime import datetime, timezone\n\nSUBS = (\"slavelabour\", \"forhire\")\nSEEN = set()\nUA = \"OpportunityTaskMonitor/1.0\"\n\ndef clean(text):\n    text = html.unescape(html.unescape(text or \"\"))\n    return re.sub(r\"\\s+\", \" \", re.sub(r\"<[^>]+>|<!--.*?-->\", \" \", text, flags=re.S)).strip()\n\ndef poll(sub):\n    url = f\"https://www.reddit.com/r/{sub}/new/.rss?limit=25\"\n    req = urllib.request.Request(url, headers={\"User-Agent\": UA, \"Accept\": \"application/atom+xml\"})\n    with urllib.request.urlopen(req, timeout=20) as r:\n        root = ET.fromstring(r.read())\n    ns = {\"a\": \"http://www.w3.org/2005/Atom\"}\n    for entry in root.findall(\"a:entry\", ns):\n        title = clean(entry.findtext(\"a:title\", default=\"\", namespaces=ns))\n        if re.search(r\"\\[(offer|for\\s+hire)\\]\", title, re.I):\n            continue\n        if not re.search(r\"\\[(task|hiring)\\]\", title, re.I):\n            continue\n        link = entry.find(\"a:link\", ns).get(\"href\")\n        key = sub + \"|\" + link\n        if key not in SEEN:\n            SEEN.add(key)\n            print(f\"\\a[{datetime.now().strftime('%H:%M:%S')}] [真实雇主发包] {title}\\n{link}\\n\")\n\nprint(\"监控已启动；每60秒读取一次，只提示新出现的 [Task]/[Hiring]。Ctrl+C退出。\")\nwhile True:\n    for sub in SUBS:\n        try:\n            poll(sub)\n        except Exception as exc:\n            print(f\"[{sub}] 本轮读取失败: {type(exc).__name__}: {exc}\")\n    time.sleep(60)\n`}
+function makePitch(){const v=toolValues();$('pitchOutput').value=`Hi — I saw your task and can handle ${v.skill}.\n\nI can send a small 15–20 row sample with the real headers first, so you can check the output before the full run. My quote is ${v.quote}. If you share one sample file and the required columns, I’ll reply with the sample and exact delivery plan.\n\n中文备忘：先发15–20行样本截图，再报总价、交付时间和修改轮次。`}
+async function load(){try{const [data,health]=await Promise.all([readJson('./live_signals.json'),readJson('./source_health.json')]);state.records=(Array.isArray(data.records)?data.records:[]).map(normalizeRecord).filter(buyerOnly);state.health=health||{};renderStats({...data,stats:{...(data.stats||{}),total:state.records.length}});renderSources();renderMatrix();render()}catch(e){$('notice').classList.remove('hidden');$('cards').classList.add('hidden');$('notice').textContent='读取快照失败：'+e.message+'。这不代表来源网站关闭。'}}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tabpage').forEach(x=>x.classList.add('hidden'));$('tab-'+b.dataset.tab).classList.remove('hidden')});
+document.querySelectorAll('.flt').forEach(b=>b.onclick=()=>{state.track=b.dataset.track;document.querySelectorAll('.flt').forEach(x=>x.classList.toggle('bg-blue-600',x===b));render()});
+$('search').oninput=render;$('matrixSearch').oninput=renderMatrix;$('collapseAll').onclick=()=>document.querySelectorAll('.card').forEach(x=>x.open=false);$('expandAll').onclick=()=>document.querySelectorAll('.card').forEach(x=>x.open=true);$('refresh').onclick=load;$('sourceToggle').onclick=()=>$('sourcePanel').classList.toggle('hidden');$('sourceClose').onclick=()=>$('sourcePanel').classList.add('hidden');
+$('downloadAge').onclick=()=>downloadText('18+二跳防封页.html',buildAgePage(),'text/html;charset=utf-8');$('downloadProgress').onclick=()=>downloadText('99%进度条任务锁.html',buildProgressPage(),'text/html;charset=utf-8');$('downloadMonitor').onclick=()=>downloadText('10分钟抢单监控器.py',buildMonitorPy(),'text/x-python;charset=utf-8');$('makePitch').onclick=makePitch;$('copyPitch').onclick=async()=>{makePitch();await navigator.clipboard.writeText($('pitchOutput').value);$('copyPitch').textContent='已复制';setTimeout(()=>$('copyPitch').textContent='复制话术',1200)};
+renderPlaybooks();renderMatrix();makePitch();load();setInterval(load,20*60*1000);
 </script>
 </body></html>

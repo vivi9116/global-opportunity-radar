@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ================================================================================
-全球痛点与真实赚钱机会 24h 自动监控引擎 (v11.2 全平台带盾穿透·悬赏2h自动清理版)
+全球痛点与真实赚钱机会 24h 自动监控引擎 (v11.3 全平台均衡配额·带盾穿透·悬赏2h自动清理版)
 ================================================================================
 """
 
@@ -81,7 +81,6 @@ REDDIT_TARGET_SUBS = [
     ("Sexsells", "nsfw_adult", "Reddit r/Sexsells (成人内容C2C直卖热榜)", "top_month")
 ]
 
-# 高防带盾域名清单（配置住宅 IP 或 SCRAPER_API_KEY 后自动启用穿透与轮换重试）
 SHIELDED_DOMAINS = (
     "blackhatworld.com", "reddit.com", "etsy.com", "upwork.com",
     "f95zone.to", "affiliatefix.com", "g2.com", "trustpilot.com",
@@ -339,7 +338,6 @@ def sanitizeAndUpgradeSignal(rawItem):
 
     isBaseCard = str(rawItem.get("id", "")).startswith("base_")
     createdTs = int(rawItem.get("created_ts") or rawItem.get("created_utc") or time.time())
-    # 悬赏单（bounty_direct）一旦超过 2 小时（7200秒），直接丢弃不入库
     if not isBaseCard and rawItem.get("track") == "bounty_direct":
         if (time.time() - createdTs) > 7200:
             return None
@@ -368,7 +366,7 @@ def sanitizeAndUpgradeSignal(rawItem):
     }
 
 
-def fetch_reddit_jsonp_py(sub, mode="new", limit=35):
+def fetch_reddit_jsonp_py(sub, mode="new", limit=20):
     errors = []
     reddit_headers = {
         "User-Agent": "GlobalOpportunityRadar/1.0 (+https://github.com/vivi9116/global-opportunity-radar)",
@@ -417,6 +415,33 @@ def fetch_reddit_jsonp_py(sub, mode="new", limit=35):
         errors.append("RSS: empty feed")
     except Exception as exc:
         errors.append(f"RSS: {type(exc).__name__}: {exc}")
+
+    # 通道 3：PullPush.io 免盾 Reddit 镜像 API（彻底解决机房裸 IP 被 Reddit 403 封锁导致抓不到数据的问题）
+    try:
+        sort_by = "score" if mode == "top_month" else "created_utc"
+        pp_url = f"https://api.pullpush.io/reddit/search/submission/?subreddit={sub}&size={limit}&sort=desc&sort_type={sort_by}"
+        raw_pp = http_get(pp_url, timeout=14)
+        pp_data = json.loads(raw_pp).get("data", [])
+        posts = []
+        for d in pp_data:
+            if not d.get("title"):
+                continue
+            posts.append({
+                "id": d.get("id"),
+                "title": d.get("title"),
+                "selftext": d.get("selftext") or "",
+                "author": d.get("author") or "",
+                "created_utc": int(d.get("created_utc") or time.time()),
+                "ups": int(d.get("score") or 5),
+                "num_comments": int(d.get("num_comments") or 1),
+                "permalink": f"/r/{sub}/comments/{d.get('id')}/"
+            })
+        if posts:
+            print(f"[SOURCE OK] Reddit r/{sub}: PullPush mirror {len(posts)}")
+            return posts
+    except Exception as exc:
+        errors.append(f"PullPush: {type(exc).__name__}: {exc}")
+
     print(f"[SOURCE WARN] Reddit r/{sub}: {' | '.join(errors)}")
     return []
 
@@ -580,7 +605,7 @@ def fetch_additional_sources(now_ts):
     items = []
     thirty_days_ago_ts = now_ts - (30 * 86400)
 
-    # 1. Hacker News 近30天痛点、变现、灰产与成人全量搜索
+    # 1. Hacker News（每个检索词严格限制 hitsPerPage=8，绝不霸屏！）
     hn_queries = [
         ("willing to pay OR too expensive alternative", "pain_saas", "HN 近30天痛点求平替"),
         ("Show HN revenue OR MRR OR first sale OR Stripe", "pain_saas", "HN 近30天真实变现复盘"),
@@ -589,7 +614,7 @@ def fetch_additional_sources(now_ts):
     ]
     for query, trk, label in hn_queries:
         try:
-            url = f"https://hn.algolia.com/api/v1/search?tags=story&numericFilters=created_at_i>{thirty_days_ago_ts},points>2&hitsPerPage=35&query=" + urllib.parse.quote(query)
+            url = f"https://hn.algolia.com/api/v1/search?tags=story&numericFilters=created_at_i>{thirty_days_ago_ts},points>2&hitsPerPage=8&query=" + urllib.parse.quote(query)
             data = json.loads(http_get(url, timeout=15))
             for hit in data.get("hits", []):
                 object_id = str(hit.get("objectID") or "")
@@ -597,7 +622,7 @@ def fetch_additional_sources(now_ts):
                 if not object_id or not title:
                     continue
                 item = sanitizeAndUpgradeSignal({
-                    "id": f"hn_{object_id}", "created_ts": int(hit.get("created_at_i") or (now_ts - 3600)),
+                    "id": f"hn_{object_id}", "created_ts": int(hit.get("created_at_i") or (now_ts - 14400)),
                     "track": trk, "ups": hit.get("points") or 0, "num_comments": hit.get("num_comments") or 0,
                     "title_zh": f"【{label}】{title}", "pain_point_zh": hit.get("story_text") or title,
                     "source_platform": label, "source_url": hit.get("url") or f"https://news.ycombinator.com/item?id={object_id}",
@@ -608,36 +633,37 @@ def fetch_additional_sources(now_ts):
         except Exception as exc:
             print(f"[SOURCE WARN] HN {query}: {exc}")
 
-    # 2. Reddit 全站关键词主动搜索引擎（专抓近1个月全球怎么赚钱、CPA、黑帽、成人引流）
-    reddit_global_searches = [
+    # 2. PullPush 全网搜索引擎（免盾直抓近1个月 CPA、黑帽、成人、真实变现贴）
+    global_searches = [
         ("CPA marketing OR content locker OR OGAds OR AdBlueMedia", "gray_arb", "全网搜索·CPA与任务锁门道"),
         ("CrakRevenue OR adult affiliate OR Fanvue OR AI NSFW", "nsfw_adult", "全网搜索·成人CPA与AI擦边"),
         ("parasite SEO OR blackhat SEO OR expired domains", "gray_arb", "全网搜索·黑帽寄生虫SEO"),
         ("how I made $ OR made my first $1000 OR side hustle worked", "pain_saas", "全网搜索·近30天亲测赚钱复盘"),
         ("TikTok shop affiliate OR Etsy digital product OR Gumroad", "gray_arb", "全网搜索·短视频带货与虚拟品套利")
     ]
-    for q_str, trk, label in reddit_global_searches:
+    for q_str, trk, label in global_searches:
         try:
-            s_url = f"https://www.reddit.com/search.json?q={urllib.parse.quote(q_str)}&sort=top&t=month&limit=35&raw_json=1"
-            s_data = json.loads(http_get(s_url, timeout=14))
-            for child in s_data.get("data", {}).get("children", []):
-                d = child.get("data", {})
+            pp_url = f"https://api.pullpush.io/reddit/search/submission/?q={urllib.parse.quote(q_str)}&size=12&sort=desc&sort_type=score"
+            pp_data = json.loads(http_get(pp_url, timeout=14)).get("data", [])
+            for d in pp_data:
                 title = clean_raw_html(d.get("title", ""))
                 if not title:
                     continue
+                sub_name = d.get("subreddit", "all")
+                post_id = d.get("id", "")
+                link = d.get("full_link") or f"https://www.reddit.com/r/{sub_name}/comments/{post_id}/"
                 item = sanitizeAndUpgradeSignal({
-                    "id": f"rds_{d.get('id')}", "created_ts": int(d.get("created_utc") or (now_ts - 7200)),
-                    "track": trk, "ups": d.get("ups", 0), "num_comments": d.get("num_comments", 0),
-                    "title_zh": f"【{label} · r/{d.get('subreddit')}】{title}",
+                    "id": f"rds_{post_id}", "created_ts": int(d.get("created_utc") or (now_ts - 7200)),
+                    "track": trk, "ups": int(d.get("score") or 10), "num_comments": int(d.get("num_comments") or 2),
+                    "title_zh": f"【{label} · r/{sub_name}】{title}",
                     "pain_point_zh": d.get("selftext") or title,
                     "source_platform": label,
-                    "source_url": "https://www.reddit.com" + d.get("permalink", ""),
-                    "solver_url": "https://www.reddit.com" + d.get("permalink", "")
+                    "source_url": link, "solver_url": link
                 })
                 if item:
                     items.append(item)
         except Exception as exc:
-            print(f"[SOURCE WARN] Reddit Search {label}: {exc}")
+            print(f"[SOURCE WARN] Global Search {label}: {exc}")
 
     # 3. V2EX 外包与酷工作急单 (超过2小时会在 sanitizeAndUpgradeSignal 中被自动过滤)
     for node in ("jobs", "outsourcing"):
@@ -664,7 +690,7 @@ def fetch_additional_sources(now_ts):
         except Exception as exc:
             print(f"[SOURCE WARN] V2EX {node}: {exc}")
 
-    # 4. 【带盾高防】BlackHatWorld 6大核心分版 (RSS + HTML 双通道穿透，配住宅IP后满血)
+    # 4. 【带盾高防】BlackHatWorld 6大核心分版
     bhw_forums = [
         ("cpa", "cpa.24", "gray_arb", "BlackHatWorld CPA任务锁"),
         ("affiliate", "affiliate-programs.15", "gray_arb", "BlackHatWorld 联盟营销"),
@@ -678,7 +704,7 @@ def fetch_additional_sources(now_ts):
             feed_url = f"https://www.blackhatworld.com/forums/{forum}/index.rss"
             soup = BeautifulSoup(http_get(feed_url, timeout=18), "xml")
             bhw_count = 0
-            for entry in soup.find_all(["entry", "item"])[:25]:
+            for entry in soup.find_all(["entry", "item"])[:12]:
                 title_node = entry.find("title")
                 link_node = entry.find("link")
                 title = clean_raw_html(title_node.get_text(" ", strip=True) if title_node else "")
@@ -702,7 +728,7 @@ def fetch_additional_sources(now_ts):
             if bhw_count == 0:
                 forum_url = f"https://www.blackhatworld.com/forums/{forum}/"
                 page = BeautifulSoup(http_get(forum_url, timeout=18), "lxml")
-                for row in page.select(".structItem--thread")[:25]:
+                for row in page.select(".structItem--thread")[:12]:
                     anchor = row.select_one('.structItem-title a[data-tp-primary="on"]') or row.select_one('.structItem-title a[href*="/threads/"]')
                     if not anchor:
                         continue
@@ -728,7 +754,7 @@ def fetch_additional_sources(now_ts):
         try:
             af_url = f"https://www.affiliatefix.com/{af_path}"
             page = BeautifulSoup(http_get(af_url, timeout=18), "lxml")
-            for row in page.select(".structItem--thread")[:25]:
+            for row in page.select(".structItem--thread")[:12]:
                 anchor = row.select_one('.structItem-title a[href*="/threads/"]')
                 if not anchor:
                     continue
@@ -736,7 +762,7 @@ def fetch_additional_sources(now_ts):
                 source_url = urllib.parse.urljoin("https://www.affiliatefix.com", anchor.get("href", ""))
                 body = clean_raw_html(row.get_text(" ", strip=True))
                 item = sanitizeAndUpgradeSignal({
-                    "id": f"afffix_{abs(hash(source_url))}", "created_ts": now_ts - 3600, "track": "gray_arb",
+                    "id": f"afffix_{abs(hash(source_url))}", "created_ts": now_ts - 7200, "track": "gray_arb",
                     "title_zh": f"【{af_label}】{title}", "pain_point_zh": body,
                     "source_platform": af_label, "source_url": source_url, "solver_url": source_url,
                 })
@@ -745,7 +771,7 @@ def fetch_additional_sources(now_ts):
         except Exception as exc:
             print(f"[SOURCE WARN] {af_label}: {exc}")
 
-    # 6. 【带盾高防】Upwork / PeoplePerHour / Freelancer.com 全球外包实时悬赏急单 (仅保留2小时内新单)
+    # 6. 【带盾高防】Upwork / PeoplePerHour / Freelancer.com 全球外包实时悬赏急单
     freelance_targets = [
         ("https://www.peopleperhour.com/freelance-jobs?sort=latest", "PeoplePerHour 实时悬赏急单", ".job-list-item, [class*='item__container']"),
         ("https://www.freelancer.com/jobs/?sort=latest", "Freelancer.com 实时外包急单", ".JobSearchCard-item"),
@@ -754,7 +780,7 @@ def fetch_additional_sources(now_ts):
     for fl_url, fl_label, css_sel in freelance_targets:
         try:
             page = BeautifulSoup(http_get(fl_url, timeout=18), "lxml")
-            for card in page.select(css_sel)[:25]:
+            for card in page.select(css_sel)[:15]:
                 anchor = card.select_one("a[href]")
                 if not anchor:
                     continue
@@ -773,19 +799,19 @@ def fetch_additional_sources(now_ts):
         except Exception as exc:
             print(f"[SOURCE WARN] {fl_label}: {exc}")
 
-    # 7. 【带盾+免盾全覆盖】全球成人暴利矩阵：F95zone + DLsite 3大榜 + Chaturbate + Itch.io NSFW
+    # 7. 全球成人暴利矩阵：F95zone + DLsite (限流每榜前6名且不占实时第一屏) + Chaturbate (前12名) + Itch.io NSFW (前10名)
     try:
         f95_url = "https://f95zone.to/sam/latest_alpha/"
         f95_soup = BeautifulSoup(http_get(f95_url, timeout=18), "lxml")
-        for row in f95_soup.select("a[href*='/threads/']")[:25]:
+        for row in f95_soup.select("a[href*='/threads/']")[:12]:
             title = clean_raw_html(row.get_text(" ", strip=True))
             if len(title) < 8:
                 continue
             source_url = urllib.parse.urljoin("https://f95zone.to", row.get("href", ""))
             item = sanitizeAndUpgradeSignal({
-                "id": f"f95_{abs(hash(source_url))}", "created_ts": now_ts - 2400, "track": "nsfw_adult",
+                "id": f"f95_{abs(hash(source_url))}", "created_ts": now_ts - 5400, "track": "nsfw_adult",
                 "title_zh": f"【F95zone 全球成人游戏/Mod实时热榜】{title}",
-                "pain_point_zh": f"欧美最大成人游戏与3D同人社区 F95zone 实时更新热帖：{title}（极适合提取热门人设做 Patreon / OGAds 内容锁或汉化倒卖）",
+                "pain_point_zh": f"欧美最大成人游戏与3D同人社区 F95zone 实时更新热帖：{title}",
                 "source_platform": "F95zone 成人游戏社区", "source_url": source_url, "solver_url": source_url,
             })
             if item:
@@ -795,13 +821,13 @@ def fetch_additional_sources(now_ts):
 
     dlsite_boards = [
         ("https://www.dlsite.com/maniax/ranking/day?sort=sale&order=desc", "DLsite R18 同人日榜"),
-        ("https://www.dlsite.com/maniax/ranking/month?sort=sale&order=desc", "DLsite R18 近30天月销榜"),
         ("https://www.dlsite.com/books/ranking/month?sort=sale&order=desc", "DLsite R18 成人漫画月榜")
     ]
     for dl_url, dl_label in dlsite_boards:
         try:
             soup = BeautifulSoup(http_get(dl_url, timeout=18), "lxml")
-            for row in soup.select("table.ranking_worklist tr")[:25]:
+            dl_idx = 0
+            for row in soup.select("table.ranking_worklist tr")[:6]:
                 links = [a for a in row.select("a[href*='/work/=/product_id/']") if "btn_free_sample" not in (a.get("class") or []) and a.get_text(" ", strip=True)]
                 if not links:
                     continue
@@ -811,8 +837,9 @@ def fetch_additional_sources(now_ts):
                 body = clean_raw_html(row.get_text(" ", strip=True))
                 product_match = re.search(r"/product_id/([^/.]+)", source_url)
                 product_id = product_match.group(1) if product_match else str(abs(hash(source_url)))
+                dl_idx += 1
                 item = sanitizeAndUpgradeSignal({
-                    "id": f"dlsite_{product_id}", "created_ts": now_ts - 3600, "track": "nsfw_adult",
+                    "id": f"dlsite_{product_id}", "created_ts": now_ts - 43200 - (dl_idx * 600), "track": "nsfw_adult",
                     "title_zh": f"【{dl_label}】{title}", "pain_point_zh": body,
                     "deal_fact_zh": extract_honest_deal_fact(body), "source_platform": dl_label,
                     "source_url": source_url, "solver_url": source_url,
@@ -827,8 +854,8 @@ def fetch_additional_sources(now_ts):
         cb_url = f"https://chaturbate.com/affiliates/api/onlinerooms/?format=json&wm={urllib.parse.quote(wm)}"
         data = json.loads(http_get(cb_url, timeout=15))
         rooms = data.get("results", []) if isinstance(data, dict) else data
-        top_rooms = sorted(rooms, key=lambda x: int(x.get("num_users") or 0), reverse=True)[:50]
-        for room in top_rooms:
+        top_rooms = sorted(rooms, key=lambda x: int(x.get("num_users") or 0), reverse=True)[:12]
+        for idx, room in enumerate(top_rooms):
             username = str(room.get("username") or "")
             if not username:
                 continue
@@ -836,7 +863,7 @@ def fetch_additional_sources(now_ts):
             tags = " / ".join((room.get("tags") or [])[:5])
             source_url = room.get("chat_room_url") or f"https://chaturbate.com/{username}/"
             item = sanitizeAndUpgradeSignal({
-                "id": f"cb_{username}", "created_ts": now_ts - 1200, "track": "nsfw_adult", "ups": viewers,
+                "id": f"cb_{username}", "created_ts": now_ts - 18000 - (idx * 300), "track": "nsfw_adult", "ups": viewers,
                 "title_zh": f"【Chaturbate 全球成人直播榜 #{username}】当前 {viewers} 人在线打赏 (热搜标签: {tags})",
                 "pain_point_zh": f"当前直播间实时在线 {viewers} 人；高转化细分癖好标签：{tags}",
                 "deal_fact_zh": f"✅ 官方API实时在线打赏金主：{viewers} 人", "source_platform": "Chaturbate 成人直播榜",
@@ -850,14 +877,14 @@ def fetch_additional_sources(now_ts):
     try:
         itch_rss = "https://itch.io/games/top-sellers/tag-nsfw.xml"
         soup = BeautifulSoup(http_get(itch_rss, timeout=15), "xml")
-        for entry in soup.find_all("item")[:25]:
+        for idx, entry in enumerate(soup.find_all("item")[:10]):
             title = clean_raw_html(entry.find("title").get_text(" ", strip=True) if entry.find("title") else "")
             link = clean_raw_html(entry.find("link").get_text(" ", strip=True) if entry.find("link") else "")
             desc = clean_raw_html(entry.find("description").get_text(" ", strip=True) if entry.find("description") else "")
             if not title or not link:
                 continue
             item = sanitizeAndUpgradeSignal({
-                "id": f"itch_nsfw_{abs(hash(link))}", "created_ts": now_ts - 4800, "track": "nsfw_adult",
+                "id": f"itch_nsfw_{abs(hash(link))}", "created_ts": now_ts - 21600 - (idx * 300), "track": "nsfw_adult",
                 "title_zh": f"【Itch.io 欧美成人游戏畅销榜】{title}", "pain_point_zh": desc,
                 "deal_fact_zh": "✅ 欧美 Itch.io Top Sellers 成人畅销榜在榜作品",
                 "source_platform": "Itch.io NSFW 畅销榜", "source_url": link, "solver_url": link,
@@ -876,14 +903,14 @@ def fetch_additional_sources(now_ts):
     for sb_url, sb_track, sb_label, sb_sel in shielded_biz_targets:
         try:
             page = BeautifulSoup(http_get(sb_url, timeout=18), "lxml")
-            for node in page.select(sb_sel)[:20]:
+            for node in page.select(sb_sel)[:12]:
                 title = clean_raw_html(node.get_text(" ", strip=True))
                 href = node.get("href", "")
                 if len(title) < 6 or not href:
                     continue
                 source_url = urllib.parse.urljoin(sb_url, href)
                 item = sanitizeAndUpgradeSignal({
-                    "id": f"sb_{abs(hash(source_url))}", "created_ts": now_ts - 5000, "track": sb_track,
+                    "id": f"sb_{abs(hash(source_url))}", "created_ts": now_ts - 10800, "track": sb_track,
                     "title_zh": f"【{sb_label}】{title[:90]}", "pain_point_zh": title,
                     "source_platform": sb_label, "source_url": source_url, "solver_url": source_url,
                 })
@@ -895,7 +922,7 @@ def fetch_additional_sources(now_ts):
     # 9. DEV.to 近30天独立开发与自动化变现热榜
     for dtag in ("saas", "sideprojects", "indiehackers", "automation"):
         try:
-            dev_data = json.loads(http_get(f"https://dev.to/api/articles?tag={dtag}&top=30&per_page=30", timeout=12))
+            dev_data = json.loads(http_get(f"https://dev.to/api/articles?tag={dtag}&top=30&per_page=8", timeout=12))
             for art in dev_data:
                 title = clean_raw_html(art.get("title") or "")
                 if not title:
@@ -922,11 +949,11 @@ def run_fast_bounty_and_radar():
     all_fetched = []
     alert_candidates = []
 
-    print(f"[{now_str}] 🚀 正在执行满血 65+ 频道全网扫描 (悬赏限定2h内并按最新倒序)...")
+    print(f"[{now_str}] 🚀 正在执行满血 65+ 频道均衡扫描 (悬赏限定2h内并按最新倒序)...")
 
     # 1. 抓快轨悬赏急单
     for sub, track, label in FAST_BOUNTY_SUBS:
-        posts = fetch_reddit_jsonp_py(sub, "new", 30)
+        posts = fetch_reddit_jsonp_py(sub, "new", 25)
         for d in posts:
             title = clean_raw_html(d.get("title", ""))
             if not is_direct_reddit_employer_post(sub, d):
@@ -947,7 +974,7 @@ def run_fast_bounty_and_radar():
                 all_fetched.append(item)
                 alert_candidates.append((item, d.get("author", ""), title, clean_raw_html(d.get("selftext") or "")))
 
-    # 2. 抓 GitHub 一手实时悬赏（限定过去 2 小时内新开，并核验最新评论、认领状态与关联 PR）
+    # 2. 抓 GitHub 一手实时悬赏（限定过去 2 小时内新开）
     github_scan_complete = False
     current_github_ids = set()
     try:
@@ -996,10 +1023,10 @@ def run_fast_bounty_and_radar():
     except Exception as exc:
         print(f"[SOURCE WARN] GitHub 一手悬赏: {type(exc).__name__}: {exc}")
 
-    # 3. 抓其他全网痛点、CPA、灰产野路子与多平台成人频道
+    # 3. 抓其他全网痛点、CPA、灰产野路子与多平台成人频道 (每版精选 10 条)
     for sub, track, label, mode in REDDIT_TARGET_SUBS[len(FAST_BOUNTY_SUBS):]:
-        posts = fetch_reddit_jsonp_py(sub, mode, 25)
-        for d in posts:
+        posts = fetch_reddit_jsonp_py(sub, mode, 10)
+        for d in posts[:8]:
             title = clean_raw_html(d.get("title", ""))
             if not title:
                 continue
@@ -1046,7 +1073,7 @@ def run_fast_bounty_and_radar():
             pushed_count += 1
     print(f"[PUSH SUMMARY] candidates={len(alert_candidates)} pushed={pushed_count}")
 
-    # 自动从数据库删除所有已经超过 2 小时（7200秒）的悬赏急单！
+    # 自动从数据库删除所有超过 2 小时（7200秒）的悬赏急单
     c.execute("DELETE FROM signals WHERE track = 'bounty_direct' AND id NOT LIKE 'base_%' AND created_ts < ?", (now_ts - 7200,))
 
     for item in all_fetched:
@@ -1063,15 +1090,23 @@ def run_fast_bounty_and_radar():
 
     c.execute("SELECT * FROM signals ORDER BY created_ts DESC")
     cols = [col[0] for col in c.description]
-    rows = [dict(zip(cols, r)) for r in c.fetchall()]
-    rows = [
-        row for row in rows
-        if not str(row.get("source_platform") or "").startswith("GitHub")
-        or (
-            str(row.get("source_platform") or "").startswith("GitHub 一手悬赏")
-            and (not github_scan_complete or row.get("id") in current_github_ids)
-        )
-    ]
+    raw_rows = [dict(zip(cols, r)) for r in c.fetchall()]
+
+    # 强制多网站均衡配额：每个具体网站来源最多输出 8~12 条（悬赏除外），彻底防止历史库里残留的几百条 HN 或 DLsite 霸屏！
+    plat_counts = {}
+    rows = []
+    for row in raw_rows:
+        sp = str(row.get("source_platform") or "")
+        if sp.startswith("GitHub") and not (
+            sp.startswith("GitHub 一手悬赏") and (not github_scan_complete or row.get("id") in current_github_ids)
+        ):
+            continue
+        plat_key = "DLsite" if "DLsite" in sp else ("HN" if ("Hacker News" in sp or sp.startswith("HN")) else sp[:18])
+        cap = 30 if row.get("track") == "bounty_direct" else (8 if plat_key in ("DLsite", "HN") else 12)
+        plat_counts[plat_key] = plat_counts.get(plat_key, 0) + 1
+        if plat_counts[plat_key] <= cap:
+            rows.append(row)
+
     conn.close()
 
     payload = {
@@ -1083,7 +1118,7 @@ def run_fast_bounty_and_radar():
     }
     with open(JSON_OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False)
-    print(f"[{now_str}] 满血扫描完毕！共入库 {len(rows)} 条（超2h旧悬赏已自动清理），已按最新发布时间倒序排列。")
+    print(f"[{now_str}] 满血均衡扫描完毕！共输出 {len(rows)} 条多平台数据（超2h旧悬赏已自动清理）。")
     return payload
 
 

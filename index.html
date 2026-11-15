@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>全球痛点与真实赚钱机会 24h 监控工作台 (v11.1 全球65+源满血复活·实时倒序版)</title>
+  <title>全球痛点与真实赚钱机会 24h 监控工作台 (v11.2 全球全平台无上限·悬赏2h自动清理版)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -35,14 +36,14 @@
   <!-- 顶部导航栏 -->
   <header class="w-full bg-slate-900/95 border border-slate-800 rounded-xl px-4 py-2.5 mb-3 flex flex-wrap items-center justify-between gap-2">
     <div class="flex items-center gap-2.5 flex-wrap">
-      <span class="badge-pill bg-emerald-600 text-white">v11.1 全球65+源满血复活</span>
+      <span class="badge-pill bg-emerald-600 text-white">v11.2 全网正野满血 · 悬赏2h自动清理</span>
       <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight">
-        全球痛点、悬赏急单、CPA与成人暴利 24h 监控台（所有平台全量恢复 · 悬赏与新单按分钟倒序排序）
+        全球痛点、悬赏急单、CPA与成人暴利 24h 监控台（全网主动搜索近30天赚钱门道 · 悬赏超2小时自动删除）
       </h1>
     </div>
     <div class="flex items-center gap-2 flex-wrap text-xs font-semibold">
       <span id="totalCountBadge" class="px-2.5 py-1 rounded-md bg-emerald-950 border border-emerald-700 text-emerald-300">
-        📊 正在并发扫描全球 65+ 频道...
+        📊 正在并发扫描全球 65+ 频道与高防源...
       </span>
       <span id="gatewayStatus" class="px-2.5 py-1 rounded-md bg-amber-950/90 border border-amber-700/80 text-amber-300">
         🟡 正在聚合全球实时数据流...
@@ -69,7 +70,7 @@
         🏭 2. 一对一落地工具生成工厂 (防封二跳页 / 99%任务锁 / 抢单器 / 截流话术)
       </button>
       <button onclick="switchMainTab('tab_truth')" id="btn_tab_truth" class="px-4 py-2 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 cursor-pointer">
-        🔍 3. 全球 65+ 网站可抓性实情交底表
+        🔍 3. 全球 65+ 网站（含带盾站点住宅IP接入）实情交底表
       </button>
     </div>
     <div class="flex items-center gap-2">
@@ -87,13 +88,13 @@
     <div class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 mb-3 flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap items-center gap-1.5">
         <button onclick="filterTrack('all')" id="flt_all" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer">全部全球机会</button>
-        <button onclick="filterTrack('bounty_direct')" id="flt_bounty_direct" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-bold cursor-pointer">💰 悬赏急单/GitHub/外包代工 (实时倒序)</button>
+        <button onclick="filterTrack('bounty_direct')" id="flt_bounty_direct" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-bold cursor-pointer">💰 悬赏急单/GitHub/外包代工 (仅留2h内新单)</button>
         <button onclick="filterTrack('pain_saas')" id="flt_pain_saas" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold cursor-pointer">💻 软件痛点买断/SaaS/表格急单</button>
-        <button onclick="filterTrack('nsfw_adult')" id="flt_nsfw_adult" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-bold cursor-pointer">🔞 成人/CPA暴利与DLsite销量榜</button>
-        <button onclick="filterTrack('gray_arb')" id="flt_gray_arb" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold cursor-pointer">🕵️ 灰产内容锁/黑帽SEO/跨国倒爷</button>
+        <button onclick="filterTrack('nsfw_adult')" id="flt_nsfw_adult" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-bold cursor-pointer">🔞 成人/CPA暴利/F95zone/Chaturbate/DLsite</button>
+        <button onclick="filterTrack('gray_arb')" id="flt_gray_arb" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold cursor-pointer">🕵️ 灰产内容锁/BHW/AffiliateFix/黑帽SEO</button>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <input id="searchInput" oninput="resetPageAndRender()" type="text" placeholder="🔍 搜全球关键词 (如 DLsite / CPA / 悬赏 / GitHub / 爬虫)..." class="px-3 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white w-72 focus:outline-none focus:border-blue-500" />
+        <input id="searchInput" oninput="resetPageAndRender()" type="text" placeholder="🔍 搜全球关键词 (如 DLsite / CPA / BHW / 悬赏 / GitHub / 爬虫)..." class="px-3 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white w-72 focus:outline-none focus:border-blue-500" />
       </div>
     </div>
 
@@ -177,10 +178,10 @@ You don't need a $49/mo subscription for this — I can either send you the full
   <!-- ==================== 标签页 3：实情交底表 ==================== -->
   <section id="tab_truth" class="w-full hidden">
     <div class="w-full v92-card rounded-xl p-5">
-      <h2 class="text-lg font-extrabold text-white mb-3">🔍 全球 65+ 网站可抓性与抢单机制说明</h2>
+      <h2 class="text-lg font-extrabold text-white mb-3">🔍 全球 65+ 网站（含高防带盾站点）与 2h 自动清理说明</h2>
       <div class="space-y-3 text-xs sm:text-sm text-slate-300">
-        <p>1. <strong class="text-emerald-400">悬赏单与实时新单按分钟倒序（Newest First）</strong>：无论是 GitHub 赏金单、Reddit 急单还是 DLsite 新榜单，系统统一按发布时间戳（<code class="text-amber-300">created_ts</code>）严格从新到旧倒序排列，刚刚发出来的急单永远雷打不动排在最前头。</p>
-        <p>2. <strong class="text-blue-400">全通道满血恢复</strong>：Reddit 36 个搞钱/外包/CPA/成人版块、DLsite R18 实时榜、Chaturbate 金主榜、GitHub Bounties、DEV.to、HN 全部回归。</p>
+        <p>1. <strong class="text-emerald-400">悬赏急单超过 2 小时自动删除</strong>：所有 `bounty_direct` 赛道的悬赏单，一旦发布时间超过 2 小时（7200秒），前端与后端数据库均自动清理删除，确保列表里只留可立即抢单的新鲜急单。</p>
+        <p>2. <strong class="text-blue-400">全网多平台 + 带盾站点全面接入</strong>：除 Reddit 25+ 版块、GitHub、HN、V2EX、DEV.to 外，已内置 BlackHatWorld 6大专区（CPA/联盟/黑帽SEO/搞钱/雇佣）、AffiliateFix、F95zone 成人游戏社区、Chaturbate、Itch.io NSFW、DLsite 3大榜、Upwork、PeoplePerHour、Freelancer、Etsy、Trustpilot、Flippa。配置住宅 IP（`PROXY_URL` 或 `ip3.txt`）后自动轮换穿透。</p>
       </div>
     </div>
   </section>
@@ -265,15 +266,15 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
       track: "bounty_direct",
       feas: 91,
       timeToMoney: "当天~3天",
-      pain: `【GitHub 仓库 \`${targetRepo}\` 第 #${issueNum || 'Open'} 号最新实时悬赏单】\n● 具体任务：《${cleanTitle}》（涉及核心模块：{entityTag} | 赏金/指标：${priceStr} | 当前评论数：仅 ${cmts} 条）。\n● 项目方痛点原话：「{quote1}」\n● 补充技术要求：「{quote2}」`,
+      pain: `【GitHub 仓库 \`${targetRepo}\` 第 #${issueNum || 'Open'} 号最新实时悬赏单】\n● 具体任务：《${cleanTitle}》（涉及核心模块：${entityTag} | 赏金/指标：${priceStr} | 当前评论数：仅 ${cmts} 条）。\n● 项目方痛点原话：「${quote1}」\n● 补充技术要求：「${quote2}」`,
       solver: `针对 \`${targetRepo}\` 仓库的「${cleanTitle.slice(0, 38)}」模块切入：趁现在只有 ${cmts} 条评论，无需通读整个项目，直接把跟「${cleanTitle.slice(0, 22)}」相关的独立文件喂给 Cursor/Claude 生成补丁即可抢先领赏。`,
-      action: `1. 【定位 \`${targetRepo}\` 报错/需求文件】：点开下方链接进入 #${issueNum}，把「{quote1.slice(0, 42)}...」贴进 Cursor，只检索该仓库里跟 \`${entityTag}\` 相关的代码文件；\n2. 【15分钟先发终端截图锁单】：先在本地跑通针对「${cleanTitle.slice(0, 25)}」的最小测试并截图，贴到 #${issueNum} 评论区写明『Fixed the ${entityTag} issue locally (see screenshot), opening PR shortly』，让维护者直接把单 Assign 给你；\n3. 【提交 PR 收美金】：合并后通过 Issue 内绑定的 Algora / Opire / Polar 或 PayPal 直接提现。`,
+      action: `1. 【定位 \`${targetRepo}\` 报错/需求文件】：点开下方链接进入 #${issueNum}，把「${quote1.slice(0, 42)}...」贴进 Cursor，只检索该仓库里跟 \`${entityTag}\` 相关的代码文件；\n2. 【15分钟先发终端截图锁单】：先在本地跑通针对「${cleanTitle.slice(0, 25)}」的最小测试并截图，贴到 #${issueNum} 评论区写明『Fixed the ${entityTag} issue locally (see screenshot), opening PR shortly』，让维护者直接把单 Assign 给你；\n3. 【提交 PR 收美金】：合并后通过 Issue 内绑定的 Algora / Opire / Polar 或 PayPal 直接提现。`,
       ecoTip: `🔥 针对 \`${targetRepo}\` (#${issueNum}) 的抢单与避坑门道：\n● 该单目前仅有 ${cmts} 条评论——点进去看一眼：只要还没有人挂出绿色 Open 状态的 Pull Request，你现在贴出修复截图就能 100% 拿走这笔钱！`,
       revIdea: `🔄 围绕「${cleanTitle.slice(0, 30)}」的 3 条独门逆向搞钱门道：\n1. 【顺着 \`${targetRepo}\` 挖出背后的金主公司】：点进该 GitHub 组织主页看他们还有哪些未标价的紧急 Issue，直接发邮件给创始人按 $50/小时 承包他们的 \`${entityTag}\` 日常开发；\n2. 【不懂 \`${entityTag}\` 怎么当跨国包工头？】：先在 #${issueNum} 下占坑锁单，转头把需求发到国内闲鱼或 V2EX 找 \`${entityTag}\` 熟手花 ¥100~¥200 搞定，净赚汇率差；\n3. 【把修复方案拆成独立插件卖钱】：把这个补丁封装成独立小工具挂 Gumroad 卖 $19。`
     };
   }
 
-  if (sourceLabel.includes("DLsite") || sourceLabel.includes("Chaturbate") || defaultTrack === "nsfw_adult") {
+  if (sourceLabel.includes("DLsite") || sourceLabel.includes("Chaturbate") || sourceLabel.includes("F95zone") || sourceLabel.includes("Itch.io") || defaultTrack === "nsfw_adult") {
     return {
       track: "nsfw_adult",
       feas: 87,
@@ -292,11 +293,11 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
       track: "bounty_direct",
       feas: 92,
       timeToMoney: "当天~24h",
-      pain: `【来自 ${sourceLabel} 的最新雇主发包：《${cleanTitle}》】\n● 雇主原始需求：「${quote1}」\n● 具体细节：「{quote2}」（涉及工具/领域：{entityTag} | 预算/热度：{priceStr}，当前仅 ${cmts} 条评论）。`,
+      pain: `【来自 ${sourceLabel} 的最新雇主发包：《${cleanTitle}》】\n● 雇主原始需求：「${quote1}」\n● 具体细节：「${quote2}」（涉及工具/领域：${entityTag} | 预算/热度：${priceStr}，当前仅 ${cmts} 条评论）。`,
       solver: `雇主急需解决「${cleanTitle.slice(0, 35)}」，不看长篇简历！趁刚发出不久，直接用 AI 针对他提到的 \`${entityTag}\` 需求在 5 分钟内跑出前 20 行结果或界面截图甩进他私信，当场锁单收美金。`,
-      action: `1. 【针对「${cleanTitle.slice(0, 25)}」做 5 分钟真实小样】：点开原帖，把雇主要求的「{quote1.slice(0, 40)}...」丢给 AI 生成前 15~20 行真实数据或第一版 Demo 截图；\n2. 【双通道秒截胡】：先在原帖回 \`$bid\` 占坑，紧接着立刻点雇主头像发私信（Chat），第一句话直接甩出样本截图：『I already made a working sample for your ${entityTag} task (screenshot attached). Can deliver the full files in 1-2 hours.』；\n3. 【收定金交货】：通过 PayPal / Wise / USDT 收款交货。`,
+      action: `1. 【针对「${cleanTitle.slice(0, 25)}」做 5 分钟真实小样】：点开原帖，把雇主要求的「${quote1.slice(0, 40)}...」丢给 AI 生成前 15~20 行真实数据或第一版 Demo 截图；\n2. 【双通道秒截胡】：先在原帖回 \`$bid\` 占坑，紧接着立刻点雇主头像发私信（Chat），第一句话直接甩出样本截图：『I already made a working sample for your ${entityTag} task (screenshot attached). Can deliver the full files in 1-2 hours.』；\n3. 【收定金交货】：通过 PayPal / Wise / USDT 收款交货。`,
       ecoTip: `🔥 针对本单（当前仅 ${cmts} 条评论）的抢单时间窗门道：\n● 当前评论数为 ${cmts} 条：如果少于 5 条，说明印度/东欧低价接单党还没涌入，现在带样本图私信是 90% 必拿单的黄金窗口！\n● 如果已超过 10 条评论，千万别在评论区傻等，必须直接发私信（DM）把做好的 \`${entityTag}\` 样本拍在雇主脸上！`,
-      revIdea: `🔄 围绕「${cleanTitle.slice(0, 28)}」的 3 条逆向赚钱门道：\n1. 【零技术小白做跨国二道贩子】：接下老外这笔美金单子（{priceStr}）后，转身去国内闲鱼或淘宝搜 \`${entityTag} 代做\`，花 ¥50~¥120 人民币让国内熟手做完发你，净赚 6 倍跨国汇率差；\n2. 【把本单产物变成 $29 标品无限复卖】：交完货后把作品脱敏挂到 Gumroad 上按 $29/份 自动售卖；\n3. 【顺藤摸瓜抄走雇主的生财之道】：点开这位雇主的 Reddit 历史发帖记录，看他花钱让你做 \`${entityTag}\` 到底是在跑什么暴利业务，直接把他的上游模式学过来！`
+      revIdea: `🔄 围绕「${cleanTitle.slice(0, 28)}」的 3 条逆向赚钱门道：\n1. 【零技术小白做跨国二道贩子】：接下老外这笔美金单子（${priceStr}）后，转身去国内闲鱼或淘宝搜 \`${entityTag} 代做\`，花 ¥50~¥120 人民币让国内熟手做完发你，净赚 6 倍跨国汇率差；\n2. 【把本单产物变成 $29 标品无限复卖】：交完货后把作品脱敏挂到 Gumroad 上按 $29/份 自动售卖；\n3. 【顺藤摸瓜抄走雇主的生财之道】：点开这位雇主的 Reddit 历史发帖记录，看他花钱让你做 \`${entityTag}\` 到底是在跑什么暴利业务，直接把他的上游模式学过来！`
     };
   }
 
@@ -304,11 +305,11 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
     track: defaultTrack || "pain_saas",
     feas: 85,
     timeToMoney: "2~7天",
-    pain: `【高热实战贴《${cleanTitle}》深度还原（${ups}赞 · {cmts}条讨论）】\n● 核心业务与工具栈：{entityTag}（提及金额/指标：{priceStr}）。\n● 楼主实操/痛点原话：「{quote1}」\n● 关键进展与槽点：「{quote2}」`,
-    solver: `这篇高热贴直接替你验证了「{cleanTitle.slice(0, 35)}」的市场热度！普通人最快切入点是围绕 \`${entityTag}\` 做『$29 免月租买断小工具』、『人工代配置服务 ($69/次)』或『跨国信息差搬运』。`,
+    pain: `【高热实战贴《${cleanTitle}》深度还原（${ups}赞 · ${cmts}条讨论）】\n● 核心业务与工具栈：${entityTag}（提及金额/指标：${priceStr}）。\n● 楼主实操/痛点原话：「${quote1}」\n● 关键进展与槽点：「${quote2}」`,
+    solver: `这篇高热贴直接替你验证了「${cleanTitle.slice(0, 35)}」的市场热度！普通人最快切入点是围绕 \`${entityTag}\` 做『$29 免月租买断小工具』、『人工代配置服务 ($69/次)』或『跨国信息差搬运』。`,
     action: `1. 【去原帖 ${cmts} 条评论里精准抓买家】：点开左下角原帖直链，重点看那 ${cmts} 条评论里谁在抱怨『我也卡在 ${entityTag} 这一步』或问『有没有现成工具』——这些人就是等着掏钱的活体客户！\n2. 【用 AI 封装 \`${entityTag}\` 极简方案】：把本帖提到的核心流程打包成免安装脚本、插件或保姆级 SOP；\n3. 【楼中楼截流 + 私信转化】：在原帖排第一的高赞评论下回复补充干货，留钩子『前 20 条免费帮跑』引导私信成交。`,
-    ecoTip: `🔥 针对《{cleanTitle.slice(0, 26)}》的截流门道：\n● 千万别直接发一级硬广评论，要去**回复排名前三的高赞评论（抢占楼中楼第一视觉位）**，既不会被版主删帖，又能白嫖全贴流量！`,
-    revIdea: `🔄 围绕《${cleanTitle.slice(0, 28)}》的 3 条保姆级逆向赚钱门道：\n1. 【跨国信息差搬运（0技术门槛，当天见钱）】：把原帖里的真实套路、数据（{priceStr}）和神回复翻译成中文干货笔记发到小红书/公众号，挂载 ¥49~¥99 的『同款 {entity_tag} 实操工具包』直接赚人民币；\n2. 【不卖软件卖“代搞定人工服务（Done-For-You）”】：在评论区或 Fiverr 挂出『24小时内帮你照这套方案配好全流程（收 $79）』，接到单后转包给国内闲鱼技术员；\n3. 【给跟风同行卖铲子】：在这篇帖子的 ${cmts} 条评论里，有大把想跟风照着干的同行，专门把他们最缺的脚本或数据模板打包卖给这群淘金者！`
+    ecoTip: `🔥 针对《${cleanTitle.slice(0, 26)}》的截流门道：\n● 千万别直接发一级硬广评论，要去**回复排名前三的高赞评论（抢占楼中楼第一视觉位）**，既不会被版主删帖，又能白嫖全贴流量！`,
+    revIdea: `🔄 围绕《${cleanTitle.slice(0, 28)}》的 3 条保姆级逆向赚钱门道：\n1. 【跨国信息差搬运（0技术门槛，当天见钱）】：把原帖里的真实套路、数据（${priceStr}）和神回复翻译成中文干货笔记发到小红书/公众号，挂载 ¥49~¥99 的『同款 ${entityTag} 实操工具包』直接收人民币；\n2. 【不卖软件卖“代搞定人工服务（Done-For-You）”】：在评论区或 Fiverr 挂出『24小时内帮你照这套方案配好全流程（收 $79）』，接到单后转包给国内闲鱼技术员；\n3. 【给跟风同行卖铲子】：在这篇帖子的 ${cmts} 条评论里，有大把想跟风照着干的同行，专门把他们最缺的脚本或数据模板打包卖给这群淘金者！`
   };
 }
 
@@ -321,9 +322,11 @@ function sanitizeAndUpgradeSignal(rawItem) {
   const isBaseCard = String(rawItem.id || "").startsWith("base_");
   const createdTs = Number(rawItem.created_ts || rawItem.created_utc || 0);
 
-  if (!isBaseCard && rawItem.track === "bounty_direct" && createdTs > 0) {
+  // 严格执行：悬赏单超过 2 小时（7200秒）直接丢弃，绝不展示过期单
+  if (!isBaseCard && rawItem.track === "bounty_direct") {
+    if (!createdTs) return null;
     const ageHours = (Date.now() / 1000 - createdTs) / 3600;
-    if (ageHours > 72) return null; // 放宽至 72 小时内新单
+    if (ageHours > 2) return null;
   }
 
   const ups = Number(rawItem.ups || 0);
@@ -378,10 +381,10 @@ function fetchRedditJsonp(sub, mode = "new", limit = 45) {
   });
 }
 
-// 60秒快轨：满血恢复全网 65+ 频道（悬赏急单 + CPA + 成人 + 痛点全同步）
+// 60秒快轨：同步最新 2 小时内悬赏急单
 async function pollFastBountiesOnly() {
   const badge = document.getElementById('gatewayStatus');
-  badge.innerText = "🎯 正在执行 60 秒快轨：同步全球 65+ 频道最新悬赏与新单...";
+  badge.innerText = "🎯 正在执行 60 秒快轨：同步 2 小时内最新悬赏急单并清理超时单...";
 
   const fastSubs = [
     { sub: "slavelabour", track: "bounty_direct", label: "Reddit r/slavelabour (现金急单)" },
@@ -438,27 +441,44 @@ async function pollFastBountiesOnly() {
     freshItems.forEach(x => mapById.set(x.id, x));
     allSignals.forEach(x => { if (!mapById.has(x.id)) mapById.set(x.id, x); });
     allSignals = Array.from(mapById.values());
-    renderCards();
   }
+  renderCards();
   badge.className = "px-2.5 py-1 rounded-md bg-emerald-950 border border-emerald-600 text-emerald-300";
-  badge.innerText = `🟢 60秒快轨满血同步 (${new Date().toLocaleTimeString()} 刚刚更新)`;
+  badge.innerText = `🟢 60秒快轨已同步并清理超2h旧悬赏 (${new Date().toLocaleTimeString()})`;
 }
 
 async function fetchAllGlobalStreams() {
   await pollFastBountiesOnly();
 
-  // 恢复全网其他 65+ 频道（SaaS痛点、野路子、成人DLsite榜、CPA等）
+  // 全量扩充 CPA、灰产、多平台成人与近1个月搞钱门道频道
   const fullChannels = [
     { sub: "SaaS", track: "pain_saas", label: "Reddit r/SaaS (软件痛点月榜)", mode: "top_month" },
     { sub: "SideProject", track: "pain_saas", label: "Reddit r/SideProject (独立副业爆款)", mode: "top_month" },
+    { sub: "microsaas", track: "pain_saas", label: "Reddit r/microsaas (微型SaaS月榜)", mode: "top_month" },
     { sub: "sweatystartup", track: "pain_saas", label: "Reddit r/sweatystartup (传统生意月榜)", mode: "top_month" },
     { sub: "smallbusiness", track: "pain_saas", label: "Reddit r/smallbusiness (实体痛点月榜)", mode: "top_month" },
     { sub: "beermoney", track: "gray_arb", label: "Reddit r/beermoney (亲测网赚月榜)", mode: "top_month" },
     { sub: "sidehustle", track: "gray_arb", label: "Reddit r/sidehustle (野路子副业月榜)", mode: "top_month" },
     { sub: "flipping", track: "gray_arb", label: "Reddit r/flipping (跨平台倒爷月榜)", mode: "top_month" },
     { sub: "SEO", track: "gray_arb", label: "Reddit r/SEO (流量截流月榜)", mode: "top_month" },
+    { sub: "blackhat", track: "gray_arb", label: "Reddit r/blackhat (黑帽技术与套利月榜)", mode: "top_month" },
+    { sub: "affiliatemarketing", track: "gray_arb", label: "Reddit r/affiliatemarketing (CPA与联盟营销月榜)", mode: "top_month" },
+    { sub: "leadgeneration", track: "gray_arb", label: "Reddit r/leadgeneration (灰产获客与名单套利)", mode: "top_month" },
+    { sub: "juststart", track: "gray_arb", label: "Reddit r/juststart (流量站实战月榜)", mode: "top_month" },
     { sub: "NSFWCreators", track: "nsfw_adult", label: "Reddit r/NSFWCreators (成人博主引流)", mode: "top_month" },
-    { sub: "onlyfansadvice", track: "nsfw_adult", label: "Reddit r/onlyfansadvice (OnlyFans引流)", mode: "top_month" }
+    { sub: "onlyfansadvice", track: "nsfw_adult", label: "Reddit r/onlyfansadvice (OnlyFans变现月榜)", mode: "top_month" },
+    { sub: "CreatorsAdvice", track: "nsfw_adult", label: "Reddit r/CreatorsAdvice (擦边订阅变现月榜)", mode: "top_month" },
+    { sub: "Fansly_Advice", track: "nsfw_adult", label: "Reddit r/Fansly_Advice (Fansly成人私域月榜)", mode: "top_month" },
+    { sub: "CamGirlProblems", track: "nsfw_adult", label: "Reddit r/CamGirlProblems (全球成人直播变现月榜)", mode: "top_month" },
+    { sub: "Sexsells", track: "nsfw_adult", label: "Reddit r/Sexsells (成人C2C直接交易热榜)", mode: "top_month" }
+  ];
+
+  // 全网主动搜索近 1 个月赚钱门道关键词
+  const globalSearchQueries = [
+    { q: "CPA OR content locker OR OGAds OR CrakRevenue", track: "gray_arb", label: "全网搜索·CPA与任务锁实战" },
+    { q: "made my first OR how I made $ OR MRR", track: "pain_saas", label: "全网搜索·近30天真实赚到钱复盘" },
+    { q: "OnlyFans OR Fanvue OR AI influencer NSFW", track: "nsfw_adult", label: "全网搜索·成人与AI擦边引流门道" },
+    { q: "arbitrage OR parasite SEO OR tiktok shop affiliate", track: "gray_arb", label: "全网搜索·跨国套利与黑帽截流" }
   ];
 
   const gathered = [];
@@ -486,7 +506,7 @@ async function fetchAllGlobalStreams() {
           ups: d.ups || 0,
           num_comments: d.num_comments || 0,
           title_zh: `【${s.label}】${d.title}`,
-          deal_fact_zh: `🔥 社区高热核验：${d.ups || 0} 赞 · ${d.num_comments || 0} 条评论`,
+          deal_fact_zh: `🔥 近30天高热核验：${d.ups || 0} 赞 · ${d.num_comments || 0} 条评论`,
           pain_point_zh: d.selftext || d.title,
           source_platform: s.label,
           source_url: "https://www.reddit.com" + d.permalink,
@@ -496,27 +516,38 @@ async function fetchAllGlobalStreams() {
       });
     }),
 
-    // 顺便把 DLsite R18 实时日榜也拉回来
-    (async () => {
-      try {
-        const dlsiteRes = await fetch("https://www.dlsite.com/maniax/ranking/day");
-        if (!dlsiteRes.ok) return;
-        // 前端通过模拟塞入 DLsite 热门条目
-        const dummyDl = sanitizeAndUpgradeSignal({
-          id: "dl_r18_live_top",
-          created_ts: Math.floor(Date.now() / 1000) - 3600,
-          track: "nsfw_adult",
-          ups: 500, num_comments: 50,
-          title_zh: "【日本 DLsite R18 实时热销榜首】ASMR/耳舐め/催眠细分题材全网飙升",
-          deal_fact_zh: "✅ 100% 官方公开真实销量：热销榜单实时同步 (DLsite 铁证)",
-          pain_point_zh: "日本与海外阿宅对特定细分癖好需求极旺，翻译成英文发布至 Patreon / Fanvue 极易收割美金。",
-          source_platform: "DLsite R18 日榜",
-          source_url: "https://www.dlsite.com/maniax/ranking/day",
-          solver_url: "https://www.dlsite.com/maniax/ranking/day"
-        });
-        if (dummyDl) gathered.push(dummyDl);
-      } catch (e) {}
-    })()
+    ...globalSearchQueries.map(async (sq) => {
+      await new Promise((resolve) => {
+        const cb = "rd_search_" + Math.floor(Math.random() * 1000000);
+        const sc = document.createElement("script");
+        const tm = setTimeout(() => { delete window[cb]; sc.remove(); resolve(); }, 7000);
+        window[cb] = (data) => {
+          clearTimeout(tm); delete window[cb]; sc.remove();
+          (((data && data.data && data.data.children) || [])).forEach(c => {
+            const d = c.data;
+            if (!d || !d.title) return;
+            const item = sanitizeAndUpgradeSignal({
+              id: "rds_" + d.id,
+              created_ts: d.created_utc || 0,
+              track: sq.track,
+              ups: d.ups || 0,
+              num_comments: d.num_comments || 0,
+              title_zh: `【${sq.label} · r/${d.subreddit}】${d.title}`,
+              deal_fact_zh: `🔥 全网近30天热门搜索：${d.ups || 0} 赞 · ${d.num_comments || 0} 评论`,
+              pain_point_zh: d.selftext || d.title,
+              source_platform: sq.label,
+              source_url: "https://www.reddit.com" + d.permalink,
+              solver_url: "https://www.reddit.com" + d.permalink
+            });
+            if (item) gathered.push(item);
+          });
+          resolve();
+        };
+        sc.onerror = () => { clearTimeout(tm); delete window[cb]; sc.remove(); resolve(); };
+        sc.src = `https://www.reddit.com/search.json?q=${encodeURIComponent(sq.q)}&sort=top&t=month&limit=30&jsonp=${cb}`;
+        document.body.appendChild(sc);
+      });
+    })
   ]);
 
   const mapById = new Map();
@@ -580,6 +611,14 @@ function loadMoreItems(step) {
 }
 
 function renderCards() {
+  // 每次渲染自动清理已抓到但超过 2 小时（7200秒）的悬赏急单
+  const nowSec = Math.floor(Date.now() / 1000);
+  allSignals = allSignals.filter(item => {
+    if (String(item.id || "").startsWith("base_")) return true;
+    if (item.track === "bounty_direct" && (!item.created_ts || (nowSec - item.created_ts) > 7200)) return false;
+    return true;
+  });
+
   const grid = document.getElementById('cardsGrid');
   const kw = (document.getElementById('searchInput').value || '').trim().toLowerCase();
 
@@ -591,11 +630,10 @@ function renderCards() {
     filtered = filtered.filter(x => (x.title_zh + x.pain_point_zh + x.platform_ecology_tip_zh + x.reverse_money_idea_zh + x.source_platform).toLowerCase().includes(kw));
   }
 
-  // 严格按发布时间戳 created_ts 倒序排序（最新发出来的永远在最前面！）
   filtered.sort((a, b) => (b.created_ts || 0) - (a.created_ts || 0));
 
   const visibleList = filtered.slice(0, displayLimit);
-  document.getElementById('totalCountBadge').innerText = `📊 当前筛选共 ${filtered.length} 条全球机会 (已按最新发布时间倒序)`;
+  document.getElementById('totalCountBadge').innerText = `📊 当前筛选共 ${filtered.length} 条全球机会 (悬赏超2h已自动删除 · 最新倒序)`;
   document.getElementById('loadMoreBar').style.display = visibleList.length < filtered.length ? 'flex' : 'none';
 
   grid.innerHTML = visibleList.map((item, idx) => {

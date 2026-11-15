@@ -456,9 +456,14 @@ def verify_first_party_github_bounty(issue):
     linked_issue_urls = re.findall(r"https://github\.com/([^/]+/[^/]+)/(?:issues|pull)/(\d+)", body, re.I)
     if any(linked_repo.lower() != repo_full_name.lower() for linked_repo, _ in linked_issue_urls):
         return None, "正文指向其他仓库原帖，属于转发"
-    relay_blob = f"{repo_full_name} {issue.get('title') or ''} {body[:800]}".lower()
+    issue_title = str(issue.get("title") or "")
+    relay_blob = f"{repo_full_name} {issue_title} {body[:800]}".lower()
     if re.search(r"bounty[-_ ]?bot|bounty encontrado|original bounty|mirrored from|aggregat(?:or|ed)", relay_blob):
         return None, "机器人/聚合转发"
+    if re.search(r"bot[-_ ]?trap|ai\s+benchmark\s+arena", relay_blob):
+        return None, "机器人诱捕/基准测试任务"
+    if re.search(r"\[\s*\$0(?:\.0+)?\s*\]", issue_title, re.I):
+        return None, "标题明确标注零赏金"
 
     try:
         repo = _GITHUB_REPO_CACHE.get(repo_full_name)

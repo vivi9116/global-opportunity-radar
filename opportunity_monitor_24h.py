@@ -195,11 +195,12 @@ def fetch_dlsite() -> tuple[list[dict], dict]:
     url="https://www.dlsite.com/maniax/ranking/day?sort=sale&order=desc"
     def parser(text):
         soup=BeautifulSoup(text,"lxml"); rows=[]
-        for card in soup.select(".n_worklist_item, .search_result_img_box, [data-product_id]"):
-            anchor=card.select_one("a[href*='/work/=/product_id/']"); title_node=card.select_one(".work_name, .search_result_work_name") or anchor
-            if not anchor or not title_node: continue
-            url=anchor.get("href",""); title=title_node.get_text(" ",strip=True); body=card.get_text(" ",strip=True)
-            rows.append(make_raw("dlsite","DLsite R18公开日榜",title,body,url,native_id=card.get("data-product_id",url),track="nsfw_adult",body_scope="公开榜单卡片；未取得购买后台"))
+        for card in soup.select("table.ranking_worklist tr"):
+            links=[a for a in card.select("a[href*='/work/=/product_id/']") if "btn_free_sample" not in (a.get("class") or []) and a.get_text(" ",strip=True)]
+            if not links: continue
+            anchor=links[0];url=anchor.get("href","");title=anchor.get_text(" ",strip=True);body=card.get_text(" ",strip=True)
+            match=re.search(r"/product_id/([^/.]+)",url);native=match.group(1) if match else url
+            rows.append(make_raw("dlsite","DLsite R18公开日榜",title,body,url,native_id=native,track="nsfw_adult",body_scope="公开榜单行；未取得购买后台，页面数字仍需核对字段含义"))
         if not rows: raise ValueError("页面可读但没有匹配到公开榜单卡片，未伪造销量。")
         return rows
     return fetch_with_health("dlsite_r18_day","DLsite R18公开24小时榜",url,parser)

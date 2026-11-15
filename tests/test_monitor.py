@@ -32,5 +32,10 @@ class MonitorTests(unittest.TestCase):
     def test_required_public_files_exist(self):
         for name in ['index.html','global_arb_radar_workbench.html','opportunity_monitor_24h.py','requirements.txt','.github/workflows/monitor_20min.yml']:
             self.assertTrue((ROOT/name).exists(),name)
+    def test_dlsite_selector_ignores_free_sample_button(self):
+        sample='<table class="ranking_worklist"><tr><td><a href="/maniax/work/=/product_id/RJ1.html">真实作品名</a></td><td data-product_id="RJ1"><a class="btn_free_sample" href="/maniax/work/=/product_id/RJ1.html">無料サンプル</a></td></tr></table>'
+        soup=monitor.BeautifulSoup(sample,'lxml');card=soup.select_one('table.ranking_worklist tr')
+        links=[a for a in card.select("a[href*='/work/=/product_id/']") if "btn_free_sample" not in (a.get("class") or []) and a.get_text(" ",strip=True)]
+        self.assertEqual(links[0].get_text(strip=True),'真实作品名')
 
 if __name__=='__main__':unittest.main()

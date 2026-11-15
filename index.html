@@ -1,8 +1,7 @@
-name: Global Money Radar Dual-Track (Fast Bounty TG Push + 20m Full Scan)
+name: Global Money Radar Dual-Track (WeChat/Feishu/Bark Push + 20m Full Scan)
 
 on:
   schedule:
-    # GitHub Actions 云端最高频巡检（若你在网页端或本地开启了60秒模式，两边会自动去重）
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
@@ -27,15 +26,16 @@ jobs:
         run: |
           pip install curl_cffi requests beautifulsoup4 lxml
 
-      - name: 4. Run Fast Bounty TG Sniper & Radar Scan
+      - name: 4. Run Fast Bounty Sniper & Push to WeChat/Feishu/Bark
         env:
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          BARK_URL: ${{ secrets.BARK_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PROXY_URL: ${{ secrets.PROXY_URL }}
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: |
-          # 每5分钟必跑一次极速悬赏抢单并推送TG；每逢20分钟整点跑一次全网大盘
           MINUTE=$(date +%M)
           if [ $((10#$MINUTE % 20)) -lt 5 ]; then
             python opportunity_monitor_24h.py --cloud-once
@@ -43,9 +43,9 @@ jobs:
             python opportunity_monitor_24h.py --bounty-fast
           fi
 
-      - name: 5. Auto Commit & Push Updated Signals & TG State
+      - name: 5. Auto Commit & Push Updated Signals
         run: |
           git config --global user.name "Global-Radar-Bot"
           git config --global user.email "radar-bot@users.noreply.github.com"
           git add live_signals.json radar_pain_solver_history.db || true
-          git diff --staged --quiet || (git commit -m "Auto-update signals & TG notified state [skip ci]" && git push)
+          git diff --staged --quiet || (git commit -m "Auto-update signals & push state [skip ci]" && git push)

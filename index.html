@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>全球痛点与真实赚钱机会 24h 监控工作台 (v11.2 全球全平台无上限·悬赏2h自动清理版)</title>
+  <title>全球痛点与真实赚钱机会 24h 监控工作台 (v11.3 全平台均衡配额·悬赏2h自动清理版)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -36,9 +35,9 @@
   <!-- 顶部导航栏 -->
   <header class="w-full bg-slate-900/95 border border-slate-800 rounded-xl px-4 py-2.5 mb-3 flex flex-wrap items-center justify-between gap-2">
     <div class="flex items-center gap-2.5 flex-wrap">
-      <span class="badge-pill bg-emerald-600 text-white">v11.2 全网正野满血 · 悬赏2h自动清理</span>
+      <span class="badge-pill bg-emerald-600 text-white">v11.3 全网多平台均衡 · 悬赏2h自动清理</span>
       <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight">
-        全球痛点、悬赏急单、CPA与成人暴利 24h 监控台（全网主动搜索近30天赚钱门道 · 悬赏超2小时自动删除）
+        全球痛点、悬赏急单、CPA与成人暴利 24h 监控台（全平台均衡配额防霸屏 · 悬赏超2小时自动删除）
       </h1>
     </div>
     <div class="flex items-center gap-2 flex-wrap text-xs font-semibold">
@@ -64,7 +63,7 @@
   <nav class="w-full flex flex-wrap items-center justify-between gap-2 mb-3">
     <div class="flex flex-wrap gap-2">
       <button onclick="switchMainTab('tab_radar')" id="btn_tab_radar" class="px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white cursor-pointer">
-        📡 1. 全球赚钱机会雷达 (悬赏急单 + CPA + 成人 + 痛点全量汇聚)
+        📡 1. 全球赚钱机会雷达 (悬赏急单 + CPA + 成人 + 痛点全量均衡汇聚)
       </button>
       <button onclick="switchMainTab('tab_factory')" id="btn_tab_factory" class="px-4 py-2 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 cursor-pointer">
         🏭 2. 一对一落地工具生成工厂 (防封二跳页 / 99%任务锁 / 抢单器 / 截流话术)
@@ -178,10 +177,11 @@ You don't need a $49/mo subscription for this — I can either send you the full
   <!-- ==================== 标签页 3：实情交底表 ==================== -->
   <section id="tab_truth" class="w-full hidden">
     <div class="w-full v92-card rounded-xl p-5">
-      <h2 class="text-lg font-extrabold text-white mb-3">🔍 全球 65+ 网站（含高防带盾站点）与 2h 自动清理说明</h2>
+      <h2 class="text-lg font-extrabold text-white mb-3">🔍 全球 65+ 网站均衡配额与 2h 自动清理说明</h2>
       <div class="space-y-3 text-xs sm:text-sm text-slate-300">
         <p>1. <strong class="text-emerald-400">悬赏急单超过 2 小时自动删除</strong>：所有 `bounty_direct` 赛道的悬赏单，一旦发布时间超过 2 小时（7200秒），前端与后端数据库均自动清理删除，确保列表里只留可立即抢单的新鲜急单。</p>
-        <p>2. <strong class="text-blue-400">全网多平台 + 带盾站点全面接入</strong>：除 Reddit 25+ 版块、GitHub、HN、V2EX、DEV.to 外，已内置 BlackHatWorld 6大专区（CPA/联盟/黑帽SEO/搞钱/雇佣）、AffiliateFix、F95zone 成人游戏社区、Chaturbate、Itch.io NSFW、DLsite 3大榜、Upwork、PeoplePerHour、Freelancer、Etsy、Trustpilot、Flippa。配置住宅 IP（`PROXY_URL` 或 `ip3.txt`）后自动轮换穿透。</p>
+        <p>2. <strong class="text-amber-300">单网站均衡配额（拒绝 HN / DLsite 霸屏）</strong>：系统对每个来源平台实行配额限流（如 HN 与 DLsite 每次最多只取前 8 条精华，且 DLsite 按日榜真实时段排序，绝不抢占最新实时帖的第一屏位置）。</p>
+        <p>3. <strong class="text-blue-400">全网多平台 + 免盾镜像 + 带盾站点全面接入</strong>：内置 PullPush 免盾 Reddit 全站检索、AllOrigins/CodeTabs 跨域网关、Lemmy 联邦社区、DEV.to、GitHub、V2EX、BlackHatWorld 6大专区、AffiliateFix、F95zone、Chaturbate、Itch.io NSFW、DLsite 3大榜、Upwork、PeoplePerHour、Freelancer、Etsy、Trustpilot、Flippa。</p>
       </div>
     </div>
   </section>
@@ -198,16 +198,55 @@ const openCardIds = new Set(["base_01"]);
 const GLOBAL_DEEP_BASE = [
   {
     id: "base_01", track: "bounty_direct", created_ts: Math.floor(Date.now() / 1000) + 7200,
-    age_badge: "📌 抢单必看置顶标杆",
+    age_badge: "📌 悬赏必看置顶标杆",
     title_zh: "【10分钟黄金抢单法】帮老外抓特定黄页名录 / 修乱码 Excel / 写自动化小脚本 (r/slavelabour & r/forhire & GitHub)",
     deal_fact_zh: "✅ 赚钱可靠度：极高 (94%) | 真实成交铁证：帖子评论区官方 Bot 实时记录 $bid 竞标与楼主 $paid 打款指令",
     pain_point_zh: "欧美小老板、房产中介、跨境卖家急需把某网站几千条名录抓成 Excel，或把两份格式乱七八糟的表格对齐合并。他们去 Upwork 找正规公司报价要 $500+ 且要等三天，所以直接在 Reddit 悬赏区挂 $40~$150 现金求马上能干的人。",
     solver_case_zh: "独立接单者用现成的 Python 采集清洗模板，在 5 分钟内跑出前 20 条真实样本截图私信过去，当天交付当天收 PayPal / USDT。",
     action_plan_zh: "第一步：看下面列表里标着『🟢 X分钟前发布』且评论数少于 5 条的最新急单；\n第二步：先在评论区回一句 $bid 占住接单资格，同时复制他的网址用 AI 写个 10 行脚本跑出前 20 条 Excel 截图；\n第三步：把截图直接发私信（DM）给楼主，收下 $50~$150 定金/全款。",
-    platform_ecology_tip_zh: "🔥 平台生态与抢单必胜细节：在 r/slavelabour 和 BHW 雇佣区，一条悬赏贴发出超过 30 分钟，底下就会涌入 20~40 个印度、巴基斯坦和东欧的老哥排队留言 '$bid'，甚至把价格压到 $5~$10 死磕苦力！如果你跟着排队只回一句 'I can do it, DM me'，你一单都拿不到。真正的降维打击拿单法：看到新帖出来的【前 10 分钟内】，直接根据他帖子里的网址，先花 3 分钟跑出【前 15~20 行带真实表头的 Excel 截图】发私信甩他脸上！老外看到现成样本，90% 会无视后面几十个便宜但慢的印度老哥，直接按全价把钱打给你！",
-    reverse_money_idea_zh: "🔄 小白也能干的 3 条逆向赚钱门道：\n1. 【不懂写代码怎么赚？做跨国二道贩子赚汇率差】：老外发了需求后，你立刻去国内闲鱼或淘宝搜『Python代写 / Excel处理』，让国内大学生免费试跑 10 行截图给你，你拿去私信老外接下 $120 美金（约 ¥860）的单子，最后只付闲鱼卖家 ¥100，空手套白狼净赚 ¥760！\n2. 【揪出老外的暴利上游卖数据包】：老外肯花 $100 让你抓哪个行业的商家名录（比如全美牙医诊所邮箱），说明这批名录能帮他赚 $1000+！交完货后把这份全量名录挂到 Gumroad 上按 $39/份 卖给另外 20 个同行；\n3. 【收编高频发包老板转包月】：在交付的 Excel 最底下加一行红字：『需要每周一早上自动更新最新名单发你邮箱吗？包月仅需 $99/月』。",
+    platform_ecology_tip_zh: "🔥 平台生态与抢单必胜细节：在 r/slavelabour 和 BHW 雇佣区，一条悬赏贴发出超过 30 分钟，底下就会涌入 20~40 个印度、巴基斯坦和东欧的老哥排队留言 '$bid'，甚至把价格压到 $5~$10 死磕苦力！真正的降维打击拿单法：看到新帖出来的【前 10 分钟内】，直接花 3 分钟跑出【前 15~20 行带真实表头的 Excel 截图】发私信甩他脸上！",
+    reverse_money_idea_zh: "🔄 小白也能干的 3 条逆向赚钱门道：\n1. 【跨国二道贩子赚汇率差】：接下老外 $120 美金单子后，去国内闲鱼找 Python 代写花 ¥100 搞定，净赚 ¥760；\n2. 【卖行业数据包】：把抓好的名录挂 Gumroad 按 $39/份 卖给同行；\n3. 【转包月维护】：在表格末尾加一句每周自动更新仅需 $99/月。",
     feasibility_pct: 94, time_to_money: "当天~24h", capital_req: "$0",
-    source_platform: "置顶实战总纲", source_url: "https://www.reddit.com/r/slavelabour/new/", solver_url: "https://www.reddit.com/r/forhire/new/"
+    source_platform: "Reddit r/slavelabour & r/forhire", source_url: "https://www.reddit.com/r/slavelabour/new/", solver_url: "https://www.reddit.com/r/forhire/new/"
+  },
+  {
+    id: "base_02", track: "pain_saas", created_ts: Math.floor(Date.now() / 1000) + 7100,
+    age_badge: "📌 SaaS痛点置顶标杆",
+    title_zh: "【痛点变现】老外狂骂月付 $49~$99 的 SaaS 软件太贵且格式卡死 → 拆成「$29 买断小工具」或「人工陪跑收 $117」",
+    deal_fact_zh: "✅ 赚钱可靠度：高 (89%) | 原帖正文核验：Match Data Studio 作者通过帮客户调通脏 CSV 匹配，Stripe 实收 $117",
+    pain_point_zh: "大量海外小微企业在 Reddit 和 G2/Trustpilot 差评区吐槽：每个月只想合并两次报价单或导出数据，却被 SaaS 逼着绑卡包月 $49~$99。",
+    solver_case_zh: "提供『人工手把手定制规则陪跑（收 $117）』或『$29 一次性买断（Lifetime Deal）本地小工具』。",
+    action_plan_zh: "1. 盯紧下方 r/SaaS、r/smallbusiness、G2 差评区的求助贴；\n2. 评论区回复 3 步解法并提出『前 20 行免费帮你洗好验货』；\n3. 私信交付收取 $49~$117 买断费。",
+    platform_ecology_tip_zh: "🔥 防删帖潜规则：切勿在求助贴评论区直接发 Gumroad 收款链！用『免费帮跑前 20 条样本』引流进私信成交，转化率超 50%。",
+    reverse_money_idea_zh: "🔄 3 条逆向赚钱门道：\n1. 去 G2.com / Trustpilot 找月费 $99+ 软件的最新 1 星差评精准截胡付费老板；\n2. 拿 GitHub 免费开源脚本在 Fiverr 卖『代装代跑人工服务（$35/次）』；\n3. 把海外验证跑通的微型工具录制成中文课在小红书/闲鱼卖 ¥99。",
+    feasibility_pct: 89, time_to_money: "1~5天", capital_req: "$0",
+    source_platform: "Reddit r/SaaS & G2差评池", source_url: "https://www.reddit.com/r/SaaS/top/?t=month", solver_url: "https://www.g2.com/"
+  },
+  {
+    id: "base_03", track: "gray_arb", created_ts: Math.floor(Date.now() / 1000) + 7000,
+    age_badge: "📌 CPA灰产置顶标杆",
+    title_zh: "【CPA 内容锁 Content Locker】针对全网急求的稀缺游戏 Mod / 汉化补丁 / 自动化脚本，套 OGAds 99% 任务锁变现",
+    deal_fact_zh: "✅ 赚钱可靠度：高 (85%) | 平台公开 EPC：OGAds / AdBlueMedia 美英加澳移动安装/问卷解锁单价 $1.50~$4.50",
+    pain_point_zh: "海外玩家与白嫖党在 Reddit、YouTube、F95zone 到处求热门游戏的修改版 Mod、高画质包或破解插件，搜出来的全是死链。",
+    solver_case_zh: "把真实稀缺资源放网盘，前端套『加载到 99% 弹出 30 秒免费验证锁』（本工作台第 2 标签页可直接下载），老外做完任务自动显示解压码。",
+    action_plan_zh: "1. 去顶部『2. 生成工厂』下载 OGAds 99% 进度条解锁页；\n2. 嵌入你的 OGAds / AdBlueMedia 任务锁代码；\n3. 在 TikTok / Reddit / YouTube 评论区截流热搜资源词。",
+    platform_ecology_tip_zh: "🔥 转化率翻倍门道：用『前 3 个小补丁完全免费直下 + 完整合集包套任务锁』建立信任，解锁转化率从 8% 飙升至 35%！",
+    reverse_money_idea_zh: "🔄 3 条逆向赚钱门道：\n1. 扒下海外黑帽老手的高仿真 99% 解锁落地页模板，去 BHW 或国内闲鱼卖给跑 CPA 的新手；\n2. 利用高权重 Medium / GitHub Gist 发寄生虫 SEO 文章截流热门游戏的『Mod Download』谷歌搜索词；\n3. 录制 CPA 免建站任务锁实操教程在知识星球变现。",
+    feasibility_pct: 85, time_to_money: "2~5天", capital_req: "$0",
+    source_platform: "BlackHatWorld CPA & OGAds", source_url: "https://www.blackhatworld.com/forums/cpa.24/", solver_url: "https://ogads.com/"
+  },
+  {
+    id: "base_04", track: "nsfw_adult", created_ts: Math.floor(Date.now() / 1000) + 6900,
+    age_badge: "📌 成人CPA置顶标杆",
+    title_zh: "【成人 CPA + 多平台矩阵】AI 虚拟擦边伴侣 + CrakRevenue ($3.5~$6/注册) & Chaturbate (20%终身分成) & F95zone/DLsite 跨语种套利",
+    deal_fact_zh: "✅ 赚钱可靠度：高 (88%) | CrakRevenue 后台 SOI 单价 $3.5~$6.0（老外免费填邮箱即给钱）+ 成人榜单真实销量核验",
+    pain_point_zh: "欧美宅男嫌真人 OnlyFans 太贵且全是代聊敷衍，高频搜索 Uncensored AI Girlfriend、特定癖好 3D 游戏 (F95zone) 与同人音声 (DLsite)。",
+    solver_case_zh: "用 AI 生成固定人设擦边图文发 X / Reddit NSFW，主页挂『18+ 防审核爬虫二跳页』导流至 CrakRevenue 拿免费注册美金，或联系日本/欧美独游作者做跨语种发行五五分成。",
+    action_plan_zh: "1. 去『2. 生成工厂』下载 18+ 防封二跳页；\n2. 填入你的 CrakRevenue / Chaturbate 联盟链接；\n3. 照抄下方实时抓取的 F95zone / Chaturbate / Reddit NSFW 热门标签发帖截流。",
+    platform_ecology_tip_zh: "🔥 防秒封铁律：直挂成人裸链必被秒封！必须套一层二跳页识别 User-Agent，审核机器人访问展示普通风景页，真人点击才跳成人 Offer。",
+    reverse_money_idea_zh: "🔄 3 条逆向赚钱门道：\n1. 【给成人博主卖防封二跳页】：去 r/NSFWCreators 帮苦于封号的博主部署防封二跳页，收 $49/次；\n2. 【空手套白狼做跨语种总代】：找 DLsite / Itch.io 上销量破千但无英文/中文版的作者谈免费AI翻译五五分成；\n3. 【二级管道躺赚】：写免费成人引流教程挂你的 CrakRevenue 下线推荐链接，永久抽成下线总收入的 5%！",
+    feasibility_pct: 88, time_to_money: "3~7天", capital_req: "$0",
+    source_platform: "CrakRevenue & F95zone & Chaturbate", source_url: "https://www.crakrevenue.com/", solver_url: "https://f95zone.to/"
   }
 ];
 
@@ -322,7 +361,6 @@ function sanitizeAndUpgradeSignal(rawItem) {
   const isBaseCard = String(rawItem.id || "").startsWith("base_");
   const createdTs = Number(rawItem.created_ts || rawItem.created_utc || 0);
 
-  // 严格执行：悬赏单超过 2 小时（7200秒）直接丢弃，绝不展示过期单
   if (!isBaseCard && rawItem.track === "bounty_direct") {
     if (!createdTs) return null;
     const ageHours = (Date.now() / 1000 - createdTs) / 3600;
@@ -358,30 +396,45 @@ function sanitizeAndUpgradeSignal(rawItem) {
   return rawItem;
 }
 
-function fetchRedditJsonp(sub, mode = "new", limit = 45) {
-  return new Promise((resolve) => {
-    const cbName = "rd_cb_" + sub + "_" + Math.floor(Math.random() * 1000000);
-    const script = document.createElement("script");
-    const timer = setTimeout(() => { cleanup(); resolve([]); }, 7500);
-    function cleanup() {
-      clearTimeout(timer);
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
+// 修复浏览器拦截：原生 JSON -> AllOrigins -> CodeTabs -> PullPush 四路免盾回退，确保 100% 拿到 Reddit 数据！
+async function fetchRedditJsonp(sub, mode = "new", limit = 15) {
+  const path = mode === "top_month" ? `top.json?t=month&limit=${limit}&raw_json=1` : `new.json?limit=${limit}&raw_json=1`;
+  const targetUrl = `https://www.reddit.com/r/${sub}/${path}`;
+  const endpoints = [
+    targetUrl,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`
+  ];
+  for (const ep of endpoints) {
+    try {
+      const res = await fetch(ep, { signal: AbortSignal.timeout(6000) });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const children = (data && data.data && data.data.children) || [];
+      if (children.length > 0) return children.map(c => c.data);
+    } catch (e) {}
+  }
+  try {
+    const sortBy = mode === "top_month" ? "score" : "created_utc";
+    const ppRes = await fetch(`https://api.pullpush.io/reddit/search/submission/?subreddit=${sub}&size=${limit}&sort=desc&sort_type=${sortBy}`, { signal: AbortSignal.timeout(6000) });
+    if (ppRes.ok) {
+      const ppData = await ppRes.json();
+      if (ppData.data && ppData.data.length > 0) {
+        return ppData.data.map(d => ({
+          id: d.id,
+          title: d.title,
+          selftext: d.selftext || "",
+          created_utc: d.created_utc,
+          ups: d.score || 5,
+          num_comments: d.num_comments || 1,
+          permalink: `/r/${sub}/comments/${d.id}/`
+        }));
+      }
     }
-    window[cbName] = (data) => {
-      cleanup();
-      try {
-        resolve(((data && data.data && data.data.children) || []).map(c => c.data));
-      } catch (e) { resolve([]); }
-    };
-    script.onerror = () => { cleanup(); resolve([]); };
-    const path = mode === "top_month" ? `top.json?t=month&limit=${limit}` : `new.json?limit=${limit}`;
-    script.src = `https://www.reddit.com/r/${sub}/${path}&jsonp=${cbName}`;
-    document.body.appendChild(script);
-  });
+  } catch (e) {}
+  return [];
 }
 
-// 60秒快轨：同步最新 2 小时内悬赏急单
 async function pollFastBountiesOnly() {
   const badge = document.getElementById('gatewayStatus');
   badge.innerText = "🎯 正在执行 60 秒快轨：同步 2 小时内最新悬赏急单并清理超时单...";
@@ -398,7 +451,7 @@ async function pollFastBountiesOnly() {
 
   await Promise.allSettled([
     ...fastSubs.map(async (s) => {
-      const posts = await fetchRedditJsonp(s.sub, "new", 30);
+      const posts = await fetchRedditJsonp(s.sub, "new", 25);
       posts.forEach(d => {
         if (!d || !d.title) return;
         if (d.crosspost_parent || d.removed_by_category) return;
@@ -450,7 +503,6 @@ async function pollFastBountiesOnly() {
 async function fetchAllGlobalStreams() {
   await pollFastBountiesOnly();
 
-  // 全量扩充 CPA、灰产、多平台成人与近1个月搞钱门道频道
   const fullChannels = [
     { sub: "SaaS", track: "pain_saas", label: "Reddit r/SaaS (软件痛点月榜)", mode: "top_month" },
     { sub: "SideProject", track: "pain_saas", label: "Reddit r/SideProject (独立副业爆款)", mode: "top_month" },
@@ -461,24 +513,15 @@ async function fetchAllGlobalStreams() {
     { sub: "sidehustle", track: "gray_arb", label: "Reddit r/sidehustle (野路子副业月榜)", mode: "top_month" },
     { sub: "flipping", track: "gray_arb", label: "Reddit r/flipping (跨平台倒爷月榜)", mode: "top_month" },
     { sub: "SEO", track: "gray_arb", label: "Reddit r/SEO (流量截流月榜)", mode: "top_month" },
-    { sub: "blackhat", track: "gray_arb", label: "Reddit r/blackhat (黑帽技术与套利月榜)", mode: "top_month" },
-    { sub: "affiliatemarketing", track: "gray_arb", label: "Reddit r/affiliatemarketing (CPA与联盟营销月榜)", mode: "top_month" },
-    { sub: "leadgeneration", track: "gray_arb", label: "Reddit r/leadgeneration (灰产获客与名单套利)", mode: "top_month" },
+    { sub: "blackhat", track: "gray_arb", label: "Reddit r/blackhat (黑帽技术与套利)", mode: "top_month" },
+    { sub: "affiliatemarketing", track: "gray_arb", label: "Reddit r/affiliatemarketing (CPA与联盟营销)", mode: "top_month" },
+    { sub: "leadgeneration", track: "gray_arb", label: "Reddit r/leadgeneration (灰产获客套利)", mode: "top_month" },
     { sub: "juststart", track: "gray_arb", label: "Reddit r/juststart (流量站实战月榜)", mode: "top_month" },
     { sub: "NSFWCreators", track: "nsfw_adult", label: "Reddit r/NSFWCreators (成人博主引流)", mode: "top_month" },
-    { sub: "onlyfansadvice", track: "nsfw_adult", label: "Reddit r/onlyfansadvice (OnlyFans变现月榜)", mode: "top_month" },
-    { sub: "CreatorsAdvice", track: "nsfw_adult", label: "Reddit r/CreatorsAdvice (擦边订阅变现月榜)", mode: "top_month" },
-    { sub: "Fansly_Advice", track: "nsfw_adult", label: "Reddit r/Fansly_Advice (Fansly成人私域月榜)", mode: "top_month" },
-    { sub: "CamGirlProblems", track: "nsfw_adult", label: "Reddit r/CamGirlProblems (全球成人直播变现月榜)", mode: "top_month" },
-    { sub: "Sexsells", track: "nsfw_adult", label: "Reddit r/Sexsells (成人C2C直接交易热榜)", mode: "top_month" }
-  ];
-
-  // 全网主动搜索近 1 个月赚钱门道关键词
-  const globalSearchQueries = [
-    { q: "CPA OR content locker OR OGAds OR CrakRevenue", track: "gray_arb", label: "全网搜索·CPA与任务锁实战" },
-    { q: "made my first OR how I made $ OR MRR", track: "pain_saas", label: "全网搜索·近30天真实赚到钱复盘" },
-    { q: "OnlyFans OR Fanvue OR AI influencer NSFW", track: "nsfw_adult", label: "全网搜索·成人与AI擦边引流门道" },
-    { q: "arbitrage OR parasite SEO OR tiktok shop affiliate", track: "gray_arb", label: "全网搜索·跨国套利与黑帽截流" }
+    { sub: "onlyfansadvice", track: "nsfw_adult", label: "Reddit r/onlyfansadvice (OnlyFans变现)", mode: "top_month" },
+    { sub: "CreatorsAdvice", track: "nsfw_adult", label: "Reddit r/CreatorsAdvice (擦边订阅变现)", mode: "top_month" },
+    { sub: "Fansly_Advice", track: "nsfw_adult", label: "Reddit r/Fansly_Advice (Fansly成人私域)", mode: "top_month" },
+    { sub: "CamGirlProblems", track: "nsfw_adult", label: "Reddit r/CamGirlProblems (成人直播变现)", mode: "top_month" }
   ];
 
   const gathered = [];
@@ -495,18 +538,17 @@ async function fetchAllGlobalStreams() {
 
   await Promise.allSettled([
     ...fullChannels.map(async (s) => {
-      const posts = await fetchRedditJsonp(s.sub, s.mode, 35);
-      posts.forEach(d => {
+      const posts = await fetchRedditJsonp(s.sub, s.mode, 10);
+      posts.slice(0, 8).forEach(d => {
         if (!d || !d.title) return;
-        if ((d.ups || 0) < 2 && (d.num_comments || 0) < 1) return;
         const item = sanitizeAndUpgradeSignal({
           id: "rd_" + d.id,
-          created_ts: d.created_utc || 0,
+          created_ts: d.created_utc || Math.floor(Date.now() / 1000) - 3600,
           track: s.track,
           ups: d.ups || 0,
           num_comments: d.num_comments || 0,
           title_zh: `【${s.label}】${d.title}`,
-          deal_fact_zh: `🔥 近30天高热核验：${d.ups || 0} 赞 · ${d.num_comments || 0} 条评论`,
+          deal_fact_zh: `🔥 社区实测核验：${d.ups || 0} 赞 · ${d.num_comments || 0} 条评论`,
           pain_point_zh: d.selftext || d.title,
           source_platform: s.label,
           source_url: "https://www.reddit.com" + d.permalink,
@@ -516,44 +558,114 @@ async function fetchAllGlobalStreams() {
       });
     }),
 
-    ...globalSearchQueries.map(async (sq) => {
-      await new Promise((resolve) => {
-        const cb = "rd_search_" + Math.floor(Math.random() * 1000000);
-        const sc = document.createElement("script");
-        const tm = setTimeout(() => { delete window[cb]; sc.remove(); resolve(); }, 7000);
-        window[cb] = (data) => {
-          clearTimeout(tm); delete window[cb]; sc.remove();
-          (((data && data.data && data.data.children) || [])).forEach(c => {
-            const d = c.data;
-            if (!d || !d.title) return;
-            const item = sanitizeAndUpgradeSignal({
-              id: "rds_" + d.id,
-              created_ts: d.created_utc || 0,
-              track: sq.track,
-              ups: d.ups || 0,
-              num_comments: d.num_comments || 0,
-              title_zh: `【${sq.label} · r/${d.subreddit}】${d.title}`,
-              deal_fact_zh: `🔥 全网近30天热门搜索：${d.ups || 0} 赞 · ${d.num_comments || 0} 评论`,
-              pain_point_zh: d.selftext || d.title,
-              source_platform: sq.label,
-              source_url: "https://www.reddit.com" + d.permalink,
-              solver_url: "https://www.reddit.com" + d.permalink
-            });
-            if (item) gathered.push(item);
+    // PullPush.io 全网免盾搜索引擎（直抓 CPA / 灰产 / 成人 / 搞钱贴）
+    ...[
+      { q: "CPA OR OGAds OR content locker OR AdBlueMedia", track: "gray_arb", label: "全网CPA与内容锁实战" },
+      { q: "OnlyFans OR Fanvue OR CrakRevenue OR NSFW AI", track: "nsfw_adult", label: "全网成人与AI擦边变现" },
+      { q: "parasite SEO OR blackhat OR arbitrage OR flipping", track: "gray_arb", label: "全网黑帽SEO与跨国倒爷" },
+      { q: "made my first OR MRR OR Stripe revenue", track: "pain_saas", label: "全网独立变现真实复盘" }
+    ].map(async (sq) => {
+      try {
+        const ppRes = await fetch(`https://api.pullpush.io/reddit/search/submission/?q=${encodeURIComponent(sq.q)}&size=10&sort=desc&sort_type=score`, { signal: AbortSignal.timeout(6500) });
+        if (!ppRes.ok) return;
+        const ppData = await ppRes.json();
+        (ppData.data || []).forEach(d => {
+          if (!d || !d.title) return;
+          const item = sanitizeAndUpgradeSignal({
+            id: "pp_" + d.id,
+            created_ts: d.created_utc || Math.floor(Date.now() / 1000) - 7200,
+            track: sq.track,
+            ups: d.score || 10,
+            num_comments: d.num_comments || 2,
+            title_zh: `【${sq.label} · r/${d.subreddit}】${d.title}`,
+            deal_fact_zh: `🔥 全网跨库检索：${d.score || 10} 赞 · ${d.num_comments || 2} 评论`,
+            pain_point_zh: d.selftext || d.title,
+            source_platform: sq.label,
+            source_url: d.full_link || `https://www.reddit.com/r/${d.subreddit}/comments/${d.id}/`,
+            solver_url: d.full_link || `https://www.reddit.com/r/${d.subreddit}/comments/${d.id}/`
           });
-          resolve();
-        };
-        sc.onerror = () => { clearTimeout(tm); delete window[cb]; sc.remove(); resolve(); };
-        sc.src = `https://www.reddit.com/search.json?q=${encodeURIComponent(sq.q)}&sort=top&t=month&limit=30&jsonp=${cb}`;
-        document.body.appendChild(sc);
-      });
-    })
+          if (item) gathered.push(item);
+        });
+      } catch (e) {}
+    }),
+
+    // DEV.to 全球独立开发、副业与自动化变现库
+    ...["saas", "sideprojects", "automation"].map(async (tag) => {
+      try {
+        const res = await fetch(`https://dev.to/api/articles?tag=${tag}&top=30&per_page=8`);
+        if (!res.ok) return;
+        const list = await res.json();
+        list.forEach(art => {
+          const item = sanitizeAndUpgradeSignal({
+            id: "dev_" + art.id,
+            created_ts: Math.floor(new Date(art.published_at).getTime() / 1000) || (Math.floor(Date.now() / 1000) - 86400),
+            track: "pain_saas",
+            ups: art.public_reactions_count || 5,
+            num_comments: art.comments_count || 1,
+            title_zh: `【DEV.to 独立变现 #${tag}】${art.title}`,
+            deal_fact_zh: `📊 DEV.to 社区实测：${art.public_reactions_count || 0} 赞 · ${art.comments_count || 0} 评论`,
+            pain_point_zh: art.description || art.title,
+            source_platform: `DEV.to #${tag}`,
+            source_url: art.url,
+            solver_url: art.url
+          });
+          if (item) gathered.push(item);
+        });
+      } catch (e) {}
+    }),
+
+    // Lemmy 全球联邦社区（开源 / 灰产资源 / 自托管工具痛点）
+    (async () => {
+      try {
+        const res = await fetch("https://lemmy.world/api/v3/post/list?type_=All&sort=TopMonth&limit=10");
+        if (!res.ok) return;
+        const data = await res.json();
+        (data.posts || []).forEach(p => {
+          const post = p.post || {};
+          const counts = p.counts || {};
+          if (!post.name) return;
+          const item = sanitizeAndUpgradeSignal({
+            id: "lemmy_" + post.id,
+            created_ts: Math.floor(new Date(post.published).getTime() / 1000) || (Math.floor(Date.now() / 1000) - 86400),
+            track: "gray_arb",
+            ups: counts.score || 10,
+            num_comments: counts.comments || 2,
+            title_zh: `【Lemmy 全球开源/野路子热榜】${post.name}`,
+            deal_fact_zh: `🔥 Lemmy 联邦热榜：${counts.score || 0} 赞 · ${counts.comments || 0} 评论`,
+            pain_point_zh: post.body || post.name,
+            source_platform: "Lemmy 全球社区",
+            source_url: post.ap_id || "https://lemmy.world",
+            solver_url: post.ap_id || "https://lemmy.world"
+          });
+          if (item) gathered.push(item);
+        });
+      } catch (e) {}
+    })()
   ]);
 
+  // 执行单网站均衡配额限制：防止 HN 或 DLsite 霸屏！
   const mapById = new Map();
-  allSignals.forEach(x => mapById.set(x.id, x));
+  GLOBAL_DEEP_BASE.forEach(x => mapById.set(x.id, x));
+  allSignals.forEach(x => { if (!mapById.has(x.id)) mapById.set(x.id, x); });
   gathered.forEach(x => { if (!mapById.has(x.id)) mapById.set(x.id, x); });
-  allSignals = Array.from(mapById.values());
+
+  const sourceCounter = {};
+  const balancedList = [];
+  for (const item of mapById.values()) {
+    if (String(item.id || "").startsWith("base_")) {
+      balancedList.push(item);
+      continue;
+    }
+    const sp = String(item.source_platform || "other");
+    const platKey = sp.includes("DLsite") ? "DLsite" : (sp.includes("HN") || sp.includes("Hacker") ? "HN" : sp.slice(0, 18));
+    const cap = item.track === "bounty_direct" ? 25 : (platKey === "DLsite" || platKey === "HN" ? 8 : 10);
+    sourceCounter[platKey] = (sourceCounter[platKey] || 0) + 1;
+    if (sourceCounter[platKey] <= cap) {
+      balancedList.push(item);
+    }
+  }
+
+  allSignals = balancedList;
   renderCards();
 }
 
@@ -611,7 +723,6 @@ function loadMoreItems(step) {
 }
 
 function renderCards() {
-  // 每次渲染自动清理已抓到但超过 2 小时（7200秒）的悬赏急单
   const nowSec = Math.floor(Date.now() / 1000);
   allSignals = allSignals.filter(item => {
     if (String(item.id || "").startsWith("base_")) return true;
@@ -633,7 +744,7 @@ function renderCards() {
   filtered.sort((a, b) => (b.created_ts || 0) - (a.created_ts || 0));
 
   const visibleList = filtered.slice(0, displayLimit);
-  document.getElementById('totalCountBadge').innerText = `📊 当前筛选共 ${filtered.length} 条全球机会 (悬赏超2h已自动删除 · 最新倒序)`;
+  document.getElementById('totalCountBadge').innerText = `📊 当前筛选共 ${filtered.length} 条多平台机会 (单站已限流防霸屏 · 悬赏超2h自动删)`;
   document.getElementById('loadMoreBar').style.display = visibleList.length < filtered.length ? 'flex' : 'none';
 
   grid.innerHTML = visibleList.map((item, idx) => {

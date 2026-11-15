@@ -1,10 +1,10 @@
 {
   "version": "10.2",
-  "updated_at": "2026-11-15T07:29:34+00:00",
+  "updated_at": "2026-11-15T07:32:02+00:00",
   "summary": {
     "configured_sources": 14,
-    "responding_sources": 8,
-    "failed_sources": 5
+    "responding_sources": 9,
+    "failed_sources": 4
   },
   "sources": [
     {
@@ -15,7 +15,7 @@
       "parsed_count": 0,
       "kept_count": 0,
       "bytes": 0,
-      "checked_at": "2026-11-15T07:29:24+00:00",
+      "checked_at": "2026-11-15T07:31:51+00:00",
       "message": "来源返回403；未绕过站点验证。"
     },
     {
@@ -26,7 +26,7 @@
       "parsed_count": 0,
       "kept_count": 0,
       "bytes": 0,
-      "checked_at": "2026-11-15T07:29:24+00:00",
+      "checked_at": "2026-11-15T07:31:51+00:00",
       "message": "来源返回403；未绕过站点验证。"
     },
     {
@@ -37,7 +37,7 @@
       "parsed_count": 0,
       "kept_count": 0,
       "bytes": 0,
-      "checked_at": "2026-11-15T07:29:24+00:00",
+      "checked_at": "2026-11-15T07:31:51+00:00",
       "message": "缺少官方联盟代码CHATURBATE_WM；本轮未请求，也未伪造在线人数。"
     },
     {
@@ -48,7 +48,7 @@
       "parsed_count": 100,
       "kept_count": 100,
       "bytes": 759828,
-      "checked_at": "2026-11-15T07:29:26+00:00",
+      "checked_at": "2026-11-15T07:31:53+00:00",
       "message": "HTTP 200，解析100条；读到内容不等于已成交。"
     },
     {
@@ -58,8 +58,8 @@
       "http_status": 200,
       "parsed_count": 30,
       "kept_count": 30,
-      "bytes": 215833,
-      "checked_at": "2026-11-15T07:29:25+00:00",
+      "bytes": 215832,
+      "checked_at": "2026-11-15T07:31:52+00:00",
       "message": "HTTP 200，解析30条；读到内容不等于已成交。"
     },
     {
@@ -67,11 +67,11 @@
       "name": "HN检索：freelance automation scraping",
       "status": "ok",
       "http_status": 200,
-      "parsed_count": 5,
-      "kept_count": 5,
-      "bytes": 20326,
-      "checked_at": "2026-11-15T07:29:25+00:00",
-      "message": "HTTP 200，解析5条；读到内容不等于已成交。"
+      "parsed_count": 6,
+      "kept_count": 6,
+      "bytes": 23053,
+      "checked_at": "2026-11-15T07:31:51+00:00",
+      "message": "HTTP 200，解析6条；读到内容不等于已成交。"
     },
     {
       "id": "hn_fe3457a9",
@@ -80,8 +80,8 @@
       "http_status": 200,
       "parsed_count": 30,
       "kept_count": 30,
-      "bytes": 100477,
-      "checked_at": "2026-11-15T07:29:25+00:00",
+      "bytes": 100478,
+      "checked_at": "2026-11-15T07:31:52+00:00",
       "message": "HTTP 200，解析30条；读到内容不等于已成交。"
     },
     {
@@ -91,20 +91,20 @@
       "http_status": 200,
       "parsed_count": 30,
       "kept_count": 30,
-      "bytes": 160725,
-      "checked_at": "2026-11-15T07:29:25+00:00",
+      "bytes": 155231,
+      "checked_at": "2026-11-15T07:31:52+00:00",
       "message": "HTTP 200，解析30条；读到内容不等于已成交。"
     },
     {
       "id": "reddit_sideproject_entrepreneur_smallbusiness_sweatystartup",
       "name": "Reddit联合公开RSS：SideProject / Entrepreneur / smallbusiness / sweatystartup",
-      "status": "rate_limited",
-      "http_status": 429,
-      "parsed_count": 0,
-      "kept_count": 0,
-      "bytes": 0,
-      "checked_at": "2026-11-15T07:29:28+00:00",
-      "message": "来源返回429；本轮停止该入口并等待下次计划任务。"
+      "status": "ok",
+      "http_status": 200,
+      "parsed_count": 100,
+      "kept_count": 100,
+      "bytes": 305543,
+      "checked_at": "2026-11-15T07:32:02+00:00",
+      "message": "HTTP 200，解析100条；读到内容不等于已成交。"
     },
     {
       "id": "reddit_affiliatemarketing_seo_nsfwcreators_onlyfansadvice",
@@ -114,30 +114,30 @@
       "parsed_count": 0,
       "kept_count": 0,
       "bytes": 0,
-      "checked_at": "2026-11-15T07:29:34+00:00",
+      "checked_at": "2026-11-15T07:31:55+00:00",
       "message": "来源返回429；本轮停止该入口并等待下次计划任务。"
     },
     {
       "id": "reddit_juststart_beermoney_sidehustle_flipping",
       "name": "Reddit联合公开RSS：juststart / beermoney / sidehustle / flipping",
+      "status": "ok",
+      "http_status": 200,
+      "parsed_count": 100,
+      "kept_count": 100,
+      "bytes": 220598,
+      "checked_at": "2026-11-15T07:31:52+00:00",
+      "message": "HTTP 200，解析100条；读到内容不等于已成交。"
+    },
+    {
+      "id": "reddit_slavelabour_forhire_hireaprogrammer_saas",
+      "name": "Reddit联合公开RSS：slavelabour / forhire / hireaprogrammer / SaaS",
       "status": "rate_limited",
       "http_status": 429,
       "parsed_count": 0,
       "kept_count": 0,
       "bytes": 0,
-      "checked_at": "2026-11-15T07:29:31+00:00",
+      "checked_at": "2026-11-15T07:31:58+00:00",
       "message": "来源返回429；本轮停止该入口并等待下次计划任务。"
-    },
-    {
-      "id": "reddit_slavelabour_forhire_hireaprogrammer_saas",
-      "name": "Reddit联合公开RSS：slavelabour / forhire / hireaprogrammer / SaaS",
-      "status": "ok",
-      "http_status": 200,
-      "parsed_count": 100,
-      "kept_count": 100,
-      "bytes": 244630,
-      "checked_at": "2026-11-15T07:29:25+00:00",
-      "message": "HTTP 200，解析100条；读到内容不等于已成交。"
     },
     {
       "id": "v2ex_jobs",
@@ -147,7 +147,7 @@
       "parsed_count": 10,
       "kept_count": 10,
       "bytes": 74343,
-      "checked_at": "2026-11-15T07:29:25+00:00",
+      "checked_at": "2026-11-15T07:31:51+00:00",
       "message": "HTTP 200，解析10条；读到内容不等于已成交。"
     },
     {
@@ -158,7 +158,7 @@
       "parsed_count": 10,
       "kept_count": 10,
       "bytes": 46355,
-      "checked_at": "2026-11-15T07:29:25+00:00",
+      "checked_at": "2026-11-15T07:31:51+00:00",
       "message": "HTTP 200，解析10条；读到内容不等于已成交。"
     }
   ]

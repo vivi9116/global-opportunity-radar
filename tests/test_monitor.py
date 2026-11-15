@@ -12,6 +12,9 @@ class MonitorTests(unittest.TestCase):
     def test_rules_fill_every_structured_field(self):
         row=monitor.rules_enrich(self.fixture())
         self.assertTrue(all(row.get(name) for name in monitor.FIELDS))
+    def test_reddit_matrix_has_sixteen_unique_communities(self):
+        communities=[name.lower() for group in monitor.REDDIT_GROUPS for name in group]
+        self.assertEqual(len(communities),16);self.assertEqual(len(set(communities)),16)
     def test_bid_is_not_called_payment(self):
         fact=monitor.extract_deal_fact(self.fixture())
         self.assertIn('$bid',fact);self.assertIn('不等于',fact)

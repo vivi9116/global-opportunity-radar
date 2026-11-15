@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import re
 import threading
+import time
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import quote
 
@@ -153,6 +154,14 @@ def fetch_reddit_group(subs: list[str]) -> tuple[list[dict], dict]:
     url = "https://www.reddit.com/r/" + "+".join(subs) + "/new/.rss?limit=100"
     return fetch_with_health(source_id, "Reddit联合公开RSS：" + " / ".join(subs), url,
                              lambda text: parse_feed(text, "reddit", "Reddit联合订阅"))
+
+
+def fetch_reddit_all() -> tuple[list[dict], list[dict]]:
+    rows=[];statuses=[]
+    for index,group in enumerate(REDDIT_GROUPS):
+        found,status=fetch_reddit_group(group);rows.extend(found);statuses.append(status)
+        if index+1<len(REDDIT_GROUPS):time.sleep(3)
+    return rows,statuses
 
 
 def fetch_hn(query: str) -> tuple[list[dict], dict]:
@@ -409,7 +418,7 @@ def enrich_new(items: list[dict], previous: dict[str,dict]) -> tuple[list[dict],
 def scan() -> dict:
     previous_payload=load_json(LIVE_FILE,{"records":[]});previous={row["id"]:row for row in previous_payload.get("records",[]) if row.get("id")}
     tasks=[]
-    for group in REDDIT_GROUPS:tasks.append(("reddit:"+"+".join(group),lambda g=group:fetch_reddit_group(g)))
+    tasks.append(("reddit:16-communities-sequential",fetch_reddit_all))
     for query in HN_QUERIES:tasks.append(("hn:"+query,lambda q=query:fetch_hn(q)))
     for node in ["jobs","outsourcing"]:tasks.append(("v2ex:"+node,lambda n=node:fetch_v2ex(n)))
     tasks.extend([
@@ -424,7 +433,7 @@ def scan() -> dict:
             try:rows,status=future.result()
             except Exception as exc:
                 rows=[];status=health(future_map[future],future_map[future],"internal_error",None,0,0,type(exc).__name__)
-            raw.extend(rows);statuses.append(status)
+            raw.extend(rows);statuses.extend(status if isinstance(status,list) else [status])
     unique={}
     for item in raw:
         if safe_item(item): unique[item["id"]]=item
@@ -442,7 +451,7 @@ def scan() -> dict:
              "llm_enriched":sum(str(r.get("structured_by","")).startswith("llm:") for r in enriched),
              "rule_enriched":sum(r.get("structured_by")=="rules-v10.2" for r in enriched),"extraction":extraction},
              "truth_note":"金额、竞标、帖子状态和平台指标分开；互动量不等于成交，机器拆解不替代原文核对。"}
-    health_payload={"version":"10.2","updated_at":payload["updated_at"],"summary":{"configured_sources":len(tasks),
+    health_payload={"version":"10.2","updated_at":payload["updated_at"],"summary":{"configured_sources":len(statuses),
                     "responding_sources":sum(s["status"]=="ok" for s in statuses),"failed_sources":sum(s["status"] not in {"ok","not_configured"} for s in statuses)},
                     "sources":sorted(statuses,key=lambda s:s["name"])}
     save_json(LIVE_FILE,payload);save_json(HEALTH_FILE,health_payload)

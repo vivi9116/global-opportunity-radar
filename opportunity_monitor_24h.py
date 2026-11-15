@@ -158,9 +158,12 @@ def fetch_reddit_group(subs: list[str]) -> tuple[list[dict], dict]:
 
 def fetch_reddit_all() -> tuple[list[dict], list[dict]]:
     rows=[];statuses=[]
-    for index,group in enumerate(REDDIT_GROUPS):
+    try:cursor=(int(os.environ.get("GITHUB_RUN_NUMBER",""))+2)%len(REDDIT_GROUPS)
+    except ValueError:cursor=int(time.time()//1200)%len(REDDIT_GROUPS)
+    ordered=REDDIT_GROUPS[cursor:]+REDDIT_GROUPS[:cursor]
+    for index,group in enumerate(ordered):
         found,status=fetch_reddit_group(group);rows.extend(found);statuses.append(status)
-        if index+1<len(REDDIT_GROUPS):time.sleep(3)
+        if index+1<len(ordered):time.sleep(3)
     return rows,statuses
 
 

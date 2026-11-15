@@ -1,6 +1,165 @@
 {
   "version": "10.2",
-  "updated_at": null,
-  "sources": [],
-  "note": "尚未完成首次云端采集。"
+  "updated_at": "2026-11-15T07:23:11+00:00",
+  "summary": {
+    "configured_sources": 14,
+    "responding_sources": 8,
+    "failed_sources": 5
+  },
+  "sources": [
+    {
+      "id": "bhw_hire",
+      "name": "BHW hire公开RSS",
+      "status": "forbidden",
+      "http_status": 403,
+      "parsed_count": 0,
+      "kept_count": 0,
+      "bytes": 0,
+      "checked_at": "2026-11-15T07:23:08+00:00",
+      "message": "来源返回403；未绕过站点验证。"
+    },
+    {
+      "id": "bhw_journey",
+      "name": "BHW journey公开RSS",
+      "status": "forbidden",
+      "http_status": 403,
+      "parsed_count": 0,
+      "kept_count": 0,
+      "bytes": 0,
+      "checked_at": "2026-11-15T07:23:08+00:00",
+      "message": "来源返回403；未绕过站点验证。"
+    },
+    {
+      "id": "chaturbate_affiliate",
+      "name": "Chaturbate官方联盟在线房间API",
+      "status": "not_configured",
+      "http_status": null,
+      "parsed_count": 0,
+      "kept_count": 0,
+      "bytes": 0,
+      "checked_at": "2026-11-15T07:23:08+00:00",
+      "message": "缺少官方联盟代码CHATURBATE_WM；本轮未请求，也未伪造在线人数。"
+    },
+    {
+      "id": "dlsite_r18_day",
+      "name": "DLsite R18公开24小时榜",
+      "status": "ok",
+      "http_status": 200,
+      "parsed_count": 100,
+      "kept_count": 100,
+      "bytes": 759829,
+      "checked_at": "2026-11-15T07:23:11+00:00",
+      "message": "HTTP 200，解析100条；读到内容不等于已成交。"
+    },
+    {
+      "id": "hn_accf716e",
+      "name": "HN检索：first sale MRR",
+      "status": "ok",
+      "http_status": 200,
+      "parsed_count": 30,
+      "kept_count": 30,
+      "bytes": 215842,
+      "checked_at": "2026-11-15T07:23:09+00:00",
+      "message": "HTTP 200，解析30条；读到内容不等于已成交。"
+    },
+    {
+      "id": "hn_fe5f826b",
+      "name": "HN检索：freelance automation scraping",
+      "status": "ok",
+      "http_status": 200,
+      "parsed_count": 6,
+      "kept_count": 6,
+      "bytes": 23141,
+      "checked_at": "2026-11-15T07:23:08+00:00",
+      "message": "HTTP 200，解析6条；读到内容不等于已成交。"
+    },
+    {
+      "id": "hn_fe3457a9",
+      "name": "HN检索：too expensive alternative",
+      "status": "ok",
+      "http_status": 200,
+      "parsed_count": 30,
+      "kept_count": 30,
+      "bytes": 100466,
+      "checked_at": "2026-11-15T07:23:09+00:00",
+      "message": "HTTP 200，解析30条；读到内容不等于已成交。"
+    },
+    {
+      "id": "hn_d5d2ebcf",
+      "name": "HN检索：willing to pay",
+      "status": "ok",
+      "http_status": 200,
+      "parsed_count": 30,
+      "kept_count": 30,
+      "bytes": 160738,
+      "checked_at": "2026-11-15T07:23:09+00:00",
+      "message": "HTTP 200，解析30条；读到内容不等于已成交。"
+    },
+    {
+      "id": "reddit_sideproject_entrepreneur_smallbusiness_sweatystartup",
+      "name": "Reddit联合公开RSS：SideProject / Entrepreneur / smallbusiness / sweatystartup",
+      "status": "ok",
+      "http_status": 200,
+      "parsed_count": 100,
+      "kept_count": 100,
+      "bytes": 305832,
+      "checked_at": "2026-11-15T07:23:09+00:00",
+      "message": "HTTP 200，解析100条；读到内容不等于已成交。"
+    },
+    {
+      "id": "reddit_affiliatemarketing_seo_nsfwcreators_onlyfansadvice",
+      "name": "Reddit联合公开RSS：affiliatemarketing / SEO / NSFWCreators / onlyfansadvice",
+      "status": "rate_limited",
+      "http_status": 429,
+      "parsed_count": 0,
+      "kept_count": 0,
+      "bytes": 0,
+      "checked_at": "2026-11-15T07:23:08+00:00",
+      "message": "来源返回429；本轮停止该入口并等待下次计划任务。"
+    },
+    {
+      "id": "reddit_juststart_beermoney_sidehustle_flipping",
+      "name": "Reddit联合公开RSS：juststart / beermoney / sidehustle / flipping",
+      "status": "rate_limited",
+      "http_status": 429,
+      "parsed_count": 0,
+      "kept_count": 0,
+      "bytes": 0,
+      "checked_at": "2026-11-15T07:23:08+00:00",
+      "message": "来源返回429；本轮停止该入口并等待下次计划任务。"
+    },
+    {
+      "id": "reddit_slavelabour_forhire_hireaprogrammer_saas",
+      "name": "Reddit联合公开RSS：slavelabour / forhire / hireaprogrammer / SaaS",
+      "status": "rate_limited",
+      "http_status": 429,
+      "parsed_count": 0,
+      "kept_count": 0,
+      "bytes": 0,
+      "checked_at": "2026-11-15T07:23:08+00:00",
+      "message": "来源返回429；本轮停止该入口并等待下次计划任务。"
+    },
+    {
+      "id": "v2ex_jobs",
+      "name": "V2EX jobs公开API",
+      "status": "ok",
+      "http_status": 200,
+      "parsed_count": 10,
+      "kept_count": 10,
+      "bytes": 74343,
+      "checked_at": "2026-11-15T07:23:08+00:00",
+      "message": "HTTP 200，解析10条；读到内容不等于已成交。"
+    },
+    {
+      "id": "v2ex_outsourcing",
+      "name": "V2EX outsourcing公开API",
+      "status": "ok",
+      "http_status": 200,
+      "parsed_count": 10,
+      "kept_count": 10,
+      "bytes": 46355,
+      "checked_at": "2026-11-15T07:23:08+00:00",
+      "message": "HTTP 200，解析10条；读到内容不等于已成交。"
+    }
+  ]
 }

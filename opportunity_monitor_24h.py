@@ -382,11 +382,154 @@ def fetch_reddit_jsonp_py(sub, mode="new", limit=35):
     return []
 
 
+def is_direct_reddit_employer_post(sub, post):
+    title = clean_raw_html(post.get("title") or "")
+    if not title or post.get("crosspost_parent") or post.get("removed_by_category"):
+        return False
+    if re.search(r"\[offer\]|\[for\s*hire\]", title, re.I):
+        return False
+    if sub.lower() in {"slavelabour", "donedirtcheap"}:
+        return bool(re.search(r"\[task\]", title, re.I))
+    if sub.lower() in {"forhire", "hireaprogrammer", "freelance_forhire"}:
+        return bool(re.search(r"\[(?:hiring|task)\]", title, re.I))
+    return True
+
+
 def _iso_timestamp(value, fallback):
     try:
         return int(datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp())
     except (TypeError, ValueError):
         return fallback
+
+
+_GITHUB_REPO_CACHE = {}
+
+
+def github_api_get(url, timeout=18):
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return json.loads(http_get(url, timeout=timeout, headers=headers))
+
+
+def extract_markdown_section(markdown_text, heading_terms, max_chars=1800):
+    lines = str(markdown_text or "").splitlines()
+    captured = []
+    active = False
+    for line in lines:
+        heading = re.match(r"^\s{0,3}#{1,6}\s+(.+?)\s*$", line)
+        if heading:
+            heading_text = clean_raw_html(heading.group(1)).lower()
+            if active:
+                break
+            active = any(term.lower() in heading_text for term in heading_terms)
+        if active:
+            captured.append(line.rstrip())
+    section = "\n".join(captured).strip()
+    return section[:max_chars]
+
+
+def verify_first_party_github_bounty(issue):
+    if issue.get("pull_request") or issue.get("state") != "open":
+        return None, "不是开放 Issue"
+
+    repo_url = str(issue.get("repository_url") or "")
+    repo_full_name = repo_url.split("/repos/", 1)[-1].strip("/")
+    issue_number = int(issue.get("number") or 0)
+    body = str(issue.get("body") or "")
+    user = issue.get("user") or {}
+    association = str(issue.get("author_association") or "").upper()
+
+    if not repo_full_name or not issue_number:
+        return None, "缺少原仓库地址"
+    if user.get("type") == "Bot" or str(user.get("login") or "").lower().endswith("[bot]"):
+        return None, "机器人发布"
+    if association not in {"OWNER", "MEMBER", "COLLABORATOR"}:
+        return None, f"发布者不是仓库维护者({association or 'NONE'})"
+    if issue.get("assignees"):
+        return None, "已经分配给他人"
+
+    linked_issue_urls = re.findall(r"https://github\.com/([^/]+/[^/]+)/(?:issues|pull)/(\d+)", body, re.I)
+    if any(linked_repo.lower() != repo_full_name.lower() for linked_repo, _ in linked_issue_urls):
+        return None, "正文指向其他仓库原帖，属于转发"
+    relay_blob = f"{repo_full_name} {issue.get('title') or ''} {body[:800]}".lower()
+    if re.search(r"bounty[-_ ]?bot|bounty encontrado|original bounty|mirrored from|aggregat(?:or|ed)", relay_blob):
+        return None, "机器人/聚合转发"
+
+    try:
+        repo = _GITHUB_REPO_CACHE.get(repo_full_name)
+        if repo is None:
+            repo = github_api_get(repo_url)
+            _GITHUB_REPO_CACHE[repo_full_name] = repo
+        repo_description = str(repo.get("description") or "").lower()
+        if repo.get("archived") or repo.get("disabled") or repo.get("fork"):
+            return None, "仓库已归档/停用或为 Fork"
+        if re.search(r"bounty\s*(?:bot|aggregator|monitor)|aggregate.*bount", repo_description):
+            return None, "仓库本身是悬赏聚合器"
+    except Exception as exc:
+        return None, f"仓库身份核验失败:{type(exc).__name__}"
+
+    try:
+        comments = github_api_get(f"{issue.get('comments_url')}?per_page=100") if issue.get("comments") else []
+        timeline = github_api_get(f"{issue.get('timeline_url')}?per_page=100")
+    except Exception as exc:
+        return None, f"评论/Timeline核验失败:{type(exc).__name__}"
+
+    for event in timeline if isinstance(timeline, list) else []:
+        related = ((event.get("source") or {}).get("issue") or {})
+        if related.get("pull_request"):
+            pr_state = str(related.get("state") or "").lower()
+            merged_at = (related.get("pull_request") or {}).get("merged_at")
+            if pr_state == "open" or merged_at:
+                return None, f"已有关联 PR #{related.get('number')}"
+
+    comment_texts = [str(comment.get("body") or "") for comment in comments if isinstance(comment, dict)]
+    all_comments = "\n".join(comment_texts)
+    busy_pattern = re.compile(
+        r"\b(?:queued|filled|claimed|taken|first[- ]in[- ]line|already\s+passed|awaiting\s+(?:founder\s+)?merge|"
+        r"pr\s*#\d+[^\n]{0,100}(?:open|submitted|passed|queued|review))\b",
+        re.I,
+    )
+    if busy_pattern.search(all_comments):
+        return None, "最新评论显示已认领/排队/已有通过测试的PR"
+
+    latest_maintainer_comment = ""
+    for comment in reversed(comments if isinstance(comments, list) else []):
+        if str(comment.get("author_association") or "").upper() in {"OWNER", "MEMBER", "COLLABORATOR"}:
+            latest_maintainer_comment = str(comment.get("body") or "")
+            break
+
+    objective = extract_markdown_section(body, ["objective", "goal", "任务目标"])
+    checklist = extract_markdown_section(body, ["required pr submission checklist", "submission checklist", "requirements"])
+    fixture_section = extract_markdown_section(all_comments, ["submission & fixture path", "fixture path", "submission path"])
+    fixture_lines = []
+    for line in f"{body}\n{all_comments}".splitlines():
+        if re.search(r"bounties/submissions/|verify_bounty_submission\.py|submission\s*&\s*fixture\s*path", line, re.I):
+            cleaned = line.strip()
+            if cleaned and cleaned not in fixture_lines:
+                fixture_lines.append(cleaned)
+    fixture_text = fixture_section or "\n".join(fixture_lines[:8])
+    if not objective:
+        objective = body[:1200]
+
+    copy_pack = (
+        f"【Objective｜核心任务目标】\n{objective}\n\n"
+        f"【Required PR Submission Checklist｜提交格式】\n{checklist or '原帖没有单独的 Checklist 标题，请打开原帖按完整要求执行。'}\n\n"
+        f"【Submission & Fixture Path｜文件路径与验证命令】\n{fixture_text or '原帖及最新评论未给出单独的 Fixture Path。'}"
+    )
+    latest_context = clean_raw_html(latest_maintainer_comment)[:700] or "维护者最新评论未出现 assigned / queued / filled / 已有通过测试 PR。"
+    return {
+        "issue": issue,
+        "repo_full_name": repo_full_name,
+        "copy_pack": copy_pack,
+        "latest_context": latest_context,
+        "author": str(user.get("login") or ""),
+        "comments": comments,
+    }, "一手原帖已核验"
 
 
 def fetch_additional_sources(now_ts):
@@ -421,6 +564,9 @@ def fetch_additional_sources(now_ts):
                 topic_id = str(topic.get("id") or "")
                 title = clean_raw_html(topic.get("title") or "")
                 if not topic_id or not title:
+                    continue
+                direct_post_blob = f"{title} {clean_raw_html(topic.get('content') or '')}"
+                if re.search(r"转载|转发|代发|猎头|中介|职位汇总", direct_post_blob, re.I):
                     continue
                 source_url = topic.get("url") or f"https://www.v2ex.com/t/{topic_id}"
                 item = sanitizeAndUpgradeSignal({
@@ -477,6 +623,8 @@ def fetch_additional_sources(now_ts):
                 body = clean_raw_html(content_node.decode_contents() if content_node else "")
                 if not title or not source_url:
                     continue
+                if kind == "hire" and not re.search(r"\b(?:WTB|hiring|looking\s+for|need|wanted)\b", title, re.I):
+                    continue
                 item = sanitizeAndUpgradeSignal({
                     "id": f"bhw_{kind}_{abs(hash(source_url))}", "created_ts": now_ts - 7200, "track": track,
                     "title_zh": f"【BlackHatWorld {kind}】{title}", "pain_point_zh": body,
@@ -497,6 +645,8 @@ def fetch_additional_sources(now_ts):
                     body = clean_raw_html(row.get_text(" ", strip=True))
                     thread_match = re.search(r"/threads/(?:[^/]*\.)?(\d+)", source_url)
                     if not title or not source_url:
+                        continue
+                    if kind == "hire" and not re.search(r"\b(?:WTB|hiring|looking\s+for|need|wanted)\b", title, re.I):
                         continue
                     item = sanitizeAndUpgradeSignal({
                         "id": f"bhw_{kind}_{thread_match.group(1) if thread_match else abs(hash(source_url))}",
@@ -559,7 +709,7 @@ def run_fast_bounty_and_radar():
         posts = fetch_reddit_jsonp_py(sub, "new", 30)
         for d in posts:
             title = clean_raw_html(d.get("title", ""))
-            if not title or re.search(r'\[offer\]|\[for\s*hire\]', title, re.I):
+            if not is_direct_reddit_employer_post(sub, d):
                 continue
             item = sanitizeAndUpgradeSignal({
                 "id": f"rd_{d.get('id')}",
@@ -577,30 +727,54 @@ def run_fast_bounty_and_radar():
                 all_fetched.append(item)
                 alert_candidates.append((item, d.get("author", ""), title, clean_raw_html(d.get("selftext") or "")))
 
-    # 2. 抓 GitHub 实时新悬赏单
+    # 2. 抓 GitHub 一手实时悬赏，并核验最新评论、认领状态与关联 PR
+    github_scan_complete = False
+    current_github_ids = set()
     try:
         two_days_ago = (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d")
-        gh_url = f"https://api.github.com/search/issues?q=label:bounty+state:open+created:>={two_days_ago}&sort=created&order=desc&per_page=35"
-        gh_data = json.loads(http_get(gh_url, timeout=12))
+        gh_query = f"is:issue is:open label:bounty created:>={two_days_ago}"
+        gh_url = "https://api.github.com/search/issues?" + urllib.parse.urlencode({
+            "q": gh_query, "sort": "created", "order": "desc", "per_page": 100,
+        })
+        gh_data = github_api_get(gh_url)
+        gh_rejected = {}
+        gh_accepted = 0
         for iss in gh_data.get("items", []):
+            verified, reason = verify_first_party_github_bounty(iss)
+            if not verified:
+                gh_rejected[reason] = gh_rejected.get(reason, 0) + 1
+                continue
             created_ts = int(datetime.strptime(iss["created_at"], "%Y-%m-%dT%H:%M:%SZ").timestamp())
+            copy_pack = verified["copy_pack"]
+            latest_context = verified["latest_context"]
+            deal_fact = extract_honest_deal_fact(f"{iss['title']} {iss.get('body') or ''}", (iss.get("reactions") or {}).get("total_count", 0), iss.get("comments", 0))
             item = sanitizeAndUpgradeSignal({
                 "id": f"gh_bounty_{iss['id']}",
                 "created_ts": created_ts,
                 "track": "bounty_direct",
                 "ups": (iss.get("reactions") or {}).get("total_count", 1),
                 "num_comments": iss.get("comments", 0),
-                "title_zh": f"【GitHub 实时新悬赏】{iss['title']}",
+                "title_zh": f"【GitHub 一手悬赏·已查评论/PR】{iss['title']}",
+                "deal_fact_zh": f"{deal_fact} | ✅ 一手维护者原帖，当前无 Assignee、无关联在做 PR、无 queued/filled",
                 "pain_point_zh": iss.get("body") or iss["title"],
-                "source_platform": "GitHub 实时悬赏",
+                "source_platform": "GitHub 一手悬赏（已查评论/PR）",
                 "source_url": iss["html_url"],
                 "solver_url": iss["html_url"]
             })
             if item:
+                item["summary_one_line"] = "一手维护者原帖；已检查最新评论、Assignee 与关联 PR"
+                item["pain_point_zh"] = f"【一手状态核验】{latest_context}\n\n{copy_pack}"
+                item["action_plan_zh"] = copy_pack
+                item["platform_ecology_tip_zh"] = "⚡ 已自动检查原帖最底部最新评论、Assignee 和 Timeline 关联 PR；发现 assigned、queued、filled、claimed、在做 PR 或已通过测试即剔除，不推送。"
                 all_fetched.append(item)
-                alert_candidates.append((item, "", iss["title"], clean_raw_html(iss.get("body") or "")))
-    except Exception:
-        pass
+                current_github_ids.add(item["id"])
+                alert_body = f"{copy_pack}\n\n【维护者最新评论】\n{latest_context}"
+                alert_candidates.append((item, verified["author"], iss["title"], alert_body))
+                gh_accepted += 1
+        github_scan_complete = True
+        print(f"[GITHUB PRIMARY] examined={len(gh_data.get('items', []))} accepted={gh_accepted} rejected={sum(gh_rejected.values())} reasons={gh_rejected}")
+    except Exception as exc:
+        print(f"[SOURCE WARN] GitHub 一手悬赏: {type(exc).__name__}: {exc}")
 
     # 3. 抓其他全网痛点、野路子与成人频道 (Reddit 36个版块代表)
     for sub, track, label, mode in REDDIT_TARGET_SUBS[len(FAST_BOUNTY_SUBS):]:
@@ -640,7 +814,11 @@ def run_fast_bounty_and_radar():
             if ai_result.get("title_zh"):
                 item["title_zh"] = f"【⚡急单】{clean_raw_html(ai_result['title_zh'])}"
             if ai_result.get("sample_3min_zh"):
-                item["action_plan_zh"] = clean_raw_html(ai_result["sample_3min_zh"])
+                ai_action = clean_raw_html(ai_result["sample_3min_zh"])
+                if item.get("source_platform", "").startswith("GitHub 一手悬赏"):
+                    item["action_plan_zh"] = f"{item['action_plan_zh']}\n\n【Gemini 3分钟执行建议】\n{ai_action}"
+                else:
+                    item["action_plan_zh"] = ai_action
             custom_dm = clean_raw_html(ai_result.get("custom_dm_en") or "")
         if send_multichannel_bounty_alert(item, author_name=author, custom_dm_en=custom_dm):
             c.execute("INSERT OR REPLACE INTO notified_bounties VALUES (?, ?)", (item["id"], now_str))
@@ -663,6 +841,14 @@ def run_fast_bounty_and_radar():
     c.execute("SELECT * FROM signals ORDER BY created_ts DESC")
     cols = [col[0] for col in c.description]
     rows = [dict(zip(cols, r)) for r in c.fetchall()]
+    rows = [
+        row for row in rows
+        if not str(row.get("source_platform") or "").startswith("GitHub")
+        or (
+            str(row.get("source_platform") or "").startswith("GitHub 一手悬赏")
+            and (not github_scan_complete or row.get("id") in current_github_ids)
+        )
+    ]
     conn.close()
 
     payload = {

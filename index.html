@@ -334,16 +334,17 @@ function sanitizeAndUpgradeSignal(rawItem) {
       title, pain, rawItem.source_platform || "全球社区",
       rawItem.source_url || "", rawItem.track, ups, cmts
     );
+    const isVerifiedGitHub = String(rawItem.source_platform || "").startsWith("GitHub 一手悬赏");
     return {
       ...rawItem,
       created_ts: createdTs,
       track: u.track,
       title_zh: title,
       deal_fact_zh: rawItem.deal_fact_zh || `🔥 实时核验：当前 ${cmts} 条评论 · ${ups} 赞`,
-      pain_point_zh: u.pain,
-      solver_case_zh: u.solver,
-      action_plan_zh: u.action,
-      platform_ecology_tip_zh: u.ecoTip,
+      pain_point_zh: isVerifiedGitHub ? pain : u.pain,
+      solver_case_zh: isVerifiedGitHub ? (rawItem.solver_case_zh || u.solver) : u.solver,
+      action_plan_zh: isVerifiedGitHub ? (rawItem.action_plan_zh || u.action) : u.action,
+      platform_ecology_tip_zh: isVerifiedGitHub ? (rawItem.platform_ecology_tip_zh || u.ecoTip) : u.ecoTip,
       reverse_money_idea_zh: u.revIdea,
       feasibility_pct: u.feas,
       time_to_money: u.timeToMoney,
@@ -397,6 +398,10 @@ async function pollFastBountiesOnly() {
       const posts = await fetchRedditJsonp(s.sub, "new", 30);
       posts.forEach(d => {
         if (!d || !d.title) return;
+        if (d.crosspost_parent || d.removed_by_category) return;
+        if (/\[offer\]|\[for\s*hire\]/i.test(d.title)) return;
+        if (/^(slavelabour|DoneDirtCheap)$/i.test(s.sub) && !/\[task\]/i.test(d.title)) return;
+        if (/^(forhire|hireaprogrammer|freelance_forhire)$/i.test(s.sub) && !/\[(hiring|task)\]/i.test(d.title)) return;
         const item = sanitizeAndUpgradeSignal({
           id: "rd_" + d.id,
           created_ts: d.created_utc || Math.floor(Date.now() / 1000),
@@ -416,26 +421,11 @@ async function pollFastBountiesOnly() {
 
     (async () => {
       try {
-        const twoDaysAgo = new Date(Date.now() - 48 * 3600 * 1000).toISOString().slice(0, 10);
-        const ghUrl = `https://api.github.com/search/issues?q=label:bounty+state:open+created:>=${twoDaysAgo}&sort=created&order=desc&per_page=35`;
-        const ghRes = await fetch(ghUrl);
+        const ghRes = await fetch('./live_signals.json?t=' + Date.now(), { signal: AbortSignal.timeout(4500) });
         if (!ghRes.ok) return;
         const ghData = await ghRes.json();
-        (ghData.items || []).forEach(iss => {
-          const createdTs = Math.floor(new Date(iss.created_at).getTime() / 1000);
-          const item = sanitizeAndUpgradeSignal({
-            id: "gh_bounty_" + iss.id,
-            created_ts: createdTs,
-            track: "bounty_direct",
-            ups: (iss.reactions && iss.reactions.total_count) || 1,
-            num_comments: iss.comments || 0,
-            title_zh: `【GitHub 实时新悬赏】${iss.title}`,
-            deal_fact_zh: `✅ 官方 Bounty 悬赏认证 | 当前仅 ${iss.comments || 0} 条评论`,
-            pain_point_zh: (iss.body || iss.title).slice(0, 500),
-            source_platform: "GitHub 实时悬赏",
-            source_url: iss.html_url,
-            solver_url: iss.html_url
-          });
+        (ghData.signals || []).filter(raw => String(raw.source_platform || '').startsWith('GitHub 一手悬赏')).forEach(raw => {
+          const item = sanitizeAndUpgradeSignal(raw);
           if (item) freshItems.push(item);
         });
       } catch (e) {}

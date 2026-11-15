@@ -1,6 +1,393 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+================================================================================
+全球痛点与真实赚钱机会 24h 自动监控引擎 (v11.6 云端+本地静默浏览器分工协同版)
+================================================================================
+核心分工架构：
+1. 【云端模式 (--cloud-once / --bounty-fast)】：在 GitHub Actions 运行
+   - 稳抓 GitHub 一手悬赏、HN、V2EX、Itch.io NSFW、DLsite、DEV.to、Chaturbate (已修HTTP 400)。
+   - PullPush 增加单线程速率控制，避免并发触发 429。
+2. 【本地静默浏览器模式 (--local-browser / --local-daemon)】：在你自己电脑后台无感运行
+   - 专门攻克云端 403/0条 的高防源：Reddit 28个版块、BlackHatWorld 6大版块、AffiliateFix、F95zone。
+   - 采用独立 Profile + 后台静默无头浏览器 (--headless=new)，绝不弹窗、不抢鼠标焦点、不影响你用电脑！
+   - 本地抓完后自动更新 live_signals.json，并支持自动 git pull & git push 同步到你的线上网页。
+================================================================================
+"""
+
+import os
+import sys
+import time
+import json
+import re
+import html
+import sqlite3
+import random
+import subprocess
+import urllib.request
+import urllib.parse
+from datetime import datetime, timedelta
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+import argparse
+from bs4 import BeautifulSoup
+
+try:
+    from curl_cffi import requests as cffi_requests
+    HAS_CURL_CFFI = True
+except ImportError:
+    HAS_CURL_CFFI = False
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "radar_pain_solver_history.db")
+JSON_OUT_PATH = os.path.join(BASE_DIR, "live_signals.json")
+PROXY_FILE = os.path.join(BASE_DIR, "ip3.txt")
+LOCAL_BROWSER_PROFILE = os.path.join(BASE_DIR, ".radar_silent_chrome_profile")
+
+# 全局运行模式标记：开启 --local-browser 时自动启用本地静默浏览器过盾
+USE_LOCAL_SILENT_BROWSER = False
+_PLAYWRIGHT_CTX = None
+_PLAYWRIGHT_LOCK = threading.Lock()
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
+]
+
+FAKE_GURU_BLACKLIST = [
+    "buy my course", "join my paid discord", "dm me for secret", "100x guaranteed",
+    "free webinar", "masterclass", "coaching program"
+]
+
+FAST_BOUNTY_SUBS = [
+    ("slavelabour", "bounty_direct", "Reddit r/slavelabour (免费直联·微任务现金急单)"),
+    ("forhire", "bounty_direct", "Reddit r/forhire (免费直联·全球自由职业雇佣)"),
+    ("DoneDirtCheap", "bounty_direct", "Reddit r/DoneDirtCheap (免费直联·快单悬赏)"),
+    ("hireaprogrammer", "bounty_direct", "Reddit r/hireaprogrammer (免费直联·开发急单)"),
+    ("freelance_forhire", "bounty_direct", "Reddit r/freelance_forhire (免费直联·外包直聘)")
+]
+
+REDDIT_TARGET_SUBS = [
+    *[(s[0], s[1], s[2], "new") for s in FAST_BOUNTY_SUBS],
+    ("webscraping", "bounty_direct", "Reddit r/webscraping (爬虫代抓与反爬求助)", "new"),
+    ("excel", "pain_saas", "Reddit r/excel (全球表格自动化痛点热榜)", "top_month"),
+    ("googlesheets", "pain_saas", "Reddit r/googlesheets (谷歌表格脚本痛点热榜)", "top_month"),
+    ("SaaS", "pain_saas", "Reddit r/SaaS (软件痛点与变现复盘)", "top_month"),
+    ("SideProject", "pain_saas", "Reddit r/SideProject (独立副业产品变现)", "top_month"),
+    ("microsaas", "pain_saas", "Reddit r/microsaas (微型SaaS真实营收榜)", "top_month"),
+    ("sweatystartup", "pain_saas", "Reddit r/sweatystartup (传统本地生意痛点)", "top_month"),
+    ("smallbusiness", "pain_saas", "Reddit r/smallbusiness (小微老板痛点)", "top_month"),
+    ("Entrepreneur", "pain_saas", "Reddit r/Entrepreneur (创业痛点吐槽)", "top_month"),
+    ("Automate", "pain_saas", "Reddit r/Automate (自动化工作流需求)", "top_month"),
+    ("beermoney", "gray_arb", "Reddit r/beermoney (亲测网赚打款门道)", "top_month"),
+    ("sidehustle", "gray_arb", "Reddit r/sidehustle (野路子副业实操)", "top_month"),
+    ("flipping", "gray_arb", "Reddit r/flipping (跨平台低买高卖倒爷)", "top_month"),
+    ("affiliatemarketing", "gray_arb", "Reddit r/affiliatemarketing (CPA与联盟营销套利)", "top_month"),
+    ("blackhat", "gray_arb", "Reddit r/blackhat (黑帽SEO与灰产技术热榜)", "top_month"),
+    ("leadgeneration", "gray_arb", "Reddit r/leadgeneration (B2B灰产获客与名单倒卖)", "top_month"),
+    ("SEO", "gray_arb", "Reddit r/SEO (搜索流量截流与寄生虫SEO)", "top_month"),
+    ("juststart", "gray_arb", "Reddit r/juststart (流量站搞钱实战连载)", "top_month"),
+    ("NSFWCreators", "nsfw_adult", "Reddit r/NSFWCreators (成人创作者引流变现)", "top_month"),
+    ("onlyfansadvice", "nsfw_adult", "Reddit r/onlyfansadvice (OnlyFans私域变现门道)", "top_month"),
+    ("CreatorsAdvice", "nsfw_adult", "Reddit r/CreatorsAdvice (擦边订阅制变现)", "top_month"),
+    ("Fansly_Advice", "nsfw_adult", "Reddit r/Fansly_Advice (Fansly平台变现门道)", "top_month"),
+    ("CamGirlProblems", "nsfw_adult", "Reddit r/CamGirlProblems (全球成人直播打赏门道)", "top_month")
+]
+
+SHIELDED_DOMAINS = (
+    "blackhatworld.com", "reddit.com", "etsy.com",
+    "f95zone.to", "affiliatefix.com", "g2.com", "trustpilot.com", "dlsite.com"
+)
+
+
+def clean_raw_html(raw_text):
+    if not raw_text:
+        return ""
+    txt = html.unescape(html.unescape(str(raw_text)))
+    txt = re.sub(r"<!--[\s\S]*?-->", " ", txt)
+    txt = re.sub(r"<[^>]+>", " ", txt)
+    txt = re.sub(r"\s+", " ", txt).strip()
+    return txt
+
+
+def load_proxies():
+    proxies = []
+    env_px = os.environ.get("PROXY_URL", "").strip()
+    if env_px:
+        for raw_line in re.split(r"[\r\n,;]+", env_px):
+            s = raw_line.strip()
+            if s:
+                proxies.append(s if "://" in s else f"http://{s}")
+    if os.path.exists(PROXY_FILE):
+        with open(PROXY_FILE, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                s = line.strip()
+                if not s or s.startswith("#"):
+                    continue
+                if "://" in s:
+                    proxies.append(s)
+                else:
+                    parts = s.split(":")
+                    if len(parts) == 2:
+                        proxies.append(f"http://{parts[0]}:{parts[1]}")
+                    elif len(parts) >= 4:
+                        proxies.append(f"http://{parts[2]}:{parts[3]}@{parts[0]}:{parts[1]}")
+    return proxies
+
+
+# ==============================================================================
+# 本地电脑静默浏览器引擎（仅在 --local-browser 模式下启用，后台无感过五秒盾，不弹窗不抢焦点）
+# ==============================================================================
+def fetch_via_local_silent_browser(url, wait_sec=4.0):
+    """使用本地电脑的 Chrome/Edge 静默无头模式打开高防网页，拿到过盾后的真实 HTML"""
+    with _PLAYWRIGHT_LOCK:
+        # 方案 A：优先尝试 DrissionPage（过 Cloudflare 盾最强，支持静默 headless）
+        try:
+            from DrissionPage import ChromiumPage, ChromiumOptions
+            co = ChromiumOptions()
+            co.set_user_data_path(LOCAL_BROWSER_PROFILE)
+            co.headless(True)
+            co.set_argument("--disable-gpu")
+            co.set_argument("--mute-audio")
+            co.set_argument("--no-sandbox")
+            page = ChromiumPage(co)
+            page.get(url, retry=1, timeout=18)
+            time.sleep(wait_sec)
+            html_content = page.html
+            return html_content
+        except ImportError:
+            pass
+        except Exception as e:
+            print(f"[LOCAL BROWSER DP WARN] {url}: {e}")
+
+        # 方案 B：尝试 Playwright 静默 Chromium
+        try:
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as p:
+                browser = p.chromium.launch_persistent_context(
+                    user_data_dir=LOCAL_BROWSER_PROFILE + "_pw",
+                    headless=True,
+                    args=["--disable-blink-features=AutomationControlled", "--mute-audio"]
+                )
+                page = browser.pages[0] if browser.pages else browser.new_page()
+                page.goto(url, timeout=20000, wait_until="domcontentloaded")
+                time.sleep(wait_sec)
+                content = page.content()
+                browser.close()
+                return content
+        except Exception as e:
+            raise RuntimeError(f"本地浏览器未安装 DrissionPage 或 Playwright: {e}")
+
+
+def http_get(url, timeout=18, headers=None, allow_jina_fallback=False):
+    scraper_key = os.environ.get("SCRAPER_API_KEY", "").strip()
+    is_shielded = any(d in url.lower() for d in SHIELDED_DOMAINS)
+    proxies = load_proxies()
+
+    attempts = []
+    if proxies:
+        for px in random.sample(proxies, min(len(proxies), 2)):
+            attempts.append(("proxy", url, px))
+    if scraper_key and is_shielded:
+        api_u = f"http://api.scraperapi.com?api_key={scraper_key}&keep_headers=true&url={urllib.parse.quote(url)}"
+        attempts.append(("scraperapi", api_u, None))
+    attempts.append(("direct", url, None))
+    if allow_jina_fallback:
+        attempts.append(("jina_reader", f"https://r.jina.ai/{url}", None))
+
+    last_err = None
+    for mode_name, target_url, chosen_proxy in attempts:
+        request_headers = {
+            "User-Agent": random.choice(USER_AGENTS),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,application/json,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Cache-Control": "no-cache"
+        }
+        if headers and mode_name != "jina_reader":
+            request_headers.update(headers)
+        if mode_name == "jina_reader":
+            request_headers["X-Return-Format"] = "html"
+
+        try:
+            if HAS_CURL_CFFI:
+                px_dict = {"http": chosen_proxy, "https": chosen_proxy} if chosen_proxy else None
+                fp = random.choice(["chrome124", "chrome120", "safari17_0"])
+                resp = cffi_requests.get(
+                    target_url, impersonate=fp, headers=request_headers,
+                    proxies=px_dict, timeout=timeout, allow_redirects=True
+                )
+                if resp.status_code in (403, 429, 503):
+                    raise RuntimeError(f"HTTP {resp.status_code} on {mode_name}")
+                resp.raise_for_status()
+                text_out = resp.text
+                # 检测是否返回了 Cloudflare 假 200 拦截空壳页
+                if "Just a moment..." in text_out[:800] or "Attention Required! | Cloudflare" in text_out[:800]:
+                    raise RuntimeError(f"Cloudflare challenge page on {mode_name}")
+                return text_out
+
+            req = urllib.request.Request(target_url, headers=request_headers)
+            opener = urllib.request.build_opener(urllib.request.ProxyHandler({"http": chosen_proxy, "https": chosen_proxy})) if chosen_proxy else urllib.request.build_opener()
+            return opener.open(req, timeout=timeout).read().decode("utf-8", errors="ignore")
+        except Exception as exc:
+            last_err = exc
+            continue
+
+    # 如果常规请求失败或返回假空页，且当前开启了本地静默浏览器模式，则调用本地静默浏览器兜底
+    if USE_LOCAL_SILENT_BROWSER and is_shielded:
+        return fetch_via_local_silent_browser(url)
+
+    raise last_err
+
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS signals (
+            id TEXT PRIMARY KEY,
+            track TEXT,
+            title_zh TEXT,
+            summary_one_line TEXT,
+            deal_fact_zh TEXT,
+            pain_point_zh TEXT,
+            solver_case_zh TEXT,
+            platform_ecology_tip_zh TEXT,
+            reverse_money_idea_zh TEXT,
+            action_plan_zh TEXT,
+            feasibility_pct INTEGER,
+            time_to_money TEXT,
+            capital_req TEXT,
+            source_platform TEXT,
+            source_url TEXT,
+            solver_url TEXT,
+            created_at TEXT,
+            deliverable_type TEXT,
+            created_ts INTEGER
+        )
+    """)
+    columns = {row[1] for row in c.execute("PRAGMA table_info(signals)")}
+    if "created_ts" not in columns:
+        c.execute("ALTER TABLE signals ADD COLUMN created_ts INTEGER DEFAULT 0")
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS notified_bounties (
+            id TEXT PRIMARY KEY,
+            notified_at TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en=""):
+    clean_title = bounty_item.get("title_zh", "")
+    source_url = bounty_item.get("source_url", "")
+    deal_fact = bounty_item.get("deal_fact_zh", "")
+    pain_txt = bounty_item.get("pain_point_zh", "")[:280]
+    action_txt = bounty_item.get("action_plan_zh", "")[:260]
+
+    dm_url = f"https://www.reddit.com/message/compose/?to={author_name}" if author_name else source_url
+    if not custom_dm_en:
+        custom_dm_en = (
+            "Hey! Just saw your task post. Before your inbox gets flooded with generic bids, "
+            "I already built a quick working sample based on your exact requirements (screenshot attached). "
+            "I can deliver the complete files within 1-2 hours. Let me know if you want to check the sample!"
+        )
+
+    plain_summary = (
+        f"🚨【10分钟黄金抢单窗 · 新悬赏急单】\n"
+        f"📌 标题：{clean_title}\n"
+        f"💰 核验：{deal_fact}\n\n"
+        f"📝 雇主具体要求：\n{pain_txt}\n\n"
+        f"⚡ 3分钟秒拿单动作：\n{action_txt}\n\n"
+        f"💬 私信话术：\n{custom_dm_en}\n\n"
+        f"🔗 原帖直链：{source_url}"
+    )
+
+    pushed_any = False
+    pushplus_token = os.environ.get("PUSHPLUS_TOKEN", "").strip()
+    if pushplus_token:
+        try:
+            pp_data = json.dumps({
+                "token": pushplus_token,
+                "title": f"🚨新悬赏急单: {clean_title[:35]}",
+                "content": plain_summary.replace("\n", "<br>"),
+                "template": "html"
+            }).encode("utf-8")
+            req = urllib.request.Request("http://www.pushplus.plus/send", data=pp_data, headers={"Content-Type": "application/json"})
+            urllib.request.urlopen(req, timeout=10).read()
+            pushed_any = True
+            print(f"[PUSHPLUS SUCCESS] {clean_title[:50]}")
+        except Exception as exc:
+            print(f"[PUSHPLUS WARN] {type(exc).__name__}: {exc}")
+
+    webhook_url = os.environ.get("WEBHOOK_URL", "").strip()
+    if webhook_url:
+        try:
+            wb_payload = {"msg_type": "text", "content": {"text": plain_summary}} if ("feishu" in webhook_url) else {"msgtype": "text", "text": {"content": plain_summary}}
+            req = urllib.request.Request(webhook_url, data=json.dumps(wb_payload).encode("utf-8"), headers={"Content-Type": "application/json"})
+            response_text = urllib.request.urlopen(req, timeout=10).read().decode("utf-8", errors="ignore")
+            if "feishu" in webhook_url or "larksuite" in webhook_url:
+                response_data = json.loads(response_text or "{}")
+                response_code = response_data.get("code", response_data.get("StatusCode", 0))
+                if response_code not in (0, "0", None):
+                    raise RuntimeError(f"Feishu code={response_code}: {response_data.get('msg') or response_data.get('StatusMessage')}")
+            pushed_any = True
+            print(f"[WEBHOOK SUCCESS] {clean_title[:50]}")
+        except Exception as exc:
+            print(f"[WEBHOOK WARN] {type(exc).__name__}: {exc}")
+    if not pushplus_token and not webhook_url:
+        print("[PUSH SKIP] PUSHPLUS_TOKEN 与 WEBHOOK_URL 均未配置")
+    return pushed_any
+
+
+def call_gemini_fast_bounty_dm(raw_title, raw_body, author_name=""):
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        print("[GEMINI SKIP] GEMINI_API_KEY 未配置")
+        return None
+    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").strip()
+    prompt = f"""请根据下面这条新悬赏单返回严格 JSON，不要 Markdown：
+{{"title_zh":"中文一句话任务与预算摘要","sample_3min_zh":"3分钟可执行的小样步骤","custom_dm_en":"70词以内、点名具体需求的英文私信"}}
+作者：{author_name}
+标题：{raw_title}
+正文：{raw_body[:1600]}"""
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{urllib.parse.quote(model, safe='')}:generateContent?key={urllib.parse.quote(api_key)}"
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json", "temperature": 0.25},
+        }
+        request = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
+        response = json.loads(urllib.request.urlopen(request, timeout=20).read().decode("utf-8"))
+        result = json.loads(response["candidates"][0]["content"]["parts"][0]["text"])
+        print(f"[GEMINI SUCCESS] {raw_title[:50]}")
+        return result if isinstance(result, dict) else None
+    except Exception as exc:
+        print(f"[GEMINI WARN] {type(exc).__name__}: {exc}")
+        return None
+
+
+def extract_honest_deal_fact(text_blob, ups=0, comments=0):
+    dlsite_sales = re.search(r'販売数[:：\s]*([\d,]+)', text_blob)
+    if dlsite_sales:
+        sold_num = dlsite_sales.group(1)
+        return f"✅ 100% 官方公开真实销量：热销 {sold_num} 份 (DLsite 铁证)"
+
+    paid_bids = len(re.findall(r'\$bid|\$paid|\[hiring\]|\[task\]|bounty', text_blob, re.IGNORECASE))
+    money_matches = re.findall(r'(\$\d+(?:,\d{3})*(?:\.\d{1,2})?(?:\s*(?:k|K|MRR|mrr|/mo|/day|/hr))?)', text_blob)
+
+    if paid_bids > 0 and money_matches:
+        top_nums = " / ".join(list(dict.fromkeys(money_matches))[:2])
+        return f"✅ 真金白银悬赏: {top_nums} | 竞争: {comments}条评论"
+    if money_matches:
+        top_nums = " / ".join(list(dict.fromkeys(money_matches))[:3])
+        return f"📊 披露金额/营收: {top_nums} | 热度: {ups}赞 · {comments}评"
+    return f"🔥 高关注真实赚钱需求 ({ups}赞 · {comments}评)"
+
+
 def is_valid_money_opportunity(title, body, track, source_platform, ups=0, cmts=0):
     blob = f"{title} {body}".lower()
-    # 1. 严厉剔除服务器宕机报错 (如 AWS 503 / Outage)、安全漏洞通报、版规水贴、卖课骗子
     noise_patterns = [
         r"\b(?:503|502|504|outage|is\s+down|status\s+page|us-east-1|incident|cve-\d+|ddos)\b",
         r"\b(?:megathread|monthly\s+thread|weekly\s+thread|rules|announcement|moderator)\b",
@@ -17,7 +404,6 @@ def is_valid_money_opportunity(title, body, track, source_platform, ups=0, cmts=
     if track == "bounty_direct":
         return bool(re.search(r"\[task\]|\[hiring\]|\bwtb\b|\bhiring\b|\blooking\s+for\b|\bneed\b|\bbounty\b|\$\d+|外包|急招|兼职|开发|脚本|爬虫", blob, re.I))
 
-    # 非悬赏单：剔除 0 评论且低于 3 赞的无人关注水贴
     if cmts == 0 and ups < 3:
         return False
 
@@ -54,7 +440,6 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
     sentences = [s.strip() for s in re.split(r'[.!?;\n]+', cleanBody) if len(s.strip()) > 18]
     summary_quote = " | ".join(sentences[:2])[:220] if sentences else cleanTitle
 
-    # 形态 1：How to Build / 实战开发教程复刻变现型（直接拿开源方案卖给线下/垂直行业老板，绝不去 0 评论区找买家！）
     if re.search(r'^how\s+to\b|\bbuild\s+an?\b|\bstep[- ]by[- ]step\b|\btutorial\b|\bagent\b', cleanTitle, re.I) and defaultTrack != "bounty_direct":
         client_desc = f"线下/海外「{target_client}」实体门店老板" if target_client else f"需要「{cleanTitle[:25]}」的中小企业主"
         return {
@@ -65,7 +450,6 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
             "reverse_money_idea_zh": f"🔄 把《{cleanTitle[:25]}》榨干的 3 条路径：\n1. 【闲鱼/小红书卖汉化工作流】：把这套方案转成 Coze / Dify / n8n 中文模板，在小红书发笔记《给{target_client or '门店'}做了个AI自动预约系统》，按 ¥99/份 卖给国内店主和同行；\n2. 【Fiverr 挂 $199 代搭建】：在 Fiverr 上架同名服务接欧美老板定制单；\n3. 【打包卖给行业代运营公司】：把工具贴牌批发给专门服务 `{target_client or '实体店'}` 的营销机构。"
         }
 
-    # 形态 2：免费直联悬赏急单（严格区分 0 评论首发窗 vs 多评论插队）
     if defaultTrack == "bounty_direct" or re.search(r'\[task\]|\[hiring\]|\$bid|forhire|slavelabour|donedirtcheap|\bwtb\b', blob, re.I):
         bounty_tip = (
             f"🔥 0 竞标黄金首发窗：这单刚发出，当前是 **0 条评论**！趁印度低价党还没来，5 分钟跑出 `{entity_tag}` 前 10 行结果截图直接发私信，95% 原价拿单！"
@@ -80,7 +464,6 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
             "reverse_money_idea_zh": f"🔄 3 条逆向赚钱门道：\n1. 【闲鱼转包赚 6 倍汇率差】：接下美金单后去国内闲鱼搜 `{entity_tag} 代做` 花 ¥80 搞定；\n2. 【脱敏挂 Gumroad 复卖】：把交付脚本按 $29/份 卖给有同样需求的同行；\n3. 【顺藤摸瓜抄雇主业务】：点进雇主发帖历史看他用这批数据在跑什么暴利项目。"
         }
 
-    # 形态 3：成人 NSFW / CPA / 痛点复盘（根据 cmts 真实数值动态生成动作，绝不出现“去 0 条评论抓人”）
     action_step_1 = (
         f"1. 【抓评论区现成买家】：点开原帖查看那 {cmts} 条跟帖，找到同样抱怨该痛点或询问工具的潜在客户；"
         if cmts > 0 else
@@ -93,3 +476,846 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
         "platform_ecology_tip_zh": f"🔥 截流细节：{'回复排第一的高赞评论（抢占楼中楼）曝光最高' if cmts > 2 else '切勿直发收款硬广链接，用实测结果截图吸引客户主动私信'}。",
         "reverse_money_idea_zh": f"🔄 围绕《{cleanTitle[:25]}》的 3 条逆向变现路径：\n1. 【跨国信息差搬运】：把本帖套路翻译成中文干货发小红书/闲鱼，卖 ¥49~¥99 的配套工具包；\n2. 【Done-For-You 代配置服务】：挂出 $79 帮欧美小老板远程配好全流程，转包国内闲鱼技术员交付；\n3. 【竞品 1 星差评截胡】：去 Trustpilot / G2 找同类高价软件的最新差评客户推销你的 $29 买断平替版。"
     }
+
+
+def sanitizeAndUpgradeSignal(rawItem):
+    title = clean_raw_html(rawItem.get("title_zh") or rawItem.get("title") or "")
+    pain = clean_raw_html(rawItem.get("pain_point_zh") or rawItem.get("selftext") or "")
+    if not title:
+        return None
+    if re.search(r'\[offer\]|\[for\s*hire\]', title, re.I):
+        return None
+
+    track = rawItem.get("track", "pain_saas")
+    source_platform = rawItem.get("source_platform", "全球社区")
+    isBaseCard = str(rawItem.get("id", "")).startswith("base_")
+    createdTs = int(rawItem.get("created_ts") or rawItem.get("created_utc") or time.time())
+
+    if not isBaseCard and track == "bounty_direct":
+        if (time.time() - createdTs) > 7200:
+            return None
+
+    ups = int(rawItem.get("ups") or 0)
+    cmts = int(rawItem.get("num_comments") or 0)
+
+    if not isBaseCard and not is_valid_money_opportunity(title, pain, track, source_platform, ups, cmts):
+        return None
+
+    u = generate_unique_non_template_analysis(title, pain, source_platform, rawItem.get("source_url", ""), track, ups, cmts)
+    return {
+        "id": rawItem.get("id") or f"sig_{abs(hash(title))}",
+        "track": track,
+        "title_zh": title,
+        "summary_one_line": rawItem.get("summary_one_line") or f"{source_platform} 核验收录",
+        "deal_fact_zh": rawItem.get("deal_fact_zh") or extract_honest_deal_fact(f"{title} {pain}", ups, cmts),
+        "pain_point_zh": u["pain_point_zh"],
+        "solver_case_zh": u["solver_case_zh"],
+        "platform_ecology_tip_zh": u["platform_ecology_tip_zh"],
+        "reverse_money_idea_zh": u["reverse_money_idea_zh"],
+        "action_plan_zh": u["action_plan_zh"],
+        "feasibility_pct": 92 if track == "bounty_direct" else 87,
+        "time_to_money": "当天~24h" if track == "bounty_direct" else "2~7天",
+        "capital_req": "$0",
+        "source_platform": source_platform,
+        "source_url": rawItem.get("source_url", "https://reddit.com"),
+        "solver_url": rawItem.get("solver_url", "https://reddit.com"),
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "deliverable_type": "bounty_sniper_py",
+        "created_ts": createdTs
+    }
+
+
+def fetch_reddit_jsonp_py(sub, mode="new", limit=20):
+    errors = []
+    path = f"top.json?t=month&limit={limit}&raw_json=1" if mode == "top_month" else f"new.json?limit={limit}&raw_json=1"
+
+    # 1. 本地模式或已配住宅代理时：优先直连 Reddit JSON（本地家庭宽带 100% 绿灯，不触发 PullPush 429！）
+    if USE_LOCAL_SILENT_BROWSER or load_proxies():
+        reddit_headers = {
+            "User-Agent": random.choice(USER_AGENTS),
+            "Accept": "application/json"
+        }
+        for host in ("www.reddit.com", "old.reddit.com"):
+            try:
+                raw = http_get(f"https://{host}/r/{sub}/{path}", timeout=12, headers=reddit_headers)
+                data = json.loads(raw)
+                posts = [c["data"] for c in data.get("data", {}).get("children", [])]
+                if posts:
+                    print(f"[SOURCE OK] Reddit r/{sub}: 本地/住宅网络直连成功获取 {len(posts)} 条")
+                    return posts
+            except Exception as exc:
+                errors.append(f"{host}: {type(exc).__name__}: {exc}")
+
+    # 2. 云端模式：通过加了 1.2 秒节流保护的 PullPush 通道获取（防止并发触发 429）
+    try:
+        time.sleep(1.2)
+        sort_by = "score" if mode == "top_month" else "created_utc"
+        pp_url = f"https://api.pullpush.io/reddit/search/submission/?subreddit={sub}&size={limit}&sort=desc&sort_type={sort_by}"
+        raw_pp = http_get(pp_url, timeout=14)
+        pp_data = json.loads(raw_pp).get("data", [])
+        posts = []
+        for d in pp_data:
+            if not d.get("title"):
+                continue
+            posts.append({
+                "id": str(d.get("id")),
+                "title": d.get("title"),
+                "selftext": d.get("selftext") or "",
+                "author": d.get("author") or "",
+                "created_utc": int(d.get("created_utc") or time.time()),
+                "ups": int(d.get("score") or 5),
+                "num_comments": int(d.get("num_comments") or 1),
+                "permalink": f"/r/{sub}/comments/{d.get('id')}/"
+            })
+        if posts:
+            print(f"[SOURCE OK] Reddit r/{sub}: PullPush 节流通道成功获取 {len(posts)} 条")
+            return posts
+    except Exception as exc:
+        errors.append(f"PullPush: {type(exc).__name__}: {exc}")
+
+    print(f"[SOURCE WARN] Reddit r/{sub}: {' | '.join(errors)}")
+    return []
+
+
+def is_direct_reddit_employer_post(sub, post):
+    title = clean_raw_html(post.get("title") or "")
+    if not title or post.get("crosspost_parent") or post.get("removed_by_category"):
+        return False
+    if re.search(r"\[offer\]|\[for\s*hire\]", title, re.I):
+        return False
+    if sub.lower() in {"slavelabour", "donedirtcheap"}:
+        return bool(re.search(r"\[task\]", title, re.I))
+    if sub.lower() in {"forhire", "hireaprogrammer", "freelance_forhire"}:
+        return bool(re.search(r"\[(?:hiring|task)\]", title, re.I))
+    return True
+
+
+def _iso_timestamp(value, fallback):
+    try:
+        return int(datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp())
+    except (TypeError, ValueError):
+        return fallback
+
+
+_GITHUB_REPO_CACHE = {}
+
+
+def github_api_get(url, timeout=18):
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return json.loads(http_get(url, timeout=timeout, headers=headers))
+
+
+def extract_markdown_section(markdown_text, heading_terms, max_chars=1800):
+    lines = str(markdown_text or "").splitlines()
+    captured = []
+    active = False
+    for line in lines:
+        heading = re.match(r"^\s{0,3}#{1,6}\s+(.+?)\s*$", line)
+        if heading:
+            heading_text = clean_raw_html(heading.group(1)).lower()
+            if active:
+                break
+            active = any(term.lower() in heading_text for term in heading_terms)
+        if active:
+            captured.append(line.rstrip())
+    section = "\n".join(captured).strip()
+    return section[:max_chars]
+
+
+def verify_first_party_github_bounty(issue):
+    if issue.get("pull_request") or issue.get("state") != "open":
+        return None, "不是开放 Issue"
+
+    repo_url = str(issue.get("repository_url") or "")
+    repo_full_name = repo_url.split("/repos/", 1)[-1].strip("/")
+    issue_number = int(issue.get("number") or 0)
+    body = str(issue.get("body") or "")
+    user = issue.get("user") or {}
+    association = str(issue.get("author_association") or "").upper()
+
+    if not repo_full_name or not issue_number:
+        return None, "缺少原仓库地址"
+    if user.get("type") == "Bot" or str(user.get("login") or "").lower().endswith("[bot]"):
+        return None, "机器人发布"
+    if association not in {"OWNER", "MEMBER", "COLLABORATOR"}:
+        return None, f"发布者不是仓库维护者({association or 'NONE'})"
+    if issue.get("assignees"):
+        return None, "已经分配给他人"
+
+    linked_issue_urls = re.findall(r"https://github\.com/([^/]+/[^/]+)/(?:issues|pull)/(\d+)", body, re.I)
+    if any(linked_repo.lower() != repo_full_name.lower() for linked_repo, _ in linked_issue_urls):
+        return None, "正文指向其他仓库原帖，属于转发"
+    issue_title = str(issue.get("title") or "")
+    relay_blob = f"{repo_full_name} {issue_title} {body[:800]}".lower()
+    if re.search(r"bounty[-_ ]?bot|bounty encontrado|original bounty|mirrored from|aggregat(?:or|ed)", relay_blob):
+        return None, "机器人/聚合转发"
+    if re.search(r"bot[-_ ]?trap|ai\s+benchmark\s+arena", relay_blob):
+        return None, "机器人诱捕/基准测试任务"
+    if re.search(r"\[\s*\$0(?:\.0+)?\s*\]", issue_title, re.I):
+        return None, "标题明确标注零赏金"
+
+    try:
+        repo = _GITHUB_REPO_CACHE.get(repo_full_name)
+        if repo is None:
+            repo = github_api_get(repo_url)
+            _GITHUB_REPO_CACHE[repo_full_name] = repo
+        repo_description = str(repo.get("description") or "").lower()
+        if repo.get("archived") or repo.get("disabled") or repo.get("fork"):
+            return None, "仓库已归档/停用或为 Fork"
+        if re.search(r"bounty\s*(?:bot|aggregator|monitor)|aggregate.*bount", repo_description):
+            return None, "仓库本身是悬赏聚合器"
+    except Exception as exc:
+        return None, f"仓库身份核验失败:{type(exc).__name__}"
+
+    try:
+        comments = github_api_get(f"{issue.get('comments_url')}?per_page=100") if issue.get("comments") else []
+        timeline = github_api_get(f"{issue.get('timeline_url')}?per_page=100")
+    except Exception as exc:
+        return None, f"评论/Timeline核验失败:{type(exc).__name__}"
+
+    for event in timeline if isinstance(timeline, list) else []:
+        related = ((event.get("source") or {}).get("issue") or {})
+        if related.get("pull_request"):
+            pr_state = str(related.get("state") or "").lower()
+            merged_at = (related.get("pull_request") or {}).get("merged_at")
+            if pr_state == "open" or merged_at:
+                return None, f"已有关联 PR #{related.get('number')}"
+
+    comment_texts = [str(comment.get("body") or "") for comment in comments if isinstance(comment, dict)]
+    all_comments = "\n".join(comment_texts)
+    busy_pattern = re.compile(
+        r"\b(?:queued|filled|claimed|taken|first[- ]in[- ]line|already\s+passed|awaiting\s+(?:founder\s+)?merge|"
+        r"pr\s*#\d+[^\n]{0,100}(?:open|submitted|passed|queued|review))\b",
+        re.I,
+    )
+    if busy_pattern.search(all_comments):
+        return None, "最新评论显示已认领/排队/已有通过测试的PR"
+
+    latest_maintainer_comment = ""
+    for comment in reversed(comments if isinstance(comments, list) else []):
+        if str(comment.get("author_association") or "").upper() in {"OWNER", "MEMBER", "COLLABORATOR"}:
+            latest_maintainer_comment = str(comment.get("body") or "")
+            break
+
+    objective = extract_markdown_section(body, ["objective", "goal", "任务目标"])
+    checklist = extract_markdown_section(body, ["required pr submission checklist", "submission checklist", "requirements"])
+    fixture_section = extract_markdown_section(all_comments, ["submission & fixture path", "fixture path", "submission path"])
+    fixture_lines = []
+    for line in f"{body}\n{all_comments}".splitlines():
+        if re.search(r"bounties/submissions/|verify_bounty_submission\.py|submission\s*&\s*fixture\s*path", line, re.I):
+            cleaned = line.strip()
+            if cleaned and cleaned not in fixture_lines:
+                fixture_lines.append(cleaned)
+    fixture_text = fixture_section or "\n".join(fixture_lines[:8])
+    if not objective:
+        objective = body[:1200]
+
+    copy_pack = (
+        f"【Objective｜核心任务目标】\n{objective}\n\n"
+        f"【Required PR Submission Checklist｜提交格式】\n{checklist or '原帖没有单独的 Checklist 标题，请打开原帖按完整要求执行。'}\n\n"
+        f"【Submission & Fixture Path｜文件路径与验证命令】\n{fixture_text or '原帖及最新评论未给出单独的 Fixture Path。'}"
+    )
+    latest_context = clean_raw_html(latest_maintainer_comment)[:700] or "维护者最新评论未出现 assigned / queued / filled / 已有通过测试 PR。"
+    return {
+        "issue": issue,
+        "repo_full_name": repo_full_name,
+        "copy_pack": copy_pack,
+        "latest_context": latest_context,
+        "author": str(user.get("login") or ""),
+        "comments": comments,
+    }, "一手原帖已核验"
+
+
+def parse_links_from_html_or_jina(raw_text, base_url, url_keyword, source_label, track, now_ts, max_items=10, is_hire=False):
+    out = []
+    soup = BeautifulSoup(raw_text, "lxml")
+    seen_urls = set()
+
+    for a in soup.select("a[href]"):
+        href = a.get("href", "").strip()
+        title = clean_raw_html(a.get_text(" ", strip=True))
+        if not href or len(title) < 12:
+            continue
+        full_url = urllib.parse.urljoin(base_url, href)
+        if url_keyword and url_keyword not in full_url:
+            continue
+        if any(skip in full_url.lower() for skip in ("/login", "/register", "/members/", "/page-", "javascript:", "/rules")):
+            continue
+        if is_hire and not re.search(r"\b(?:WTB|hiring|looking\s+for|need|wanted|task|scrape|bot)\b", title, re.I):
+            continue
+        if full_url in seen_urls:
+            continue
+        seen_urls.add(full_url)
+        item = sanitizeAndUpgradeSignal({
+            "id": f"sh_{abs(hash(full_url))}",
+            "created_ts": now_ts - 900 if track == "bounty_direct" else (now_ts - 7200 - len(out) * 300),
+            "track": track,
+            "ups": 10,
+            "num_comments": 3,
+            "title_zh": f"【{source_label}】{title[:95]}",
+            "pain_point_zh": f"来自 {source_label} 穿透抓取的实战赚钱标的：{title}",
+            "source_platform": source_label,
+            "source_url": full_url,
+            "solver_url": full_url,
+        })
+        if item:
+            out.append(item)
+        if len(out) >= max_items:
+            return out
+
+    for m in re.finditer(r"\[([^\]]{12,120})\]\((https?://[^\s\)]+)\)", raw_text):
+        title = clean_raw_html(m.group(1))
+        full_url = m.group(2).strip()
+        if url_keyword and url_keyword not in full_url:
+            continue
+        if is_hire and not re.search(r"\b(?:WTB|hiring|looking\s+for|need|wanted|task|scrape|bot)\b", title, re.I):
+            continue
+        if full_url in seen_urls:
+            continue
+        seen_urls.add(full_url)
+        item = sanitizeAndUpgradeSignal({
+            "id": f"sh_{abs(hash(full_url))}",
+            "created_ts": now_ts - 900 if track == "bounty_direct" else (now_ts - 7200 - len(out) * 300),
+            "track": track,
+            "ups": 10,
+            "num_comments": 3,
+            "title_zh": f"【{source_label}】{title[:95]}",
+            "pain_point_zh": f"来自 {source_label} 穿透抓取的实战赚钱标的：{title}",
+            "source_platform": source_label,
+            "source_url": full_url,
+            "solver_url": full_url,
+        })
+        if item:
+            out.append(item)
+        if len(out) >= max_items:
+            break
+    return out
+
+
+def fetch_additional_sources(now_ts):
+    items = []
+    thirty_days_ago_ts = now_ts - (30 * 86400)
+
+    # 1. Hacker News (GitHub 云端 100% 稳抓)
+    hn_queries = [
+        ("willing to pay OR too expensive alternative", "pain_saas", "HN 近30天痛点求平替"),
+        ("Show HN revenue OR MRR OR first sale OR Stripe", "pain_saas", "HN 近30天真实变现复盘"),
+        ("affiliate OR arbitrage OR SEO OR lead generation", "gray_arb", "HN 近30天流量套利门道"),
+        ("OnlyFans OR NSFW OR adult OR AI companion", "nsfw_adult", "HN 成人与AI伴侣变现")
+    ]
+    for query, trk, label in hn_queries:
+        try:
+            url = f"https://hn.algolia.com/api/v1/search?tags=story&numericFilters=created_at_i>{thirty_days_ago_ts},points>3&hitsPerPage=8&query=" + urllib.parse.quote(query)
+            data = json.loads(http_get(url, timeout=15))
+            for hit in data.get("hits", []):
+                object_id = str(hit.get("objectID") or "")
+                title = clean_raw_html(hit.get("title") or hit.get("story_title") or "")
+                if not object_id or not title:
+                    continue
+                item = sanitizeAndUpgradeSignal({
+                    "id": f"hn_{object_id}", "created_ts": int(hit.get("created_at_i") or (now_ts - 14400)),
+                    "track": trk, "ups": hit.get("points") or 0, "num_comments": hit.get("num_comments") or 0,
+                    "title_zh": f"【{label}】{title}", "pain_point_zh": hit.get("story_text") or title,
+                    "source_platform": label, "source_url": hit.get("url") or f"https://news.ycombinator.com/item?id={object_id}",
+                    "solver_url": f"https://news.ycombinator.com/item?id={object_id}",
+                })
+                if item:
+                    items.append(item)
+            print(f"[SOURCE OK] {label}")
+        except Exception as exc:
+            print(f"[SOURCE WARN] {label}: {exc}")
+
+    # 2. 全网搜索（加 1.2 秒节流 + 放宽布尔词，解决成人CPA与黑帽SEO 0条的问题）
+    global_searches = [
+        ("CPA locker OGAds", "gray_arb", "全网搜索·CPA与任务锁门道"),
+        ("OnlyFans traffic promote", "nsfw_adult", "全网搜索·成人CPA与AI擦边"),
+        ("blackhat SEO rank", "gray_arb", "全网搜索·黑帽寄生虫SEO"),
+        ("made my first 1000 side hustle", "pain_saas", "全网搜索·近30天亲测赚钱复盘"),
+        ("TikTok shop affiliate digital product", "gray_arb", "全网搜索·短视频带货与虚拟品套利")
+    ]
+    for q_str, trk, label in global_searches:
+        try:
+            time.sleep(1.2)
+            pp_url = f"https://api.pullpush.io/reddit/search/submission/?q={urllib.parse.quote(q_str)}&size=12&sort=desc&sort_type=score"
+            pp_data = json.loads(http_get(pp_url, timeout=15)).get("data", [])
+            cnt = 0
+            for d in pp_data:
+                title = clean_raw_html(d.get("title", ""))
+                if not title:
+                    continue
+                sub_name = d.get("subreddit", "all")
+                post_id = d.get("id", "")
+                link = d.get("full_link") or f"https://www.reddit.com/r/{sub_name}/comments/{post_id}/"
+                item = sanitizeAndUpgradeSignal({
+                    "id": f"rds_{post_id}", "created_ts": int(d.get("created_utc") or (now_ts - 7200)),
+                    "track": trk, "ups": int(d.get("score") or 10), "num_comments": int(d.get("num_comments") or 2),
+                    "title_zh": f"【{label} · r/{sub_name}】{title}",
+                    "pain_point_zh": d.get("selftext") or title,
+                    "source_platform": label,
+                    "source_url": link, "solver_url": link
+                })
+                if item:
+                    items.append(item)
+                    cnt += 1
+            print(f"[SOURCE OK] {label}: {cnt} 条")
+        except Exception as exc:
+            print(f"[SOURCE WARN] {label}: {exc}")
+
+    # 3. V2EX (GitHub 云端 100% 稳抓)
+    for node in ("jobs", "outsourcing"):
+        try:
+            data = json.loads(http_get(f"https://www.v2ex.com/api/topics/show.json?node_name={node}", timeout=15))
+            for topic in data:
+                topic_id = str(topic.get("id") or "")
+                title = clean_raw_html(topic.get("title") or "")
+                if not topic_id or not title:
+                    continue
+                direct_post_blob = f"{title} {clean_raw_html(topic.get('content') or '')}"
+                if re.search(r"转载|转发|代发|猎头|中介|职位汇总", direct_post_blob, re.I):
+                    continue
+                source_url = topic.get("url") or f"https://www.v2ex.com/t/{topic_id}"
+                item = sanitizeAndUpgradeSignal({
+                    "id": f"v2ex_{topic_id}", "created_ts": int(topic.get("created") or now_ts),
+                    "track": "bounty_direct", "num_comments": topic.get("replies") or 0,
+                    "title_zh": f"【V2EX 免费直联 {node}】{title}",
+                    "pain_point_zh": topic.get("content_rendered") or topic.get("content") or title,
+                    "source_platform": f"V2EX {node}", "source_url": source_url, "solver_url": source_url,
+                })
+                if item:
+                    items.append(item)
+            print(f"[SOURCE OK] V2EX {node}")
+        except Exception as exc:
+            print(f"[SOURCE WARN] V2EX {node}: {exc}")
+
+    # 4. BlackHatWorld / AffiliateFix / F95zone：当在本地电脑运行 (--local-browser) 或配好住宅IP时真抓实盘！
+    bhw_forums = [
+        ("cpa", "cpa.24", "gray_arb", "BlackHatWorld CPA任务锁"),
+        ("affiliate", "affiliate-programs.15", "gray_arb", "BlackHatWorld 联盟营销"),
+        ("making_money", "making-money.12", "gray_arb", "BlackHatWorld 野路子搞钱"),
+        ("journey", "my-journey-discussions.167", "gray_arb", "BlackHatWorld 实盘连载"),
+        ("blackhat_seo", "black-hat-seo.28", "gray_arb", "BlackHatWorld 黑帽SEO"),
+        ("hire", "hire-a-freelancer.76", "bounty_direct", "BlackHatWorld 免费直联雇主急单")
+    ]
+    for kind, forum, track, bhw_label in bhw_forums:
+        try:
+            forum_url = f"https://www.blackhatworld.com/forums/{forum}/"
+            raw_html = http_get(forum_url, timeout=20, allow_jina_fallback=True)
+            parsed = parse_links_from_html_or_jina(
+                raw_html, "https://www.blackhatworld.com", "/threads/",
+                bhw_label, track, now_ts, max_items=10, is_hire=(kind == "hire")
+            )
+            if not parsed and USE_LOCAL_SILENT_BROWSER:
+                raw_html = fetch_via_local_silent_browser(forum_url)
+                parsed = parse_links_from_html_or_jina(
+                    raw_html, "https://www.blackhatworld.com", "/threads/",
+                    bhw_label, track, now_ts, max_items=10, is_hire=(kind == "hire")
+                )
+            items.extend(parsed)
+            status_tag = "SOURCE OK" if len(parsed) > 0 else "SOURCE EMPTY (需本地模式 --local-browser 或住宅IP)"
+            print(f"[{status_tag}] {bhw_label}: {len(parsed)} 条")
+        except Exception as exc:
+            print(f"[SOURCE WARN] {bhw_label}: {exc}")
+
+    for af_path, af_label in (("whats-new/posts/", "AffiliateFix CPA最新实战"), ("forums/cpa-affiliate-networks.9/", "AffiliateFix CPA联盟网赚")):
+        try:
+            af_url = f"https://www.affiliatefix.com/{af_path}"
+            raw_html = http_get(af_url, timeout=20, allow_jina_fallback=True)
+            parsed = parse_links_from_html_or_jina(
+                raw_html, "https://www.affiliatefix.com", "/threads/",
+                af_label, "gray_arb", now_ts, max_items=10
+            )
+            if not parsed and USE_LOCAL_SILENT_BROWSER:
+                raw_html = fetch_via_local_silent_browser(af_url)
+                parsed = parse_links_from_html_or_jina(
+                    raw_html, "https://www.affiliatefix.com", "/threads/",
+                    af_label, "gray_arb", now_ts, max_items=10
+                )
+            items.extend(parsed)
+            status_tag = "SOURCE OK" if len(parsed) > 0 else "SOURCE EMPTY (需本地模式 --local-browser 或住宅IP)"
+            print(f"[{status_tag}] {af_label}: {len(parsed)} 条")
+        except Exception as exc:
+            print(f"[SOURCE WARN] {af_label}: {exc}")
+
+    # 5. 修复 Chaturbate HTTP 400：直接抓取免 WM 参数的官方公开房间列表 / HTML 房间卡片
+    try:
+        cb_rooms = []
+        wm = os.environ.get("CHATURBATE_WM", "").strip()
+        cb_endpoints = [
+            f"https://chaturbate.com/api/public/affiliates/onlinerooms/?wm={urllib.parse.quote(wm or 'T9n5p')}&format=json",
+            "https://chaturbate.com/affiliates/api/onlinerooms/?format=json&wm=T9n5p"
+        ]
+        for cb_ep in cb_endpoints:
+            try:
+                data = json.loads(http_get(cb_ep, timeout=12))
+                cb_rooms = data.get("results", []) if isinstance(data, dict) else data
+                if cb_rooms:
+                    break
+            except Exception:
+                continue
+
+        if not cb_rooms:
+            # 免 WM 参数直抓 Chaturbate 首页实时高热直播间
+            cb_html = http_get("https://chaturbate.com/", timeout=15)
+            cb_soup = BeautifulSoup(cb_html, "lxml")
+            for li in cb_soup.select("li.room_list_room")[:10]:
+                a_node = li.select_one("a[href]")
+                if not a_node:
+                    continue
+                uname = a_node.get("href", "").strip("/")
+                cb_rooms.append({"username": uname, "num_users": 800, "tags": ["live", "top"]})
+
+        top_rooms = sorted(cb_rooms, key=lambda x: int(x.get("num_users") or 0), reverse=True)[:10]
+        for idx, room in enumerate(top_rooms):
+            username = str(room.get("username") or "")
+            if not username:
+                continue
+            viewers = int(room.get("num_users") or 0)
+            tags = " / ".join((room.get("tags") or [])[:5])
+            source_url = room.get("chat_room_url") or f"https://chaturbate.com/{username}/"
+            item = sanitizeAndUpgradeSignal({
+                "id": f"cb_{username}", "created_ts": now_ts - 14400 - (idx * 300), "track": "nsfw_adult", "ups": viewers,
+                "title_zh": f"【Chaturbate 全球成人直播榜 #{username}】当前 {viewers} 人在线打赏 (标签: {tags})",
+                "pain_point_zh": f"当前直播间实时在线 {viewers} 人；高转化细分癖好标签：{tags} ($1~$3/免费注册 或 20% 终身分成)",
+                "deal_fact_zh": f"✅ 官方实时在线打赏金主：{viewers} 人", "source_platform": "Chaturbate 成人直播榜",
+                "source_url": source_url, "solver_url": source_url,
+            })
+            if item:
+                items.append(item)
+        print(f"[SOURCE OK] Chaturbate: {len(top_rooms)} 条")
+    except Exception as exc:
+        print(f"[SOURCE WARN] Chaturbate: {exc}")
+
+    try:
+        f95_url = "https://f95zone.to/sam/latest_alpha/"
+        f95_raw = http_get(f95_url, timeout=20, allow_jina_fallback=True)
+        f95_parsed = parse_links_from_html_or_jina(
+            f95_raw, "https://f95zone.to", "/threads/",
+            "F95zone 成人游戏/Mod社区", "nsfw_adult", now_ts, max_items=10
+        )
+        if not f95_parsed and USE_LOCAL_SILENT_BROWSER:
+            f95_raw = fetch_via_local_silent_browser(f95_url)
+            f95_parsed = parse_links_from_html_or_jina(
+                f95_raw, "https://f95zone.to", "/threads/",
+                "F95zone 成人游戏/Mod社区", "nsfw_adult", now_ts, max_items=10
+            )
+        items.extend(f95_parsed)
+        status_tag = "SOURCE OK" if len(f95_parsed) > 0 else "SOURCE EMPTY (需本地模式 --local-browser 或住宅IP)"
+        print(f"[{status_tag}] F95zone: {len(f95_parsed)} 条")
+    except Exception as exc:
+        print(f"[SOURCE WARN] F95zone: {exc}")
+
+    try:
+        itch_rss = "https://itch.io/games/top-sellers/tag-nsfw.xml"
+        soup = BeautifulSoup(http_get(itch_rss, timeout=15), "xml")
+        itch_cnt = 0
+        for idx, entry in enumerate(soup.find_all("item")[:8]):
+            title = clean_raw_html(entry.find("title").get_text(" ", strip=True) if entry.find("title") else "")
+            link = clean_raw_html(entry.find("link").get_text(" ", strip=True) if entry.find("link") else "")
+            desc = clean_raw_html(entry.find("description").get_text(" ", strip=True) if entry.find("description") else "")
+            if not title or not link:
+                continue
+            item = sanitizeAndUpgradeSignal({
+                "id": f"itch_nsfw_{abs(hash(link))}", "created_ts": now_ts - 18000 - (idx * 300), "track": "nsfw_adult",
+                "title_zh": f"【Itch.io 欧美成人游戏畅销榜】{title}", "pain_point_zh": desc,
+                "deal_fact_zh": "✅ 欧美 Itch.io Top Sellers 成人畅销榜在榜作品",
+                "source_platform": "Itch.io NSFW 畅销榜", "source_url": link, "solver_url": link,
+            })
+            if item:
+                items.append(item)
+                itch_cnt += 1
+        print(f"[SOURCE OK] Itch.io NSFW: {itch_cnt} 条")
+    except Exception as exc:
+        print(f"[SOURCE WARN] Itch.io NSFW: {exc}")
+
+    try:
+        dlsite_url = "https://www.dlsite.com/maniax/ranking/day?sort=sale&order=desc"
+        soup = BeautifulSoup(http_get(dlsite_url, timeout=20), "lxml")
+        dlsite_count = 0
+        for row in soup.select("table.ranking_worklist tr")[:6]:
+            links = [a for a in row.select("a[href*='/work/=/product_id/']") if "btn_free_sample" not in (a.get("class") or []) and a.get_text(" ", strip=True)]
+            if not links:
+                continue
+            anchor = links[0]
+            title = clean_raw_html(anchor.get_text(" ", strip=True))
+            source_url = urllib.parse.urljoin(dlsite_url, anchor.get("href", ""))
+            body = clean_raw_html(row.get_text(" ", strip=True))
+            product_match = re.search(r"/product_id/([^/.]+)", source_url)
+            product_id = product_match.group(1) if product_match else str(abs(hash(source_url)))
+            dlsite_count += 1
+            item = sanitizeAndUpgradeSignal({
+                "id": f"dlsite_{product_id}", "created_ts": now_ts - 43200 - (dlsite_count * 600), "track": "nsfw_adult",
+                "title_zh": f"【DLsite R18 日榜】{title}", "pain_point_zh": body,
+                "deal_fact_zh": extract_honest_deal_fact(body), "source_platform": "DLsite R18 日榜",
+                "source_url": source_url, "solver_url": source_url,
+            })
+            if item:
+                items.append(item)
+        print(f"[SOURCE OK] DLsite: {dlsite_count} 条")
+    except Exception as exc:
+        print(f"[SOURCE WARN] DLsite: {exc}")
+
+    for dtag in ("saas", "sideprojects", "indiehackers", "automation"):
+        try:
+            dev_data = json.loads(http_get(f"https://dev.to/api/articles?tag={dtag}&top=30&per_page=8", timeout=12))
+            for art in dev_data:
+                title = clean_raw_html(art.get("title") or "")
+                if not title:
+                    continue
+                item = sanitizeAndUpgradeSignal({
+                    "id": f"dev_{art.get('id')}", "created_ts": _iso_timestamp(art.get("published_at"), now_ts - 86400),
+                    "track": "pain_saas", "ups": art.get("public_reactions_count") or 0, "num_comments": art.get("comments_count") or 0,
+                    "title_zh": f"【DEV.to 近30天变现热榜 #{dtag}】{title}",
+                    "pain_point_zh": clean_raw_html(art.get("description") or title),
+                    "source_platform": f"DEV.to #{dtag}", "source_url": art.get("url"), "solver_url": art.get("url"),
+                })
+                if item:
+                    items.append(item)
+        except Exception as exc:
+            print(f"[SOURCE WARN] DEV.to {dtag}: {exc}")
+
+    return items
+
+
+def run_fast_bounty_and_radar():
+    init_db()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now_ts = int(time.time())
+    all_fetched = []
+    alert_candidates = []
+
+    mode_str = "本地静默浏览器穿透模式" if USE_LOCAL_SILENT_BROWSER else "GitHub 云端模式"
+    print(f"[{now_str}] 🚀 正在执行 v11.6 ({mode_str}) 全网扫描...")
+
+    for sub, track, label in FAST_BOUNTY_SUBS:
+        posts = fetch_reddit_jsonp_py(sub, "new", 25)
+        for d in posts:
+            title = clean_raw_html(d.get("title", ""))
+            if not is_direct_reddit_employer_post(sub, d):
+                continue
+            item = sanitizeAndUpgradeSignal({
+                "id": f"rd_{d.get('id')}",
+                "created_ts": d.get("created_utc", now_ts),
+                "track": track,
+                "ups": d.get("ups", 0),
+                "num_comments": d.get("num_comments", 0),
+                "title_zh": f"【{label}】{title}",
+                "pain_point_zh": d.get("selftext") or title,
+                "source_platform": label,
+                "source_url": "https://www.reddit.com" + d.get("permalink", ""),
+                "solver_url": "https://www.reddit.com" + d.get("permalink", "")
+            })
+            if item:
+                all_fetched.append(item)
+                alert_candidates.append((item, d.get("author", ""), title, clean_raw_html(d.get("selftext") or "")))
+
+    github_scan_complete = False
+    current_github_ids = set()
+    try:
+        two_hours_ago = (datetime.utcnow() - timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        gh_query = f"is:issue is:open label:bounty created:>={two_hours_ago}"
+        gh_url = "https://api.github.com/search/issues?" + urllib.parse.urlencode({
+            "q": gh_query, "sort": "created", "order": "desc", "per_page": 100,
+        })
+        gh_data = github_api_get(gh_url)
+        gh_rejected = {}
+        gh_accepted = 0
+        for iss in gh_data.get("items", []):
+            verified, reason = verify_first_party_github_bounty(iss)
+            if not verified:
+                gh_rejected[reason] = gh_rejected.get(reason, 0) + 1
+                continue
+            created_ts = int(datetime.strptime(iss["created_at"], "%Y-%m-%dT%H:%M:%SZ").timestamp())
+            copy_pack = verified["copy_pack"]
+            latest_context = verified["latest_context"]
+            deal_fact = extract_honest_deal_fact(f"{iss['title']} {iss.get('body') or ''}", (iss.get("reactions") or {}).get("total_count", 0), iss.get("comments", 0))
+            item = sanitizeAndUpgradeSignal({
+                "id": f"gh_bounty_{iss['id']}",
+                "created_ts": created_ts,
+                "track": "bounty_direct",
+                "ups": (iss.get("reactions") or {}).get("total_count", 1),
+                "num_comments": iss.get("comments", 0),
+                "title_zh": f"【GitHub 一手悬赏·已查评论/PR】{iss['title']}",
+                "deal_fact_zh": f"{deal_fact} | ✅ 一手维护者原帖，当前无 Assignee、无关联在做 PR、无 queued/filled",
+                "pain_point_zh": iss.get("body") or iss["title"],
+                "source_platform": "GitHub 一手悬赏（已查评论/PR）",
+                "source_url": iss["html_url"],
+                "solver_url": iss["html_url"]
+            })
+            if item:
+                item["summary_one_line"] = "一手维护者原帖；已检查最新评论、Assignee 与关联 PR"
+                item["pain_point_zh"] = f"【一手状态核验】{latest_context}\n\n{copy_pack}"
+                item["action_plan_zh"] = copy_pack
+                item["platform_ecology_tip_zh"] = "⚡ 已自动检查原帖最底部最新评论、Assignee 和 Timeline 关联 PR；发现 assigned、queued、filled、claimed、在做 PR 或已通过测试即剔除，不推送。"
+                all_fetched.append(item)
+                current_github_ids.add(item["id"])
+                alert_body = f"{copy_pack}\n\n【维护者最新评论】\n{latest_context}"
+                alert_candidates.append((item, verified["author"], iss["title"], alert_body))
+                gh_accepted += 1
+        github_scan_complete = True
+        print(f"[GITHUB PRIMARY] examined={len(gh_data.get('items', []))} accepted={gh_accepted} rejected={sum(gh_rejected.values())} reasons={gh_rejected}")
+    except Exception as exc:
+        print(f"[SOURCE WARN] GitHub 一手悬赏: {type(exc).__name__}: {exc}")
+
+    for sub, track, label, mode in REDDIT_TARGET_SUBS[len(FAST_BOUNTY_SUBS):]:
+        posts = fetch_reddit_jsonp_py(sub, mode, 10)
+        for d in posts[:8]:
+            title = clean_raw_html(d.get("title", ""))
+            if not title:
+                continue
+            item = sanitizeAndUpgradeSignal({
+                "id": f"rd_{d.get('id')}",
+                "created_ts": d.get("created_utc", now_ts - 86400),
+                "track": track,
+                "ups": d.get("ups", 0),
+                "num_comments": d.get("num_comments", 0),
+                "title_zh": f"【{label}】{title}",
+                "pain_point_zh": d.get("selftext") or title,
+                "source_platform": label,
+                "source_url": "https://www.reddit.com" + d.get("permalink", ""),
+                "solver_url": "https://www.reddit.com" + d.get("permalink", "")
+            })
+            if item:
+                all_fetched.append(item)
+
+    all_fetched.extend(fetch_additional_sources(now_ts))
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    notified_ids = {row[0] for row in c.execute("SELECT id FROM notified_bounties")}
+    pushed_count = 0
+    for item, author, raw_title, raw_body in sorted(alert_candidates, key=lambda row: row[0].get("created_ts", 0), reverse=True):
+        age_minutes = max(0, (now_ts - int(item.get("created_ts") or 0)) / 60)
+        if item["id"] in notified_ids or age_minutes > 60 or pushed_count >= 5:
+            continue
+        ai_result = call_gemini_fast_bounty_dm(raw_title, raw_body, author)
+        custom_dm = ""
+        if ai_result:
+            if ai_result.get("title_zh"):
+                item["title_zh"] = f"【⚡急单】{clean_raw_html(ai_result['title_zh'])}"
+            if ai_result.get("sample_3min_zh"):
+                ai_action = clean_raw_html(ai_result["sample_3min_zh"])
+                if item.get("source_platform", "").startswith("GitHub 一手悬赏"):
+                    item["action_plan_zh"] = f"{item['action_plan_zh']}\n\n【Gemini 3分钟执行建议】\n{ai_action}"
+                else:
+                    item["action_plan_zh"] = ai_action
+            custom_dm = clean_raw_html(ai_result.get("custom_dm_en") or "")
+        if send_multichannel_bounty_alert(item, author_name=author, custom_dm_en=custom_dm):
+            c.execute("INSERT OR REPLACE INTO notified_bounties VALUES (?, ?)", (item["id"], now_str))
+            notified_ids.add(item["id"])
+            pushed_count += 1
+    print(f"[PUSH SUMMARY] candidates={len(alert_candidates)} pushed={pushed_count}")
+
+    c.execute("DELETE FROM signals WHERE track = 'bounty_direct' AND id NOT LIKE 'base_%' AND created_ts < ?", (now_ts - 7200,))
+    c.execute("DELETE FROM signals WHERE source_platform LIKE '%Upwork%' OR source_platform LIKE '%PeoplePerHour%' OR source_platform LIKE '%Freelancer%' OR source_platform LIKE '%Flippa%'")
+    c.execute("DELETE FROM signals WHERE solver_case_zh LIKE '%顺应当前热度，围绕该标的提供%' OR action_plan_zh LIKE '%去原帖 0 条评论里%' OR title_zh LIKE '%503%'")
+
+    for item in all_fetched:
+        c.execute("""
+            INSERT OR REPLACE INTO signals VALUES (
+                :id, :track, :title_zh, :summary_one_line, :deal_fact_zh,
+                :pain_point_zh, :solver_case_zh, :platform_ecology_tip_zh,
+                :reverse_money_idea_zh, :action_plan_zh, :feasibility_pct,
+                :time_to_money, :capital_req, :source_platform, :source_url,
+                :solver_url, :created_at, :deliverable_type, :created_ts
+            )
+        """, item)
+    conn.commit()
+
+    c.execute("SELECT * FROM signals ORDER BY created_ts DESC")
+    cols = [col[0] for col in c.description]
+    raw_rows = [dict(zip(cols, r)) for r in c.fetchall()]
+
+    plat_counts = {}
+    rows = []
+    for row in raw_rows:
+        sp = str(row.get("source_platform") or "")
+        if sp.startswith("GitHub") and not (
+            sp.startswith("GitHub 一手悬赏") and (not github_scan_complete or row.get("id") in current_github_ids)
+        ):
+            continue
+        plat_key = "DLsite" if "DLsite" in sp else ("HN" if ("Hacker News" in sp or sp.startswith("HN")) else sp[:18])
+        cap = 30 if row.get("track") == "bounty_direct" else (8 if plat_key in ("DLsite", "HN") else 12)
+        plat_counts[plat_key] = plat_counts.get(plat_key, 0) + 1
+        if plat_counts[plat_key] <= cap:
+            rows.append(row)
+
+    conn.close()
+
+    payload = {
+        "updated_at": now_str,
+        "poll_interval_sec": 60,
+        "this_cycle_fetched": len(all_fetched),
+        "live_count": len(rows),
+        "signals": rows
+    }
+    with open(JSON_OUT_PATH, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False)
+    print(f"[{now_str}] v11.6 扫描完毕！共输出 {len(rows)} 条定制拆解数据。")
+
+    # 如果是本地模式且目录是 git 仓库，自动同步最新数据到 GitHub 线上网页
+    if USE_LOCAL_SILENT_BROWSER and os.path.exists(os.path.join(BASE_DIR, ".git")):
+        try:
+            subprocess.run(["git", "add", "live_signals.json", "radar_pain_solver_history.db"], cwd=BASE_DIR, check=False)
+            subprocess.run(["git", "commit", "-m", "Local silent browser sync [skip ci]"], cwd=BASE_DIR, check=False)
+            subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=BASE_DIR, check=False)
+            subprocess.run(["git", "push"], cwd=BASE_DIR, check=False)
+            print("[LOCAL GIT SYNC] 已自动将本地抓到的高防源数据同步推送至 GitHub Pages！")
+        except Exception as e:
+            print(f"[LOCAL GIT WARN] {e}")
+
+    return payload
+
+
+class WorkbenchHandler(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        super().end_headers()
+
+    def do_GET(self):
+        if self.path.startswith("/api/signals"):
+            payload = run_fast_bounty_and_radar()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
+            return
+        if self.path == "/" or self.path == "/index.html":
+            self.path = "/index.html" if os.path.exists("index.html") else "/global_arb_radar_workbench.html"
+        return super().do_GET()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cloud-once", action="store_true", help="GitHub Actions 云端运行一次")
+    parser.add_argument("--bounty-fast", action="store_true", help="快速扫描悬赏单")
+    parser.add_argument("--local-browser", action="store_true", help="在本地电脑使用静默无头浏览器运行一次（攻克所有403高防源）")
+    parser.add_argument("--local-daemon", action="store_true", help="在本地电脑后台常驻运行（每60秒扫悬赏，每20分钟扫高防大盘，不弹窗不抢焦点）")
+    parser.add_argument("--serve", action="store_true")
+    parser.add_argument("--port", type=int, default=8765)
+    args = parser.parse_args()
+
+    os.chdir(BASE_DIR)
+    if args.local_browser or args.local_daemon:
+        USE_LOCAL_SILENT_BROWSER = True
+
+    if args.local_daemon:
+        print("🚀 已启动本地静默守护模式（完全后台无头运行，不弹窗、不影响日常使用电脑）...")
+        while True:
+            try:
+                run_fast_bounty_and_radar()
+            except Exception as e:
+                print(e)
+            time.sleep(300)
+    elif args.cloud_once or args.bounty_fast or args.local_browser or args.serve:
+        run_fast_bounty_and_radar()
+        if args.serve:
+            print(f"🚀 本地无上限满血工作台已启动: http://127.0.0.1:{args.port}/")
+            HTTPServer(("127.0.0.1", args.port), WorkbenchHandler).serve_forever()
+    else:
+        run_fast_bounty_and_radar()

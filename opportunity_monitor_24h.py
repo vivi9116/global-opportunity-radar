@@ -1164,7 +1164,15 @@ def fetch_additional_sources(now_ts):
 
     try:
         dlsite_url = "https://www.dlsite.com/maniax/ranking/day?sort=sale&order=desc"
-        soup = BeautifulSoup(http_get(dlsite_url, timeout=20), "lxml")
+        try:
+            dlsite_html = http_get(dlsite_url, timeout=20)
+        except Exception:
+            if not USE_LOCAL_SILENT_BROWSER:
+                raise
+            dlsite_html = fetch_via_local_silent_browser(dlsite_url)
+        if USE_LOCAL_SILENT_BROWSER and "verify that you're not a robot" in dlsite_html.lower():
+            dlsite_html = fetch_via_local_silent_browser(dlsite_url)
+        soup = BeautifulSoup(dlsite_html, "lxml")
         dlsite_count = 0
         for row in soup.select("table.ranking_worklist tr")[:6]:
             links = [a for a in row.select("a[href*='/work/=/product_id/']") if "btn_free_sample" not in (a.get("class") or []) and a.get_text(" ", strip=True)]
@@ -1174,13 +1182,16 @@ def fetch_additional_sources(now_ts):
             title = clean_raw_html(anchor.get_text(" ", strip=True))
             source_url = urllib.parse.urljoin(dlsite_url, anchor.get("href", ""))
             body = clean_raw_html(row.get_text(" ", strip=True))
+            sales = re.findall(r"販売数[:：\s]*([\d,]+)", body)
+            deal_fact = (f"✅ 官方24小时榜单销量：{sales[0]} 份；作品累计销量：{sales[1]} 份"
+                         if len(sales) >= 2 else extract_honest_deal_fact(body))
             product_match = re.search(r"/product_id/([^/.]+)", source_url)
             product_id = product_match.group(1) if product_match else str(abs(hash(source_url)))
             dlsite_count += 1
             item = sanitizeAndUpgradeSignal({
                 "id": f"dlsite_{product_id}", "created_ts": now_ts - 43200 - (dlsite_count * 600), "track": "nsfw_adult",
                 "title_zh": f"【DLsite R18 日榜】{title}", "pain_point_zh": body,
-                "deal_fact_zh": extract_honest_deal_fact(body), "source_platform": "DLsite R18 日榜",
+                "deal_fact_zh": deal_fact, "source_platform": "DLsite R18 日榜",
                 "source_url": source_url, "solver_url": source_url,
             })
             if item:
@@ -1332,6 +1343,27 @@ def run_fast_bounty_and_radar():
         print(f"[DATA CORRECTION] removed_unverified_chaturbate_counts={len(fake_cb_ids)}")
     analyze_all_new_signals(all_fetched, conn)
     notified_ids = {row[0] for row in c.execute("SELECT id FROM notified_bounties")}
+    # 云端接力本地已验证浏览器抓到的一手急单；本地未配置 webhook 时不能漏推。
+    fast_source_to_sub = {label: sub for sub, _, label in FAST_BOUNTY_SUBS}
+    alert_ids = {item["id"] for item, _, _, _ in alert_candidates}
+    c.execute("SELECT * FROM signals WHERE track='bounty_direct' AND created_ts>=?",
+              (now_ts - 3600,))
+    alert_columns = [column[0] for column in c.description]
+    for record in c.fetchall():
+        queued_item = dict(zip(alert_columns, record))
+        signal_id = queued_item["id"]
+        if signal_id in notified_ids or signal_id in alert_ids:
+            continue
+        platform = queued_item.get("source_platform") or ""
+        raw_title = (queued_item.get("title_zh") or "").split("】", 1)[-1].strip()
+        if platform in fast_source_to_sub:
+            if not is_direct_reddit_employer_post(fast_source_to_sub[platform], {"title": raw_title}):
+                continue
+        elif platform not in ("BlackHatWorld 免费直联雇主急单", "BlackHatWorld WTB现金求购悬赏"):
+            continue
+        alert_candidates.append((queued_item, "", raw_title,
+                                 queued_item.get("pain_point_zh") or raw_title))
+        alert_ids.add(signal_id)
     pushed_count = 0
     for item, author, raw_title, raw_body in sorted(alert_candidates, key=lambda row: row[0].get("created_ts", 0), reverse=True):
         age_minutes = max(0, (now_ts - int(item.get("created_ts") or 0)) / 60)
@@ -1593,7 +1625,9 @@ def analyze_all_new_signals(items, conn):
                     failed += 1
                     continue
                 analysis = {field: answer[field].strip() for field in ANALYSIS_FIELDS}
-                if str(item["deal_fact_zh"]).startswith("✅ 100% 官方公开真实销量"):
+                if item.get("source_platform") == "DLsite R18 日榜" and str(item["deal_fact_zh"]).startswith("✅ 官方24小时榜单销量"):
+                    analysis["deal_fact_zh"] = item["deal_fact_zh"]
+                elif str(item["deal_fact_zh"]).startswith("✅ 100% 官方公开真实销量"):
                     analysis["deal_fact_zh"] = item["deal_fact_zh"]
                 item.update(analysis)
                 cursor.execute("INSERT OR REPLACE INTO gemini_analysis VALUES (?, ?, ?)",

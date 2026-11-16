@@ -1250,6 +1250,60 @@ def parse_affiliatefix_visible_page(raw_html, source_label, now_ts, max_items=8)
     return out
 
 
+def parse_f95_visible_page(raw_html, now_ts, max_items=8):
+    """从登录后的官方最新页提取作品指标和原帖正文。"""
+    soup = BeautifulSoup(raw_html, "lxml")
+    out = []
+    for tile in soup.select(".resource-tile[data-thread-id]"):
+        thread_id = tile.get("data-thread-id") or ""
+        link = tile.select_one("a.resource-tile_link[href]")
+        title_node = tile.select_one(".resource-tile_info-header_title")
+        if not thread_id.isdigit() or not link or not title_node:
+            continue
+        thread_url = link.get("href") or ""
+        if not re.fullmatch(r"https://f95zone\.to/threads/\d+/", thread_url):
+            continue
+        relative_ts = 0
+        for cls, multiplier in (("mins", 60), ("hours", 3600), ("days", 86400)):
+            node = tile.select_one(f".tile-date_{cls}")
+            if node and node.get_text(" ", strip=True).isdigit():
+                relative_ts = int(node.get_text(" ", strip=True)) * multiplier
+                break
+        if not relative_ts or relative_ts > 30 * 86400:
+            continue
+        title = clean_raw_html(title_node.get_text(" ", strip=True))
+        version_node = tile.select_one(".resource-tile_label-version")
+        version = clean_raw_html(version_node.get_text(" ", strip=True)) if version_node else ""
+        views_node = tile.select_one(".resource-tile_info-meta_views")
+        likes_node = tile.select_one(".resource-tile_info-meta_likes")
+        views = views_node.get_text(" ", strip=True) if views_node else "未显示"
+        likes = likes_node.get_text(" ", strip=True) if likes_node else "未显示"
+        try:
+            thread_html = fetch_via_local_silent_browser(thread_url, wait_sec=2.0)
+            first_post = BeautifulSoup(thread_html, "lxml").select_one("article.message .message-body")
+            body = clean_raw_html(first_post.get_text(" ", strip=True)) if first_post else ""
+            if len(body) < 80:
+                continue
+            item = sanitizeAndUpgradeSignal({
+                "id": f"f95_{thread_id}_{re.sub(r'[^a-z0-9]+', '_', version.lower())}",
+                "created_ts": now_ts - relative_ts, "track": "nsfw_adult",
+                "ups": int(likes.replace(",", "")) if likes.replace(",", "").isdigit() else 0,
+                "num_comments": 0,
+                "title_zh": f"【F95zone 成人游戏/Mod社区】{title} {version}",
+                "pain_point_zh": body[:3500],
+                "deal_fact_zh": f"⚪ 官方最新页显示浏览量 {views}、点赞 {likes}；原帖未披露具体成交单数",
+                "source_platform": "F95zone 成人游戏/Mod社区",
+                "source_url": thread_url, "solver_url": thread_url,
+            })
+            if item:
+                out.append(item)
+        except Exception as exc:
+            print(f"[SOURCE WARN] F95zone 单条原帖: {type(exc).__name__}")
+        if len(out) >= max_items:
+            break
+    return out
+
+
 def fetch_additional_sources(now_ts):
     items = []
     thirty_days_ago_ts = now_ts - (30 * 86400)
@@ -1469,33 +1523,17 @@ def fetch_additional_sources(now_ts):
 
     # 8. F95zone（强制核验 URL 必须包含 f95zone.to/threads/）
     f95_parsed = []
-    try:
-        f95_url = "https://f95zone.to/sam/latest_alpha/"
-        f95_raw = http_get(f95_url, timeout=18, allow_jina_fallback=True)
-        f95_parsed = parse_links_from_html_or_jina(
-            f95_raw, "https://f95zone.to", "/threads/",
-            "F95zone 成人游戏/Mod社区", "nsfw_adult", now_ts, max_items=8
-        )
-    except Exception:
-        pass
-    if not f95_parsed:
-        for b_item in fetch_realtime_search_bridge(
-            "site:f95zone.to/threads VN OR RPGM OR Ren'Py",
-            expected_domain_path="f95zone.to/threads/",
-            max_age_days=30,
-            limit=8
-        ):
-            sig = sanitizeAndUpgradeSignal({
-                "id": f"f95_{b_item['id']}", "created_ts": b_item["created_utc"],
-                "track": "nsfw_adult", "ups": b_item["ups"], "num_comments": b_item["num_comments"],
-                "title_zh": f"【F95zone 成人游戏/Mod社区】{b_item['title']}",
-                "pain_point_zh": b_item["selftext"],
-                "source_platform": "F95zone 成人游戏/Mod社区", "source_url": b_item["url"], "solver_url": b_item["url"]
-            })
-            if sig:
-                f95_parsed.append(sig)
+    if USE_LOCAL_SILENT_BROWSER:
+        try:
+            f95_raw = fetch_via_local_silent_browser("https://f95zone.to/sam/latest_alpha/")
+            if "have to be" in f95_raw.lower() and "logged in" in f95_raw.lower():
+                raise RuntimeError("F95zone 最新页要求登录专用浏览器")
+            f95_parsed = parse_f95_visible_page(f95_raw, now_ts, max_items=8)
+        except Exception as exc:
+            print(f"[SOURCE WARN] F95zone: {type(exc).__name__}: {exc}")
     items.extend(f95_parsed)
-    print(f"[SOURCE OK] F95zone: {len(f95_parsed)} 条")
+    print(f"[SOURCE {'OK' if f95_parsed else 'WARN'}] F95zone: {len(f95_parsed)} 条"
+          + ("；需本地已登录浏览器补采" if not USE_LOCAL_SILENT_BROWSER else ""))
 
     # 9. Itch.io NSFW & DLsite
     try:

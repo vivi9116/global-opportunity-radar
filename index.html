@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>全球痛点与真实赚钱机会 24h 监控工作台 (v11.8 全通版·严格30天时效·15天首笔$100)</title>
+  <title>全球痛点与真实赚钱机会 24h 监控工作台 (v11.9 四重内容安检·防歧义纯净版)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -35,17 +35,17 @@
   <!-- 顶部导航栏 -->
   <header class="w-full bg-slate-900/95 border border-slate-800 rounded-xl px-4 py-2.5 mb-3 flex flex-wrap items-center justify-between gap-2">
     <div class="flex items-center gap-2.5 flex-wrap">
-      <span class="badge-pill bg-emerald-600 text-white">v11.8 全通版 · 悬赏2h内 · 套利/痛点严格30天内</span>
+      <span class="badge-pill bg-emerald-600 text-white">v11.9 四重内容安检 · 严禁非标外部站</span>
       <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight">
-        全球痛点、免费悬赏、跨国套利与成人CPA 24h 监控台（聚焦15天内赚到第一笔$100 · 超30天旧帖自动清除）
+        全球痛点、免费悬赏、跨国套利与成人CPA 24h 监控台（入库前强制核验域名与正文相关性 · 聚焦15天首笔$100）
       </h1>
     </div>
     <div class="flex items-center gap-2 flex-wrap text-xs font-semibold">
       <span id="totalCountBadge" class="px-2.5 py-1 rounded-md bg-emerald-950 border border-emerald-700 text-emerald-300">
-        📊 正在并发扫描近30天内纯免费接单与套利源...
+        📊 正在执行四重内容安检与相关性核验...
       </span>
       <span id="gatewayStatus" class="px-2.5 py-1 rounded-md bg-amber-950/90 border border-amber-700/80 text-amber-300">
-        🟡 正在聚合全球近30天实时数据流...
+        🟡 正在过滤无关站点并聚合全球近30天真需求...
       </span>
       <span class="px-2.5 py-1 rounded-md bg-rose-950/90 border border-rose-700/80 text-rose-300">
         ⚡ 60秒悬赏快轨: <strong id="fastTimerText" class="text-white font-mono">01:00</strong>
@@ -69,7 +69,7 @@
         🏭 2. 一对一落地工具生成工厂 (防封二跳页 / 99%任务锁 / 抢单器 / 截流话术)
       </button>
       <button onclick="switchMainTab('tab_truth')" id="btn_tab_truth" class="px-4 py-2 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 cursor-pointer">
-        🔍 3. 15天内赚到第一笔$100执行路线与时效锁说明
+        🔍 3. 抓取前四重内容安检标准与15天赚首笔$100说明
       </button>
     </div>
     <div class="flex items-center gap-2">
@@ -86,7 +86,7 @@
   <section id="tab_radar" class="w-full">
     <div class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 mb-3 flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap items-center gap-1.5">
-        <button onclick="filterTrack('all')" id="flt_all" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer">全部全球机会 (严格30天内)</button>
+        <button onclick="filterTrack('all')" id="flt_all" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer">全部全球机会 (已过四重安检)</button>
         <button onclick="filterTrack('bounty_direct')" id="flt_bounty_direct" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-bold cursor-pointer">💰 免费直联悬赏急单 (仅留2h内新单)</button>
         <button onclick="filterTrack('gray_arb')" id="flt_gray_arb" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold cursor-pointer">🕵️ 跨国套利/服务转包/CPA内容锁/BHW (近30天)</button>
         <button onclick="filterTrack('pain_saas')" id="flt_pain_saas" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold cursor-pointer">💻 软件痛点买断/开源方案复刻 (近30天)</button>
@@ -177,11 +177,11 @@ You don't need a $49/mo subscription for this — I can either send you the full
   <!-- ==================== 标签页 3：实情交底表 ==================== -->
   <section id="tab_truth" class="w-full hidden">
     <div class="w-full v92-card rounded-xl p-5">
-      <h2 class="text-lg font-extrabold text-white mb-3">🔍 v11.8 全通版（破除PullPush断流与0条问题 · 悬赏2h/套利30天严格时效锁）</h2>
+      <h2 class="text-lg font-extrabold text-white mb-3">🔍 v11.9 四重内容安检（彻底杜绝 cpa-jobs.jp 等无关内容混入）</h2>
       <div class="space-y-3 text-xs sm:text-sm text-slate-300">
-        <p>1. <strong class="text-emerald-400">破除 PullPush 停更导致 0 条的问题</strong>：前端已切换为 `rss2json` 实时穿透流 + `Lemmy` 免盾联邦 API + `DEV.to` + 后端实时搜索引擎桥（`live_signals.json`），确保 Reddit 23 个版块、BlackHatWorld 6 大专区、AffiliateFix、F95zone、Chaturbate 全量出数据。</p>
-        <p>2. <strong class="text-amber-300">双重严格时效锁</strong>：悬赏急单超过 2 小时（7200秒）自动删除；套利、CPA、痛点、成人等其他所有赛道一旦超过 30 天（2592000秒）立即自动清除，彻底杜绝几百天前的老贴。</p>
-        <p>3. <strong class="text-rose-400">聚焦 15 天内赚到首笔 $100</strong>：所有卡片拆解直接量化到成交几单或多少次免费注册即可满 $100。</p>
+        <p>1. <strong class="text-emerald-400">URL 域名与帖子路径白名单硬核验</strong>：每一条抓回的数据必须来自 12 个指定赚钱社区/榜单的真实帖子路径（如 `reddit.com/r/.../comments/`、`blackhatworld.com/threads/`、`affiliatefix.com/threads/`），任何外部企业站或招聘站（如 `cpa-jobs.jp`）当场拦截。</p>
+        <p>2. <strong class="text-rose-400">同名歧义词物理隔离</strong>：自动识别并踢出会计师 CPA（Certified Public Accountant / 公認会計士 / 求人 / 転職 / Tax / Audit）等无关行业内容。</p>
+        <p>3. <strong class="text-amber-300">赛道双因子核验</strong>：进入 CPA/套利/成人/痛点赛道前，必须同时命中「核心词 + 变现/流量上下文词」。</p>
       </div>
     </div>
   </section>
@@ -194,6 +194,13 @@ let fastCountdown = FAST_BOUNTY_SEC;
 let currentFilter = 'all';
 let displayLimit = 150;
 const openCardIds = new Set(["base_01", "base_03"]);
+
+// 允许展示的合法赚钱社区域名白名单（彻底拦截 cpa-jobs.jp 等野鸡外部网站！）
+const ALLOWED_DOMAINS = [
+  "reddit.com", "github.com", "news.ycombinator.com", "v2ex.com",
+  "blackhatworld.com", "affiliatefix.com", "dlsite.com", "chaturbate.com",
+  "f95zone.to", "itch.io", "dev.to", "lemmy.world", "crakrevenue.com", "ogads.com"
+];
 
 const GLOBAL_DEEP_BASE = [
   {
@@ -280,6 +287,40 @@ function formatAgeBadge(createdTs) {
   return { text: `🔵 ${days}天前发布 (近30天内有效)`, color: "bg-slate-800 border-slate-700 text-sky-300" };
 }
 
+// 前端四重内容与域名安检器：彻底拦截 cpa-jobs.jp、会计师考证/招聘、服务器故障等无关内容！
+function isValidMoneySignalJS(title, pain, track, sourcePlat, sourceUrl, ups, cmts) {
+  const urlLower = String(sourceUrl || "").toLowerCase();
+  const blob = `${title} ${pain} ${urlLower}`.toLowerCase();
+
+  // 1. 域名白名单硬核验：不在 ALLOWED_DOMAINS 里的外部野鸡站（如 cpa-jobs.jp）直接枪毙！
+  if (!urlLower || !ALLOWED_DOMAINS.some(d => urlLower.includes(d))) return false;
+
+  // 2. 歧义词与垃圾黑名单：拦截会计师 CPA (Public Accountant / 公認会計士 / 求人 / 転職)、付费投标站、503故障
+  if (/peopleperhour|upwork|freelancer\.com|flippa/i.test(blob)) return false;
+  if (/\b(?:accountant|accounting|bookkeeping|auditor|auditing|tax\s+prep|aicpa|cpa\s+exam|public\s+accountant|deloitte|pwc|kpmg)\b/i.test(blob)) return false;
+  if (/公認会計士|会計士|税理士|経理|求人サイト|キャリア求人|転職|ジョブズ|cpa-jobs/i.test(blob)) return false;
+  if (/\b(?:503|502|504|outage|is\s+down|status\s+page|us-east-1|cve-\d+)\b/i.test(title)) return false;
+
+  if (/DLsite|Chaturbate|Itch\.io|F95zone|GitHub 一手悬赏/i.test(sourcePlat)) return true;
+
+  // 3. 赛道专属双因子核验
+  if (track === "bounty_direct") {
+    return /\[task\]|\[hiring\]|\bwtb\b|\bhiring\b|\blooking\s+for\b|\bneed\b|\bbounty\b|\$\d+|外包|急招|兼职|开发|脚本|爬虫/i.test(blob);
+  }
+  if (track === "nsfw_adult") {
+    return /\b(?:onlyfans|fanvue|fansly|patreon|chaturbate|camgirl|nsfw|lewd|hentai|eroge|dlsite|crakrevenue|adult|ai\s+girlfriend|subscribers|ppv)\b/i.test(blob);
+  }
+  if (track === "gray_arb") {
+    if (/\bcpa\b/i.test(blob) && !/\b(?:offer|offers|traffic|lead|leads|locker|ogads|adbluemedia|crakrevenue|maxbounty|affiliate|network|payout|epc|conversion|landing|blackhat|bhw)\b/i.test(blob)) {
+      return false;
+    }
+    return /\$\d+|profit|margin|flip|flipping|resell|arbitrage|drop\s*servicing|cpa|locker|ogads|adbluemedia|crakrevenue|affiliate|commission|parasite\s+seo|blackhat|traffic|lead|method|journey|beermoney|side\s+hustle/i.test(blob);
+  }
+
+  if (cmts === 0 && ups < 3) return false;
+  return /\$\d+|mrr|arr|revenue|profit|client|customer|sale|sold|monetiz|automate|automation|script|scraper|scraping|saas|microsaas|plugin|extension|expensive|alternative|manual|workflow|agent|excel|csv|sheets/i.test(blob);
+}
+
 function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, defaultTrack, ups = 0, cmts = 0) {
   const cleanTitle = rawTitle
     .replace(/^\[[^\]]+\]\s*|^【[^】]+】\s*/g, "")
@@ -300,7 +341,7 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
   const hasRealMoney = moneyMatches.length > 0;
   const priceStr = hasRealMoney ? moneyMatches.slice(0, 2).join(" / ") : "按交付收 $39~$199（1~3单即满首笔$100）";
 
-  const industryMatch = blob.match(/\b(gym|fitness|clinic|dentist|restaurant|real estate|realtor|lawyer|agency|shopify|wix|ecommerce|hotel|salon|plumber|contractor|podcast|youtuber|creator|onlyfans|teacher|student|accountant)\b/i);
+  const industryMatch = blob.match(/\b(gym|fitness|clinic|dentist|restaurant|real estate|realtor|lawyer|agency|shopify|wix|ecommerce|hotel|salon|plumber|contractor|podcast|youtuber|creator|onlyfans|teacher|student)\b/i);
   const targetClient = industryMatch ? industryMatch[1] : "";
 
   const entityRegex = /\b(Python|Rust|TypeScript|React|Next\.js|Node\.js|Docker|PostgreSQL|SQLite|Supabase|Stripe|PayPal|Shopify|Wix|WordPress|Chrome|Telegram|Discord|WhatsApp|OpenAI|Claude|LLM|RAG|Agent|OCR|PDF|CSV|Excel|Google Sheets|Selenium|Playwright|Puppeteer|Cloudflare|Proxy|TikTok|YouTube|Instagram|OnlyFans|Fanvue|Patreon|Etsy|Amazon|eBay|Notion|Airtable|Zapier|n8n|FFmpeg|iOS|Android|Flutter|CPA|OGAds|CrakRevenue|AdBlueMedia|SEO|Backlinks|Arbitrage|Flipping)\b/gi;
@@ -310,7 +351,6 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
   const sentences = cleanBody.split(/[.!?;\n]+/).map(s => s.trim()).filter(s => s.length > 18 && !s.includes(cleanTitle.slice(0, 20)));
   const summaryQuote = sentences.slice(0, 2).join(" | ").slice(0, 220) || cleanBody.slice(0, 200) || cleanTitle;
 
-  // 形态 1：GitHub 开源赏金单 (Bounty)
   if (repoName || sourceLabel.includes("GitHub")) {
     const targetRepo = repoName || cleanTitle.slice(0, 28);
     const competitionTip = cmts === 0
@@ -329,7 +369,6 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
     };
   }
 
-  // 形态 2：「How to Build / Guide / AI Agent」实战方案复刻套利型
   if (/^how\s+to\b|\bbuild\s+an?\b|\bstep[- ]by[- ]step\b|\bguide\b|\btutorial\b|\bagent\b|\bworkflow\b/i.test(cleanTitle) && defaultTrack !== "bounty_direct") {
     const clientScene = targetClient ? `线下/海外「${targetClient}」实体门店老板` : `急需「${cleanTitle.slice(0, 25)}」的欧美中小老板`;
     return {
@@ -344,7 +383,6 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
     };
   }
 
-  // 形态 3：免费直联悬赏急单
   const isBounty = defaultTrack === "bounty_direct" || /\[task\]|\[hiring\]|\$bid|forhire|slavelabour|donedirtcheap|\bwtb\b/i.test(blob);
   if (isBounty) {
     const bountyTip = cmts === 0
@@ -365,7 +403,6 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
     };
   }
 
-  // 形态 4：成人 NSFW / DLsite / Chaturbate / F95zone / 成人 CPA 套利
   if (sourceLabel.includes("DLsite") || sourceLabel.includes("Chaturbate") || sourceLabel.includes("F95zone") || sourceLabel.includes("Itch.io") || defaultTrack === "nsfw_adult") {
     return {
       track: "nsfw_adult",
@@ -379,7 +416,6 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
     };
   }
 
-  // 形态 5：跨国套利 / 服务转包 / CPA 内容锁 / 黑帽 SEO / 跨平台倒爷
   if (defaultTrack === "gray_arb" || /BlackHatWorld|AffiliateFix|CPA|黑帽|网赚|野路子|倒爷|套利|Lemmy/i.test(sourceLabel)) {
     return {
       track: "gray_arb",
@@ -395,7 +431,6 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
     };
   }
 
-  // 形态 6：软件痛点吐槽 / 独立变现复盘（严格区分有评论 vs 0评论）
   const hasComments = cmts > 0;
   return {
     track: defaultTrack || "pain_saas",
@@ -418,17 +453,13 @@ function sanitizeAndUpgradeSignal(rawItem) {
   let rawPain = cleanHtmlText(rawItem.pain_point_zh || rawItem.selftext || rawItem.description || "");
   let sourcePlat = String(rawItem.source_platform || "全球社区");
   let sourceUrl = String(rawItem.source_url || "");
-  if (!rawTitle) return null;
+  if (!rawTitle || !sourceUrl) return null;
 
-  // 1. 严格黑名单：剔除付费投标站、Flippa、求职贴，以及 AWS 503 宕机/服务器故障等纯新闻水贴
   if (/\[offer\]|\[for\s*hire\]/i.test(rawTitle)) return null;
-  if (/peopleperhour|upwork|freelancer\.com|flippa/i.test(sourcePlat + " " + rawTitle + " " + sourceUrl)) return null;
-  if (/\b(?:503|502|504|outage|is\s+down|status\s+page|us-east-1|cve-\d+)\b/i.test(rawTitle)) return null;
 
   const isBaseCard = String(rawItem.id || "").startsWith("base_");
   const createdTs = Number(rawItem.created_ts || rawItem.created_utc || 0);
 
-  // 2. 双重严格时效锁：悬赏单超过 2 小时（7200秒）丢弃；其他所有赛道超过 30 天（720小时）一律丢弃！
   if (!isBaseCard) {
     if (!createdTs) return null;
     const ageHours = (Date.now() / 1000 - createdTs) / 3600;
@@ -442,9 +473,9 @@ function sanitizeAndUpgradeSignal(rawItem) {
   const ups = Number(rawItem.ups || (upsMatch ? upsMatch[1] : 0));
   const cmts = Number(rawItem.num_comments || (cmtsMatch ? cmtsMatch[1] : 0));
 
-  // 3. 非悬赏单如果既没有评论（0评）且点赞极低（<3赞），属于无人关注的冷门水贴，直接过滤（成人/BHW/套利专榜除外）
-  if (!isBaseCard && rawItem.track !== "bounty_direct" && !/DLsite|Chaturbate|Itch\.io|F95zone|BlackHatWorld|AffiliateFix|套利|Lemmy/i.test(sourcePlat)) {
-    if (cmts === 0 && ups < 3) return null;
+  // 强制执行前端四重安检器：任何类似 cpa-jobs.jp 或会计招聘的内容当场拦截返回 null！
+  if (!isBaseCard && !isValidMoneySignalJS(rawTitle, rawPain, rawItem.track, sourcePlat, sourceUrl, ups, cmts)) {
+    return null;
   }
 
   if (!isBaseCard) {
@@ -472,12 +503,10 @@ function sanitizeAndUpgradeSignal(rawItem) {
   return rawItem;
 }
 
-// 彻底移除死掉的 PullPush，改为：原生直连 -> rss2json 实时免盾 RSS 解析，确保全是最近几小时~30天的新帖！
 async function fetchRedditJsonp(sub, mode = "new", limit = 12) {
   const path = mode === "top_month" ? `top.json?t=month&limit=${limit}&raw_json=1` : `new.json?limit=${limit}&raw_json=1`;
   const targetUrl = `https://www.reddit.com/r/${sub}/${path}`;
 
-  // 通道 1：浏览器直连 Reddit JSON (开着代理时秒通)
   try {
     const res = await fetch(targetUrl, { signal: AbortSignal.timeout(4500) });
     if (res.ok) {
@@ -487,7 +516,6 @@ async function fetchRedditJsonp(sub, mode = "new", limit = 12) {
     }
   } catch (e) {}
 
-  // 通道 2：通过 rss2json 免盾网关实时拉取 Reddit RSS（完全免翻墙、全是最近几小时~几天的新帖）
   try {
     const rssPath = mode === "top_month" ? `top/.rss?t=month` : `new/.rss`;
     const rssUrl = `https://www.reddit.com/r/${sub}/${rssPath}`;
@@ -577,7 +605,7 @@ async function pollFastBountiesOnly() {
   }
   renderCards();
   badge.className = "px-2.5 py-1 rounded-md bg-emerald-950 border border-emerald-600 text-emerald-300";
-  badge.innerText = `🟢 60秒快轨已同步并清理超2h旧悬赏 & 超30天旧帖 (${new Date().toLocaleTimeString()})`;
+  badge.innerText = `🟢 四重内容安检已同步 (${new Date().toLocaleTimeString()} · 非标站与超期贴已清零)`;
 }
 
 async function fetchAllGlobalStreams() {
@@ -605,7 +633,6 @@ async function fetchAllGlobalStreams() {
   ];
 
   const gathered = [];
-  // 1. 优先读取后端 v11.8 实时搜索引擎桥写入 live_signals.json 的全平台数据（BHW / AffiliateFix / 套利 / F95zone / Chaturbate 等）
   try {
     const r1 = await fetch('./live_signals.json?t=' + Date.now(), { signal: AbortSignal.timeout(4500) });
     if (r1.ok) {
@@ -618,7 +645,6 @@ async function fetchAllGlobalStreams() {
   } catch (e) {}
 
   await Promise.allSettled([
-    // 2. Reddit 18 大频道 (直连 + rss2json 免盾双通道)
     ...fullChannels.map(async (s) => {
       const posts = await fetchRedditJsonp(s.sub, s.mode, 8);
       posts.slice(0, 6).forEach(d => {
@@ -640,12 +666,11 @@ async function fetchAllGlobalStreams() {
       });
     }),
 
-    // 3. Lemmy 全球免盾联邦社区 API（直接从浏览器免翻墙拉取近30天跨国套利、副业与NSFW讨论）
     ...[
       { q: "side hustle OR arbitrage OR flipping", track: "gray_arb", label: "Lemmy 全球副业与套利社区" },
-      { q: "CPA OR affiliate OR passive income", track: "gray_arb", label: "Lemmy 联盟营销与网赚套利" },
-      { q: "selfhosted OR automation OR scraper", track: "pain_saas", label: "Lemmy 自动化与开源工具痛点" },
-      { q: "NSFW OR patreon OR adult game", track: "nsfw_adult", label: "Lemmy 成人创作者与NSFW社区" }
+      { q: "affiliate marketing OR passive income", track: "gray_arb", label: "Lemmy 联盟营销与网赚套利" },
+      { q: "selfhosted automation OR scraper", track: "pain_saas", label: "Lemmy 自动化与开源工具痛点" },
+      { q: "NSFW patreon OR adult game", track: "nsfw_adult", label: "Lemmy 成人创作者与NSFW社区" }
     ].map(async (lq) => {
       try {
         const lRes = await fetch(`https://lemmy.world/api/v3/search?q=${encodeURIComponent(lq.q)}&type_=Posts&sort=TopMonth&limit=8`, { signal: AbortSignal.timeout(6000) });
@@ -656,6 +681,7 @@ async function fetchAllGlobalStreams() {
           const counts = pObj.counts || {};
           if (!post.name) return;
           const pubTs = Math.floor(new Date(post.published).getTime() / 1000) || (Math.floor(Date.now() / 1000) - 86400 * 5);
+          const link = `https://lemmy.world/post/${post.id}`;
           const item = sanitizeAndUpgradeSignal({
             id: "lem_" + post.id,
             created_ts: pubTs,
@@ -666,15 +692,14 @@ async function fetchAllGlobalStreams() {
             deal_fact_zh: `🔥 近30天联邦热榜：${counts.score || 10} 赞 · ${counts.comments || 2} 评论`,
             pain_point_zh: post.body || post.name,
             source_platform: lq.label,
-            source_url: post.ap_id || post.url || "https://lemmy.world",
-            solver_url: post.ap_id || post.url || "https://lemmy.world"
+            source_url: link,
+            solver_url: link
           });
           if (item) gathered.push(item);
         });
       } catch (e) {}
     }),
 
-    // 4. DEV.to 近30天独立开发与自动化变现热榜
     ...["saas", "sideprojects", "automation"].map(async (tag) => {
       try {
         const res = await fetch(`https://dev.to/api/articles?tag=${tag}&top=30&per_page=8`);
@@ -714,8 +739,6 @@ async function fetchAllGlobalStreams() {
       continue;
     }
     const sp = String(item.source_platform || "other");
-    if (/peopleperhour|upwork|freelancer\.com|flippa/i.test(sp + " " + item.title_zh)) continue;
-
     const platKey = sp.includes("DLsite") ? "DLsite" : (sp.includes("HN") || sp.includes("Hacker") ? "HN" : sp.slice(0, 18));
     const cap = item.track === "bounty_direct" ? 25 : (platKey === "DLsite" || platKey === "HN" ? 6 : 10);
     sourceCounter[platKey] = (sourceCounter[platKey] || 0) + 1;
@@ -785,12 +808,8 @@ function renderCards() {
   const nowSec = Math.floor(Date.now() / 1000);
   allSignals = allSignals.filter(item => {
     if (String(item.id || "").startsWith("base_")) return true;
-    const tStr = String(item.source_platform || "") + " " + String(item.title_zh || "");
-    if (/peopleperhour|upwork|freelancer\.com|flippa/i.test(tStr)) return false;
-    if (/\b(?:503|502|504|outage|is\s+down|status\s+page|us-east-1)\b/i.test(tStr)) return false;
-    // 悬赏单超过 2 小时（7200秒）自动删除
+    if (!isValidMoneySignalJS(item.title_zh || "", item.pain_point_zh || "", item.track, item.source_platform || "", item.source_url || "", 10, 3)) return false;
     if (item.track === "bounty_direct" && (!item.created_ts || (nowSec - item.created_ts) > 7200)) return false;
-    // 其他所有内容一旦超过 30 天（2592000秒）立即自动清除，彻底消灭几百天前的老贴！
     if (item.track !== "bounty_direct" && (!item.created_ts || (nowSec - item.created_ts) > 2592000)) return false;
     return true;
   });
@@ -809,7 +828,7 @@ function renderCards() {
   filtered.sort((a, b) => (b.created_ts || 0) - (a.created_ts || 0));
 
   const visibleList = filtered.slice(0, displayLimit);
-  document.getElementById('totalCountBadge').innerText = `📊 当前筛选共 ${filtered.length} 条机会 (悬赏限2h内 · 套利/痛点限30天内 · 聚焦15天首笔$100)`;
+  document.getElementById('totalCountBadge').innerText = `📊 当前筛选共 ${filtered.length} 条纯正赚钱机会 (已过四重域名/内容安检 · 严禁无关站)`;
   document.getElementById('loadMoreBar').style.display = visibleList.length < filtered.length ? 'flex' : 'none';
 
   grid.innerHTML = visibleList.map((item, idx) => {

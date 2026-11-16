@@ -37,6 +37,9 @@ import threading
 import argparse
 from bs4 import BeautifulSoup
 
+if os.name == "nt" and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(errors="replace")
+
 try:
     from curl_cffi import requests as cffi_requests
     HAS_CURL_CFFI = True

@@ -996,7 +996,7 @@ def fetch_additional_sources(now_ts):
         ("blackhat_seo", "black-hat-seo.28", "gray_arb", "BlackHatWorld 黑帽SEO", "parasite SEO rank"),
         ("hire", "hire-a-freelancer.76", "bounty_direct", "BlackHatWorld 免费直联雇主急单", "hiring need bot")
     ]
-    for kind, forum, track, bhw_label, search_kw in bhw_forums:
+    for kind, forum, track, bhw_label, search_kw in (bhw_forums if USE_LOCAL_SILENT_BROWSER else []):
         parsed = []
         try:
             forum_url = f"https://www.blackhatworld.com/forums/{forum}/"
@@ -1028,10 +1028,10 @@ def fetch_additional_sources(now_ts):
         print(f"[SOURCE OK] {bhw_label}: {len(parsed)} 条")
 
     # 6. AffiliateFix 两大 CPA 专区（Jina + 实时搜索桥双保险）
-    for af_path, af_label, af_kw in (
+    for af_path, af_label, af_kw in ((
         ("whats-new/posts/", "AffiliateFix CPA最新实战", "CPA offer traffic"),
         ("forums/cpa-affiliate-networks.9/", "AffiliateFix CPA联盟网赚", "affiliate network payout")
-    ):
+    ) if USE_LOCAL_SILENT_BROWSER else []):
         parsed = []
         try:
             af_url = f"https://www.affiliatefix.com/{af_path}"
@@ -1096,30 +1096,33 @@ def fetch_additional_sources(now_ts):
     except Exception as exc:
         print(f"[SOURCE WARN] Chaturbate: {exc}")
 
-    # 8. F95zone（Jina + 实时搜索桥双保险）
-    f95_parsed = []
-    try:
-        f95_url = "https://f95zone.to/sam/latest_alpha/"
-        f95_raw = http_get(f95_url, timeout=18, allow_jina_fallback=True)
-        f95_parsed = parse_links_from_html_or_jina(
-            f95_raw, "https://f95zone.to", "/threads/",
-            "F95zone 成人游戏/Mod社区", "nsfw_adult", now_ts, max_items=8
-        )
-    except Exception:
-        pass
-    if not f95_parsed:
-        for b_item in fetch_realtime_search_bridge("site:f95zone.to/threads (VN OR RPGM OR Unreal OR Ren'Py)", max_age_days=30, limit=8):
-            sig = sanitizeAndUpgradeSignal({
-                "id": f"f95_{b_item['id']}", "created_ts": b_item["created_utc"],
-                "track": "nsfw_adult", "ups": b_item["ups"], "num_comments": b_item["num_comments"],
-                "title_zh": f"【F95zone 成人游戏/Mod社区】{b_item['title']}",
-                "pain_point_zh": b_item["selftext"],
-                "source_platform": "F95zone 成人游戏/Mod社区", "source_url": b_item["url"], "solver_url": b_item["url"]
-            })
-            if sig:
-                f95_parsed.append(sig)
-    items.extend(f95_parsed)
-    print(f"[SOURCE OK] F95zone: {len(f95_parsed)} 条")
+    # 8. F95zone：仅由本地静默浏览器/本地宽带采集，避免拖慢云端任务。
+    if USE_LOCAL_SILENT_BROWSER:
+        f95_parsed = []
+        try:
+            f95_url = "https://f95zone.to/sam/latest_alpha/"
+            f95_raw = http_get(f95_url, timeout=18, allow_jina_fallback=True)
+            f95_parsed = parse_links_from_html_or_jina(
+                f95_raw, "https://f95zone.to", "/threads/",
+                "F95zone 成人游戏/Mod社区", "nsfw_adult", now_ts, max_items=8
+            )
+        except Exception:
+            pass
+        if not f95_parsed:
+            for b_item in fetch_realtime_search_bridge("site:f95zone.to/threads (VN OR RPGM OR Unreal OR Ren'Py)", max_age_days=30, limit=8):
+                sig = sanitizeAndUpgradeSignal({
+                    "id": f"f95_{b_item['id']}", "created_ts": b_item["created_utc"],
+                    "track": "nsfw_adult", "ups": b_item["ups"], "num_comments": b_item["num_comments"],
+                    "title_zh": f"【F95zone 成人游戏/Mod社区】{b_item['title']}",
+                    "pain_point_zh": b_item["selftext"],
+                    "source_platform": "F95zone 成人游戏/Mod社区", "source_url": b_item["url"], "solver_url": b_item["url"]
+                })
+                if sig:
+                    f95_parsed.append(sig)
+        items.extend(f95_parsed)
+        print(f"[SOURCE OK] F95zone: {len(f95_parsed)} 条")
+    else:
+        print("[CLOUD SKIP] F95zone：仅由本地静默浏览器采集")
 
     # 9. Itch.io NSFW & DLsite
     try:
@@ -1205,7 +1208,7 @@ def run_fast_bounty_and_radar():
 
     print(f"[{now_str}] 🚀 正在执行 v11.8 全通版扫描 (免盾实时搜索桥 + Jina Markdown + 30天时效锁)...")
 
-    for sub, track, label in FAST_BOUNTY_SUBS:
+    for sub, track, label in (FAST_BOUNTY_SUBS if USE_LOCAL_SILENT_BROWSER else []):
         posts = fetch_reddit_jsonp_py(sub, "new", 15)
         for d in posts:
             title = clean_raw_html(d.get("title", ""))
@@ -1277,7 +1280,7 @@ def run_fast_bounty_and_radar():
     except Exception as exc:
         print(f"[SOURCE WARN] GitHub 一手悬赏: {type(exc).__name__}: {exc}")
 
-    for sub, track, label, mode in REDDIT_TARGET_SUBS[len(FAST_BOUNTY_SUBS):]:
+    for sub, track, label, mode in (REDDIT_TARGET_SUBS[len(FAST_BOUNTY_SUBS):] if USE_LOCAL_SILENT_BROWSER else []):
         posts = fetch_reddit_jsonp_py(sub, mode, 8)
         for d in posts[:6]:
             title = clean_raw_html(d.get("title", ""))

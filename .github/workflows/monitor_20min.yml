@@ -2,7 +2,7 @@ name: Global Money Radar Dual-Track (WeChat/Feishu/Bark Push + 20m Full Scan)
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/20 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -24,7 +24,7 @@ jobs:
 
       - name: 3. Install Dependencies
         run: |
-          pip install curl_cffi requests beautifulsoup4 lxml
+          pip install -r requirements.txt
 
       - name: 4. Run Fast Bounty Sniper & Push to WeChat/Feishu/Bark
         env:
@@ -38,12 +38,7 @@ jobs:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: |
-          MINUTE=$(date +%M)
-          if [ $((10#$MINUTE % 20)) -lt 5 ]; then
-            python opportunity_monitor_24h.py --cloud-once
-          else
-            python opportunity_monitor_24h.py --bounty-fast
-          fi
+          python opportunity_monitor_24h.py --cloud-once
 
       - name: 5. Auto Commit & Push Updated Signals
         run: |

@@ -25,6 +25,7 @@ import hashlib
 import sqlite3
 import random
 import shutil
+import tempfile
 import subprocess
 import urllib.request
 import urllib.parse
@@ -41,6 +42,18 @@ try:
     HAS_CURL_CFFI = True
 except ImportError:
     HAS_CURL_CFFI = False
+
+if os.name == "nt" and HAS_CURL_CFFI and not os.environ.get("CURL_CA_BUNDLE"):
+    try:
+        import certifi
+        ca_source = certifi.where()
+        if not ca_source.isascii():
+            ca_target = os.path.join(tempfile.gettempdir(), "radar_cacert.pem")
+            if not os.path.isfile(ca_target) or os.path.getmtime(ca_source) > os.path.getmtime(ca_target):
+                shutil.copyfile(ca_source, ca_target)
+            os.environ["CURL_CA_BUNDLE"] = ca_target
+    except OSError as exc:
+        print(f"[CERT WARN] 本机 CA 证书兼容处理失败: {exc}", flush=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "radar_pain_solver_history.db")

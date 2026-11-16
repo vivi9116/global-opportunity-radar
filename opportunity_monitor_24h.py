@@ -1197,6 +1197,59 @@ def parse_bhw_forum_html(raw_html, source_label, track, now_ts, max_items=8, is_
     return out
 
 
+def parse_affiliatefix_visible_page(raw_html, source_label, now_ts, max_items=8):
+    """从已登录可见页核验最新回复的正文和真实时间。"""
+    soup = BeautifulSoup(raw_html, "lxml")
+    out = []
+    for row in soup.select(".structItem--thread"):
+        if row.select_one(".structItem-status--sticky"):
+            continue
+        anchor = row.select_one('.structItem-title a[href^="/threads/"]')
+        times = row.select("time[data-time]")
+        if not anchor or not times:
+            continue
+        thread_url = urllib.parse.urljoin("https://www.affiliatefix.com", anchor.get("href") or "")
+        if not re.search(r"affiliatefix\.com/threads/[^/]+\.\d+/$", thread_url):
+            continue
+        try:
+            latest_ts = int(times[-1].get("data-time") or 0)
+        except ValueError:
+            continue
+        if not latest_ts or latest_ts > now_ts + 300 or now_ts - latest_ts > 30 * 86400:
+            continue
+        try:
+            post_html = fetch_via_local_silent_browser(thread_url + "latest", wait_sec=2.0)
+            posts = BeautifulSoup(post_html, "lxml").select("article.message")
+            if not posts:
+                continue
+            post = posts[-1]
+            post_time = post.select_one("time[data-time]")
+            post_ts = int(post_time.get("data-time") or 0) if post_time else 0
+            if post_ts < now_ts - 30 * 86400 or post_ts > now_ts + 300:
+                continue
+            body_node = post.select_one(".message-body .bbWrapper") or post.select_one(".message-body")
+            body = clean_raw_html(body_node.get_text(" ", strip=True)) if body_node else ""
+            post_id = re.search(r"js-post-(\d+)", post.get("id") or "")
+            if len(body) < 60 or not post_id:
+                continue
+            title = clean_raw_html(anchor.get_text(" ", strip=True))
+            item = sanitizeAndUpgradeSignal({
+                "id": f"af_post_{post_id.group(1)}", "created_ts": post_ts,
+                "track": "gray_arb", "ups": 0, "num_comments": 0,
+                "title_zh": f"【{source_label}】{title}", "pain_point_zh": body,
+                "deal_fact_zh": "⚪ 原帖未披露具体成交单数",
+                "source_platform": source_label, "source_url": thread_url + "latest",
+                "solver_url": thread_url,
+            })
+            if item:
+                out.append(item)
+        except Exception as exc:
+            print(f"[SOURCE WARN] {source_label} 单条回复: {type(exc).__name__}")
+        if len(out) >= max_items:
+            break
+    return out
+
+
 def fetch_additional_sources(now_ts):
     items = []
     thirty_days_ago_ts = now_ts - (30 * 86400)
@@ -1368,33 +1421,16 @@ def fetch_additional_sources(now_ts):
         ("forums/cpa-affiliate-networks.9/", "AffiliateFix CPA联盟网赚", "CPA network payout")
     ):
         parsed = []
-        try:
-            af_url = f"https://www.affiliatefix.com/{af_path}"
-            raw_html = http_get(af_url, timeout=18, allow_jina_fallback=True)
-            parsed = parse_links_from_html_or_jina(
-                raw_html, "https://www.affiliatefix.com", "/threads/",
-                af_label, "gray_arb", now_ts, max_items=8
-            )
-        except Exception:
-            pass
-        if not parsed:
-            for b_item in fetch_realtime_search_bridge(
-                f"site:affiliatefix.com/threads {af_kw}",
-                expected_domain_path="affiliatefix.com/threads/",
-                max_age_days=30,
-                limit=8
-            ):
-                sig = sanitizeAndUpgradeSignal({
-                    "id": f"aff_{b_item['id']}", "created_ts": b_item["created_utc"],
-                    "track": "gray_arb", "ups": b_item["ups"], "num_comments": b_item["num_comments"],
-                    "title_zh": f"【{af_label}】{b_item['title']}",
-                    "pain_point_zh": b_item["selftext"],
-                    "source_platform": af_label, "source_url": b_item["url"], "solver_url": b_item["url"]
-                })
-                if sig:
-                    parsed.append(sig)
+        if USE_LOCAL_SILENT_BROWSER:
+            try:
+                af_url = f"https://www.affiliatefix.com/{af_path}"
+                raw_html = fetch_via_local_silent_browser(af_url)
+                parsed = parse_affiliatefix_visible_page(raw_html, af_label, now_ts, max_items=8)
+            except Exception as exc:
+                print(f"[SOURCE WARN] {af_label}: 本地浏览器 {type(exc).__name__}: {exc}")
         items.extend(parsed)
-        print(f"[SOURCE OK] {af_label}: {len(parsed)} 条")
+        print(f"[SOURCE {'OK' if parsed else 'WARN'}] {af_label}: {len(parsed)} 条"
+              + ("；云端需本地已登录浏览器补采" if not parsed and not USE_LOCAL_SILENT_BROWSER else ""))
 
     # 7. Chaturbate：只采用官方联盟在线房间 API 的真实人数，不从普通链接猜测。
     cb_wm = os.environ.get("CHATURBATE_WM", "").strip()

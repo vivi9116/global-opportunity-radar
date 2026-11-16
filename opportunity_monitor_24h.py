@@ -1050,6 +1050,22 @@ def fetch_additional_sources(now_ts):
                     raw_html, bhw_label, track, now_ts, max_items=8,
                     is_hire=(kind in ("hire", "wtb")),
                 )
+                if kind == "journey":
+                    for item in parsed:
+                        try:
+                            post_html = fetch_via_local_silent_browser(item["source_url"], wait_sec=2.0)
+                            posts = BeautifulSoup(post_html, "lxml").select("article.message")
+                            body_node = posts[-1].select_one(".message-body .bbWrapper") if posts else None
+                            if not body_node:
+                                continue
+                            for quote in body_node.select(".bbCodeBlock--quote, blockquote"):
+                                quote.decompose()
+                            body = clean_raw_html(body_node.get_text(" ", strip=True))
+                            if len(body) >= 30:
+                                item["pain_point_zh"] = body
+                                item["_raw_source_text"] = body
+                        except Exception as exc:
+                            print(f"[SOURCE WARN] {bhw_label} 最新楼层: {type(exc).__name__}: {exc}")
             except Exception as exc:
                 print(f"[SOURCE WARN] {bhw_label}: 本地浏览器 {type(exc).__name__}: {exc}")
         items.extend(parsed)
@@ -1058,8 +1074,8 @@ def fetch_additional_sources(now_ts):
 
     # 6. AffiliateFix 两大 CPA 专区（强制核验 URL 必须包含 affiliatefix.com/threads/）
     for af_path, af_label, af_kw in (
-        ("whats-new/posts/", "AffiliateFix CPA最新实战", "CPA offer traffic conversion"),
-        ("forums/cpa-affiliate-networks.9/", "AffiliateFix CPA联盟网赚", "CPA network payout")
+        ("forums/followalongs/", "AffiliateFix 联盟营销实盘跟踪", "CPA offer traffic conversion"),
+        ("forums/affiliatemarketingnetworks/", "AffiliateFix CPA联盟网赚", "CPA network payout")
     ):
         parsed = []
         if USE_LOCAL_SILENT_BROWSER:
@@ -1658,10 +1674,12 @@ def parse_bhw_forum_html(raw_html, source_label, track, now_ts, max_items=8, is_
         if now_ts - activity_ts > (7200 if is_hire else 30 * 86400):
             continue
         href = anchor.get("href") or ""
-        thread_id = re.search(r"\.(\d+)/?$", href)
+        thread_id = re.search(r"\.(\d+)(?:/(?:unread|latest))?/?$", href)
         if not thread_id:
             continue
-        thread_url = urllib.parse.urljoin("https://www.blackhatworld.com", href)
+        thread_url = urllib.parse.urljoin(
+            "https://www.blackhatworld.com", re.sub(r"/(?:unread|latest)/?$", "/", href)
+        )
         replies_node = row.select_one(".structItem-cell--meta .pairs dd")
         replies = int((replies_node.get_text(" ", strip=True) or "0").replace(",", "")) if replies_node else 0
         item = sanitizeAndUpgradeSignal({
@@ -1744,7 +1762,7 @@ def parse_f95_visible_page(raw_html, now_ts, max_items=8):
         if not re.fullmatch(r"https://f95zone\.to/threads/\d+/", thread_url):
             continue
         relative_ts = 0
-        for cls, multiplier in (("mins", 60), ("hours", 3600), ("days", 86400)):
+        for cls, multiplier in (("mins", 60), ("min", 60), ("hrs", 3600), ("hours", 3600), ("days", 86400)):
             node = tile.select_one(f".tile-date_{cls}")
             if node and node.get_text(" ", strip=True).isdigit():
                 relative_ts = int(node.get_text(" ", strip=True)) * multiplier

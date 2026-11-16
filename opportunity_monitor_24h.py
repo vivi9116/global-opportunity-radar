@@ -694,6 +694,24 @@ def _iso_timestamp(value, fallback):
         return fallback
 
 
+def is_relevant_lemmy_opportunity(title, track):
+    """站内宽泛搜索按原帖标题筛选，避免来源标签误触发赚钱词。"""
+    title = clean_raw_html(title).lower()
+    if re.search(r"\b(?:tax|allowance|lawsuit|sue|election|trump|politics|scam|war)\b", title):
+        return False
+    if track == "gray_arb":
+        return bool(re.search(r"\b(?:side[ -]hustle|passive income|affiliate marketing|flipping|"
+                              r"made \$|earned \$|first sale|first client|monetiz)\b", title))
+    if track == "pain_saas":
+        return bool(re.search(r"\b(?:automat|scrap|bot|workflow|script|saas)\w*\b", title)
+                    and re.search(r"\b(?:how|need|looking|help|problem|issue|pay|client|business|build)\b", title))
+    if track == "nsfw_adult":
+        return bool(re.search(r"\b(?:nsfw|adult game|onlyfans|fansly|patreon|creator|camgirl)\b", title)
+                    and re.search(r"\b(?:sell|sales|earn|revenue|subscriber|pay|pricing|affiliate|"
+                                  r"marketing|promot|commission|income|monetiz)\w*\b", title))
+    return False
+
+
 _GITHUB_REPO_CACHE = {}
 
 
@@ -992,6 +1010,8 @@ def fetch_additional_sources(now_ts):
                 if not post_id or post_id in lemmy_seen:
                     continue
                 title = clean_raw_html(post.get("name", ""))
+                if not is_relevant_lemmy_opportunity(title, l_track) or post.get("url"):
+                    continue
                 pub_ts = _iso_timestamp(post.get("published"), now_ts - 86400 * 5)
                 if not title or (now_ts - pub_ts) > (30 * 86400):
                     continue
@@ -1349,6 +1369,15 @@ def run_fast_bounty_and_radar():
         c.executemany("DELETE FROM gemini_analysis WHERE id=?", ((signal_id,) for signal_id in fake_cb_ids))
         conn.commit()
         print(f"[DATA CORRECTION] removed_unverified_chaturbate_counts={len(fake_cb_ids)}")
+    irrelevant_lemmy_ids = [signal_id for signal_id, title, track in c.execute(
+        "SELECT id, title_zh, track FROM signals WHERE id LIKE 'lem_%'"
+    ) if not is_relevant_lemmy_opportunity((title or "").split("】", 1)[-1], track)]
+    if irrelevant_lemmy_ids:
+        for table in ("signals", "gemini_pending", "gemini_analysis"):
+            c.executemany(f"DELETE FROM {table} WHERE id=?",
+                          ((signal_id,) for signal_id in irrelevant_lemmy_ids))
+        conn.commit()
+        print(f"[DATA CORRECTION] removed_irrelevant_lemmy={len(irrelevant_lemmy_ids)}")
     analyze_all_new_signals(all_fetched, conn)
     notified_ids = {row[0] for row in c.execute("SELECT id FROM notified_bounties")}
     # 云端接力本地已验证浏览器抓到的一手急单；本地未配置 webhook 时不能漏推。

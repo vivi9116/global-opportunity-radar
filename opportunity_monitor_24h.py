@@ -23,11 +23,15 @@ import time
 import json
 import re
 import html
+import hashlib
 import sqlite3
 import random
+import shutil
+import tempfile
 import subprocess
 import urllib.request
 import urllib.parse
+import urllib.error
 from datetime import datetime, timedelta
 from email.utils import parsedate_to_datetime
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -35,20 +39,37 @@ import threading
 import argparse
 from bs4 import BeautifulSoup
 
+if os.name == "nt" and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(errors="replace")
+
 try:
     from curl_cffi import requests as cffi_requests
     HAS_CURL_CFFI = True
 except ImportError:
     HAS_CURL_CFFI = False
 
+if os.name == "nt" and HAS_CURL_CFFI and not os.environ.get("CURL_CA_BUNDLE"):
+    try:
+        import certifi
+        ca_source = certifi.where()
+        if not ca_source.isascii():
+            ca_target = os.path.join(tempfile.gettempdir(), "radar_cacert.pem")
+            if not os.path.isfile(ca_target) or os.path.getmtime(ca_source) > os.path.getmtime(ca_target):
+                shutil.copyfile(ca_source, ca_target)
+            os.environ["CURL_CA_BUNDLE"] = ca_target
+    except OSError as exc:
+        print(f"[CERT WARN] 本机 CA 证书兼容处理失败: {exc}", flush=True)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "radar_pain_solver_history.db")
 JSON_OUT_PATH = os.path.join(BASE_DIR, "live_signals.json")
 PROXY_FILE = os.path.join(BASE_DIR, "ip3.txt")
-LOCAL_BROWSER_PROFILE = os.path.join(BASE_DIR, ".radar_silent_chrome_profile")
+LOCAL_BROWSER_PROFILE = os.environ.get("LOCAL_BROWSER_PROFILE", os.path.join(BASE_DIR, ".radar_visible_chrome_profile"))
 
 USE_LOCAL_SILENT_BROWSER = False
 _PLAYWRIGHT_LOCK = threading.Lock()
+_LOCAL_PAGE = None
+_MANUAL_VERIFY_BLOCKED = set()
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
@@ -138,38 +159,52 @@ def load_proxies():
 
 
 def fetch_via_local_silent_browser(url, wait_sec=4.0):
+    global _LOCAL_PAGE
     with _PLAYWRIGHT_LOCK:
-        try:
-            from DrissionPage import ChromiumPage, ChromiumOptions
-            co = ChromiumOptions()
-            co.set_user_data_path(LOCAL_BROWSER_PROFILE)
-            co.headless(True)
-            co.set_argument("--disable-gpu")
-            co.set_argument("--mute-audio")
-            co.set_argument("--no-sandbox")
-            page = ChromiumPage(co)
-            page.get(url, retry=1, timeout=18)
-            time.sleep(wait_sec)
-            return page.html
-        except Exception:
-            pass
+        domain = urllib.parse.urlparse(url).netloc.lower()
+        if domain in _MANUAL_VERIFY_BLOCKED:
+            raise RuntimeError(f"{domain} 等待手动验证；本轮不重复请求")
+        browser_path = find_local_browser_path()
+        if not browser_path:
+            raise RuntimeError("本机未找到 Chrome/Edge；可设置 CHROME_PATH")
+        from DrissionPage import ChromiumPage, ChromiumOptions
+        if _LOCAL_PAGE is None:
+            options = ChromiumOptions()
+            options.set_browser_path(browser_path)
+            options.set_user_data_path(LOCAL_BROWSER_PROFILE)
+            options.set_local_port(int(os.environ.get("RADAR_CHROME_PORT", "9337")))
+            options.headless(False)
+            options.set_argument("--mute-audio")
+            _LOCAL_PAGE = ChromiumPage(options)
+        _LOCAL_PAGE.get(url, retry=1, timeout=18)
+        time.sleep(wait_sec)
+        content = _LOCAL_PAGE.html
+        if is_human_challenge_page(content):
+            print(f"[MANUAL VERIFY] 请在专用 Chrome 窗口完成验证：{url}", flush=True)
+            if sys.stdin.isatty():
+                input("验证完成后按 Enter 继续；若不想继续请按 Ctrl+C：")
+            else:
+                for _ in range(90):
+                    time.sleep(2)
+                    content = _LOCAL_PAGE.html
+                    if not is_human_challenge_page(content):
+                        break
+            content = _LOCAL_PAGE.html
+            if is_human_challenge_page(content):
+                _MANUAL_VERIFY_BLOCKED.add(domain)
+                raise RuntimeError("验证在 3 分钟内未完成，本轮暂停该来源")
+            _LOCAL_PAGE.get(url, retry=1, timeout=18)
+            content = _LOCAL_PAGE.html
+        ready_marker = ("structItem--thread" if "blackhatworld.com/forums/" in url else
+                        "<shreddit-post" if "reddit.com/r/" in url and ".json" not in url else "")
+        if ready_marker:
+            for _ in range(10):
+                if ready_marker in content:
+                    break
+                time.sleep(1)
+                content = _LOCAL_PAGE.html
+        return content
 
-        try:
-            from playwright.sync_api import sync_playwright
-            with sync_playwright() as p:
-                browser = p.chromium.launch_persistent_context(
-                    user_data_dir=LOCAL_BROWSER_PROFILE + "_pw",
-                    headless=True,
-                    args=["--disable-blink-features=AutomationControlled", "--mute-audio"]
-                )
-                page = browser.pages[0] if browser.pages else browser.new_page()
-                page.goto(url, timeout=20000, wait_until="domcontentloaded")
-                time.sleep(wait_sec)
-                content = page.content()
-                browser.close()
-                return content
-        except Exception as e:
-            raise RuntimeError(f"本地浏览器调用失败: {e}")
 
 
 def http_get(url, timeout=16, headers=None, allow_jina_fallback=False):
@@ -262,25 +297,27 @@ def fetch_realtime_search_bridge(site_query, expected_domain_path, max_age_days=
                 if not title or len(title) < 8 or link in seen_links:
                     continue
 
-                # 悬赏单保持在 2 小时有效窗口内，避免因 RSS 时区偏差被误删
-                pub_ts = (now_ts - random.randint(180, 3600)) if is_bounty else (now_ts - random.randint(1800, 86400 * 3))
-                if not is_bounty and pub_node and pub_node.get_text(strip=True):
-                    try:
-                        parsed_t = int(parsedate_to_datetime(pub_node.get_text(strip=True)).timestamp())
-                        if cutoff_ts <= parsed_t <= now_ts:
-                            pub_ts = parsed_t
-                    except Exception:
-                        pass
+                if not pub_node or not pub_node.get_text(strip=True):
+                    continue
+                try:
+                    pub_ts = int(parsedate_to_datetime(pub_node.get_text(strip=True)).timestamp())
+                except (TypeError, ValueError, OverflowError):
+                    continue
+                if not cutoff_ts <= pub_ts <= now_ts:
+                    continue
+                if is_bounty:
+                    # 搜索索引不能证明原帖仍在招人；急单仅信任原站抓取。
+                    continue
 
                 seen_links.add(link)
                 results.append({
-                    "id": f"brg_{abs(hash(link))}",
+                    "id": f"brg_{hashlib.sha256(link.encode('utf-8')).hexdigest()[:20]}",
                     "title": title,
                     "selftext": desc or title,
-                    "author": "verified_poster",
+                    "author": "",
                     "created_utc": pub_ts,
-                    "ups": random.randint(8, 42),
-                    "num_comments": random.randint(1, 7) if is_bounty else random.randint(3, 18),
+                    "ups": 0,
+                    "num_comments": 0,
                     "url": link
                 })
                 if len(results) >= limit:
@@ -325,8 +362,16 @@ def init_db():
             notified_at TEXT
         )
     """)
+    c.execute("""CREATE TABLE IF NOT EXISTS gemini_analysis (
+        id TEXT PRIMARY KEY, content_hash TEXT NOT NULL, response_json TEXT NOT NULL
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS gemini_pending (
+        id TEXT PRIMARY KEY, raw_title TEXT NOT NULL, raw_source_text TEXT NOT NULL,
+        source_platform TEXT NOT NULL, content_hash TEXT NOT NULL
+    )""")
     conn.commit()
     conn.close()
+
 
 
 def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en=""):
@@ -394,24 +439,16 @@ def call_gemini_fast_bounty_dm(raw_title, raw_body, author_name=""):
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not api_key:
         return None
-    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").strip()
     prompt = f"""请根据下面这条新悬赏单返回严格 JSON，不要 Markdown：
 {{"title_zh":"中文一句话任务与预算摘要","sample_3min_zh":"3分钟可执行的小样步骤","custom_dm_en":"70词以内、点名具体需求的英文私信"}}
 作者：{author_name}
 标题：{raw_title}
 正文：{raw_body[:1600]}"""
     try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{urllib.parse.quote(model, safe='')}:generateContent?key={urllib.parse.quote(api_key)}"
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"responseMimeType": "application/json", "temperature": 0.25},
-        }
-        request = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
-        response = json.loads(urllib.request.urlopen(request, timeout=20).read().decode("utf-8"))
-        result = json.loads(response["candidates"][0]["content"]["parts"][0]["text"])
-        return result if isinstance(result, dict) else None
+        return gemini_generate_json(prompt, api_key, timeout=20)
     except Exception:
         return None
+
 
 
 def extract_honest_deal_fact(text_blob, ups=0, comments=0):
@@ -595,7 +632,9 @@ def sanitizeAndUpgradeSignal(rawItem):
         "solver_url": rawItem.get("solver_url") or source_url,
         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "deliverable_type": "bounty_sniper_py",
-        "created_ts": createdTs
+        "created_ts": createdTs,
+        "_raw_title": rawItem.get("title_zh") or rawItem.get("title") or title,
+        "_raw_source_text": rawItem.get("pain_point_zh") or rawItem.get("selftext") or pain,
     }
 
 
@@ -603,9 +642,20 @@ def fetch_reddit_jsonp_py(sub, mode="new", limit=15):
     errors = []
     path = f"top.json?t=month&limit={limit}&raw_json=1" if mode == "top_month" else f"new.json?limit={limit}&raw_json=1"
     max_age_sec = 30 * 86400 if mode == "top_month" else 7200
-    is_bounty_mode = (mode == "new")
 
-    if USE_LOCAL_SILENT_BROWSER or load_proxies():
+    if USE_LOCAL_SILENT_BROWSER:
+        try:
+            listing = "top/?t=month" if mode == "top_month" else "new/"
+            raw_html = fetch_via_local_silent_browser(f"https://www.reddit.com/r/{sub}/{listing}", wait_sec=2.0)
+            posts = parse_reddit_browser_posts(raw_html, sub, max_age_sec, limit)
+            print(f"[SOURCE OK] Reddit r/{sub}: 本地可见网页原帖 {len(posts)} 条")
+            return posts
+        except Exception as exc:
+            print(f"[SOURCE WARN] Reddit r/{sub}: 本地可见网页 {type(exc).__name__}: {exc}")
+            return []
+
+    # 住宅代理直连 Reddit JSON
+    if load_proxies():
         reddit_headers = {"User-Agent": random.choice(USER_AGENTS), "Accept": "application/json"}
         for host in ("www.reddit.com", "old.reddit.com"):
             try:
@@ -619,52 +669,9 @@ def fetch_reddit_jsonp_py(sub, mode="new", limit=15):
             except Exception as exc:
                 errors.append(f"{host}: {type(exc).__name__}")
 
-    try:
-        listing = "top/?t=month" if mode == "top_month" else "new/"
-        jina_raw = http_get(f"https://old.reddit.com/r/{sub}/{listing}", timeout=14, allow_jina_fallback=True)
-        posts = []
-        for m in re.finditer(r"\[([^\]]{12,140})\]\((https?://(?:www\.|old\.)?reddit\.com/r/" + re.escape(sub) + r"/comments/([^/\)]+)[^\)]*)\)", jina_raw, re.I):
-            t_str = clean_raw_html(m.group(1))
-            u_str = m.group(2)
-            pid = m.group(3)
-            if any(x in t_str.lower() for x in ("comment", "share", "report", "permalink")):
-                continue
-            posts.append({
-                "id": pid, "title": t_str, "selftext": t_str, "author": "reddit_user",
-                "created_utc": int(time.time()) - random.randint(180, 1800 if is_bounty_mode else 86400 * 5),
-                "ups": 15, "num_comments": 2 if is_bounty_mode else 6, "permalink": urllib.parse.urlparse(u_str).path
-            })
-            if len(posts) >= limit:
-                break
-        if posts:
-            print(f"[SOURCE OK] Reddit r/{sub}: Jina 穿透获取 {len(posts)} 条")
-            return posts
-    except Exception as exc:
-        errors.append(f"JinaReddit: {type(exc).__name__}")
-
-    max_days = 30 if mode == "top_month" else 1
-    kw_extra = "Task OR Hiring" if is_bounty_mode else ""
-    bridge_posts = fetch_realtime_search_bridge(
-        f"site:reddit.com/r/{sub}/comments {kw_extra}".strip(),
-        expected_domain_path=f"reddit.com/r/{sub}/comments",
-        max_age_days=max_days,
-        limit=limit,
-        is_bounty=is_bounty_mode
-    )
-    if bridge_posts:
-        out = []
-        for bp in bridge_posts:
-            out.append({
-                "id": bp["id"], "title": bp["title"], "selftext": bp["selftext"],
-                "author": bp["author"], "created_utc": bp["created_utc"],
-                "ups": bp["ups"], "num_comments": bp["num_comments"],
-                "permalink": urllib.parse.urlparse(bp["url"]).path
-            })
-        print(f"[SOURCE OK] Reddit r/{sub}: 实时搜索桥核验获取 {len(out)} 条")
-        return out
-
-    print(f"[SOURCE WARN] Reddit r/{sub}: {' | '.join(errors)}")
+    print(f"[SOURCE WARN] Reddit r/{sub}: {' | '.join(errors) or '云端未配置可用代理；仅本地已验证网页可抓真实原帖'}")
     return []
+
 
 
 def is_direct_reddit_employer_post(sub, post):
@@ -1022,169 +1029,98 @@ def fetch_additional_sources(now_ts):
         except Exception as exc:
             print(f"[SOURCE WARN] V2EX {node}: {exc}")
 
-    # 5. 【满血补全】BlackHatWorld 7大核心分版（含 Hire a Freelancer #76 + Want to Buy 求购悬赏区 #92 双悬赏通道！）
+    # 5. BlackHatWorld：本地已验证的真实论坛行；悬赏帖仅用原帖发布时间。
     bhw_forums = [
-        ("hire", "hire-a-freelancer.76", "bounty_direct", "BlackHatWorld 免费直联雇主急单", "hiring OR need OR bot OR scraper"),
-        ("wtb", "want-to-buy.92", "bounty_direct", "BlackHatWorld WTB现金求购悬赏", "WTB OR looking for OR buying"),
-        ("cpa", "cpa.24", "gray_arb", "BlackHatWorld CPA任务锁", "CPA OR locker OR OGAds"),
-        ("affiliate", "affiliate-programs.15", "gray_arb", "BlackHatWorld 联盟营销", "affiliate OR commission"),
-        ("making_money", "making-money.12", "gray_arb", "BlackHatWorld 野路子搞钱", "method OR making money"),
-        ("journey", "my-journey-discussions.167", "gray_arb", "BlackHatWorld 实盘连载", "journey OR $/day"),
-        ("blackhat_seo", "black-hat-seo.28", "gray_arb", "BlackHatWorld 黑帽SEO", "parasite SEO OR rank")
+        ("hire", "hire-a-freelancer.76", "bounty_direct", "BlackHatWorld 免费直联雇主急单"),
+        ("wtb", "want-to-buy.92", "bounty_direct", "BlackHatWorld WTB现金求购悬赏"),
+        ("cpa", "cpa.50", "gray_arb", "BlackHatWorld CPA任务锁"),
+        ("affiliate", "affiliate-programs.15", "gray_arb", "BlackHatWorld 联盟营销"),
+        ("making_money", "making-money.12", "gray_arb", "BlackHatWorld 野路子搞钱"),
+        ("journey", "my-journey-discussions.167", "gray_arb", "BlackHatWorld 实盘连载"),
+        ("blackhat_seo", "black-hat-seo.28", "gray_arb", "BlackHatWorld 黑帽SEO"),
     ]
-    for kind, forum, track, bhw_label, search_kw in bhw_forums:
+    for kind, forum, track, bhw_label in bhw_forums:
         parsed = []
-        is_bhw_bounty = (track == "bounty_direct")
-        # 通道 A：尝试 Jina 穿透抓取论坛列表页
-        try:
-            forum_url = f"https://www.blackhatworld.com/forums/{forum}/"
-            raw_html = http_get(forum_url, timeout=18, allow_jina_fallback=True)
-            parsed = parse_links_from_html_or_jina(
-                raw_html, "https://www.blackhatworld.com", "/threads/",
-                bhw_label, track, now_ts, max_items=10, is_hire=is_bhw_bounty
-            )
-        except Exception:
-            pass
-
-        # 通道 B：尝试 Jina 穿透抓取 BHW RSS 源
-        if not parsed:
+        if USE_LOCAL_SILENT_BROWSER:
             try:
-                rss_url = f"https://www.blackhatworld.com/forums/{forum}/index.rss"
-                rss_raw = http_get(rss_url, timeout=15, allow_jina_fallback=True)
-                parsed = parse_links_from_html_or_jina(
-                    rss_raw, "https://www.blackhatworld.com", "/threads/",
-                    bhw_label, track, now_ts, max_items=10, is_hire=is_bhw_bounty
+                raw_html = fetch_via_local_silent_browser(
+                    f"https://www.blackhatworld.com/forums/{forum}/"
                 )
-            except Exception:
-                pass
-
-        # 通道 C：宽口径实时搜索桥兜底（确保 BHW 悬赏单与各版块 100% 不为空！）
-        if not parsed:
-            bridge_bhw = fetch_realtime_search_bridge(
-                f"site:blackhatworld.com/threads ({search_kw})",
-                expected_domain_path="blackhatworld.com/threads/",
-                max_age_days=7 if is_bhw_bounty else 30,
-                limit=10,
-                is_bounty=is_bhw_bounty
-            )
-            for b_item in bridge_bhw:
-                sig = sanitizeAndUpgradeSignal({
-                    "id": f"bhw_{kind}_{b_item['id']}",
-                    "created_ts": (now_ts - random.randint(180, 2400)) if is_bhw_bounty else b_item["created_utc"],
-                    "track": track, "ups": b_item["ups"], "num_comments": b_item["num_comments"],
-                    "title_zh": f"【{bhw_label}】{b_item['title']}",
-                    "pain_point_zh": b_item["selftext"],
-                    "source_platform": bhw_label, "source_url": b_item["url"], "solver_url": b_item["url"]
-                })
-                if sig:
-                    parsed.append(sig)
-
+                parsed = parse_bhw_forum_html(
+                    raw_html, bhw_label, track, now_ts, max_items=8,
+                    is_hire=(kind in ("hire", "wtb")),
+                )
+            except Exception as exc:
+                print(f"[SOURCE WARN] {bhw_label}: 本地浏览器 {type(exc).__name__}: {exc}")
         items.extend(parsed)
-        print(f"[SOURCE OK] {bhw_label}: {len(parsed)} 条")
+        print(f"[SOURCE {'OK' if parsed else 'WARN'}] {bhw_label}: {len(parsed)} 条"
+              + ("；云端需本地已验证浏览器补采" if not USE_LOCAL_SILENT_BROWSER else ""))
 
-    # 6. AffiliateFix 两大 CPA 专区
+    # 6. AffiliateFix 两大 CPA 专区（强制核验 URL 必须包含 affiliatefix.com/threads/）
     for af_path, af_label, af_kw in (
-        ("whats-new/posts/", "AffiliateFix CPA最新实战", "CPA OR offer OR traffic"),
-        ("forums/cpa-affiliate-networks.9/", "AffiliateFix CPA联盟网赚", "CPA OR network OR payout")
+        ("whats-new/posts/", "AffiliateFix CPA最新实战", "CPA offer traffic conversion"),
+        ("forums/cpa-affiliate-networks.9/", "AffiliateFix CPA联盟网赚", "CPA network payout")
     ):
         parsed = []
-        try:
-            af_url = f"https://www.affiliatefix.com/{af_path}"
-            raw_html = http_get(af_url, timeout=18, allow_jina_fallback=True)
-            parsed = parse_links_from_html_or_jina(
-                raw_html, "https://www.affiliatefix.com", "/threads/",
-                af_label, "gray_arb", now_ts, max_items=8
-            )
-        except Exception:
-            pass
-        if not parsed:
-            for b_item in fetch_realtime_search_bridge(
-                f"site:affiliatefix.com/threads ({af_kw})",
-                expected_domain_path="affiliatefix.com/threads/",
-                max_age_days=30,
-                limit=8
-            ):
-                sig = sanitizeAndUpgradeSignal({
-                    "id": f"aff_{b_item['id']}", "created_ts": b_item["created_utc"],
-                    "track": "gray_arb", "ups": b_item["ups"], "num_comments": b_item["num_comments"],
-                    "title_zh": f"【{af_label}】{b_item['title']}",
-                    "pain_point_zh": b_item["selftext"],
-                    "source_platform": af_label, "source_url": b_item["url"], "solver_url": b_item["url"]
-                })
-                if sig:
-                    parsed.append(sig)
+        if USE_LOCAL_SILENT_BROWSER:
+            try:
+                af_url = f"https://www.affiliatefix.com/{af_path}"
+                raw_html = fetch_via_local_silent_browser(af_url)
+                parsed = parse_affiliatefix_visible_page(raw_html, af_label, now_ts, max_items=8)
+            except Exception as exc:
+                print(f"[SOURCE WARN] {af_label}: 本地浏览器 {type(exc).__name__}: {exc}")
         items.extend(parsed)
-        print(f"[SOURCE OK] {af_label}: {len(parsed)} 条")
+        print(f"[SOURCE {'OK' if parsed else 'WARN'}] {af_label}: {len(parsed)} 条"
+              + ("；云端需本地已登录浏览器补采" if not parsed and not USE_LOCAL_SILENT_BROWSER else ""))
 
-    # 7. Chaturbate
-    try:
-        cb_rooms = []
-        cb_html = http_get("https://chaturbate.com/", timeout=16, allow_jina_fallback=True)
-        for m in re.finditer(r"\[([a-zA-Z0-9_]{3,25})\]\(https?://chaturbate\.com/([a-zA-Z0-9_]{3,25})/?\)", cb_html):
-            uname = m.group(2)
-            if uname.lower() not in ("login", "register", "tags", "affiliates", "terms", "privacy", "apps", "bouncer"):
-                cb_rooms.append({"username": uname, "num_users": random.randint(600, 3500), "tags": ["live", "top_tippers"]})
-        if not cb_rooms:
-            cb_soup = BeautifulSoup(cb_html, "lxml")
-            for a_node in cb_soup.select("a[href^='/']"):
-                href = a_node.get("href", "").strip("/")
-                if re.match(r"^[a-zA-Z0-9_]{4,22}$", href) and href.lower() not in ("login", "register", "tags", "affiliates", "terms", "privacy", "apps"):
-                    cb_rooms.append({"username": href, "num_users": random.randint(600, 3500), "tags": ["live", "cams"]})
+    # 7. Chaturbate：只采用官方联盟在线房间 API 的真实人数，不从普通链接猜测。
+    cb_wm = os.environ.get("CHATURBATE_WM", "").strip()
+    if not cb_wm:
+        print("[SOURCE WARN] Chaturbate: 缺少 CHATURBATE_WM，不能核验在线人数")
+    else:
+        try:
+            cb_url = ("https://chaturbate.com/api/public/affiliates/onlinerooms/?wm="
+                      + urllib.parse.quote(cb_wm, safe=""))
+            cb_data = json.loads(http_get(cb_url, timeout=16))
+            cb_rooms = cb_data.get("results", []) if isinstance(cb_data, dict) else cb_data
+            cb_count = 0
+            for room in cb_rooms:
+                if not isinstance(room, dict):
+                    continue
+                username = str(room.get("username", ""))
+                viewers = room.get("num_users")
+                if not re.fullmatch(r"[a-zA-Z0-9_]{3,25}", username) or not isinstance(viewers, int):
+                    continue
+                source_url = f"https://chaturbate.com/{username}/"
+                item = sanitizeAndUpgradeSignal({
+                    "id": f"cb_{username}", "created_ts": now_ts, "track": "nsfw_adult", "ups": viewers,
+                    "title_zh": f"【Chaturbate 公开直播间 #{username}】当前 {viewers} 人在线",
+                    "pain_point_zh": "官方在线房间接口记录了此房间的实时在线人数；未披露打赏额或成交单数。",
+                    "deal_fact_zh": f"✅ 官方在线房间接口：{viewers} 人在线；未披露打赏额或成交单数",
+                    "source_platform": "Chaturbate 成人直播榜", "source_url": source_url, "solver_url": source_url,
+                })
+                if item:
+                    items.append(item)
+                    cb_count += 1
+                if cb_count >= 8:
+                    break
+            print(f"[SOURCE OK] Chaturbate 官方接口: {cb_count} 条")
+        except Exception as exc:
+            print(f"[SOURCE WARN] Chaturbate 官方接口: {type(exc).__name__}: {exc}")
 
-        seen_cb = set()
-        unique_cb = []
-        for r in cb_rooms:
-            if r["username"] not in seen_cb:
-                seen_cb.add(r["username"])
-                unique_cb.append(r)
-        top_rooms = unique_cb[:8]
-        for idx, room in enumerate(top_rooms):
-            username = room["username"]
-            viewers = room["num_users"]
-            tags = " / ".join(room["tags"])
-            source_url = f"https://chaturbate.com/{username}/"
-            item = sanitizeAndUpgradeSignal({
-                "id": f"cb_{username}", "created_ts": now_ts - 14400 - (idx * 300), "track": "nsfw_adult", "ups": viewers,
-                "title_zh": f"【Chaturbate 全球成人直播榜 #{username}】当前 {viewers} 人在线打赏 (标签: {tags})",
-                "pain_point_zh": f"当前直播间高热度在线打赏；细分标签：{tags}（适合套 18+ 防封二跳页导流拿 $1~$3/免费注册 或 20% 终身分成）",
-                "deal_fact_zh": f"✅ 实时高热打赏直播间：{viewers} 人在线", "source_platform": "Chaturbate 成人直播榜",
-                "source_url": source_url, "solver_url": source_url,
-            })
-            if item:
-                items.append(item)
-        print(f"[SOURCE OK] Chaturbate: {len(top_rooms)} 条")
-    except Exception as exc:
-        print(f"[SOURCE WARN] Chaturbate: {exc}")
-
-    # 8. F95zone
+    # 8. F95zone（强制核验 URL 必须包含 f95zone.to/threads/）
     f95_parsed = []
-    try:
-        f95_url = "https://f95zone.to/sam/latest_alpha/"
-        f95_raw = http_get(f95_url, timeout=18, allow_jina_fallback=True)
-        f95_parsed = parse_links_from_html_or_jina(
-            f95_raw, "https://f95zone.to", "/threads/",
-            "F95zone 成人游戏/Mod社区", "nsfw_adult", now_ts, max_items=8
-        )
-    except Exception:
-        pass
-    if not f95_parsed:
-        for b_item in fetch_realtime_search_bridge(
-            "site:f95zone.to/threads (VN OR RPGM OR Ren'Py)",
-            expected_domain_path="f95zone.to/threads/",
-            max_age_days=30,
-            limit=8
-        ):
-            sig = sanitizeAndUpgradeSignal({
-                "id": f"f95_{b_item['id']}", "created_ts": b_item["created_utc"],
-                "track": "nsfw_adult", "ups": b_item["ups"], "num_comments": b_item["num_comments"],
-                "title_zh": f"【F95zone 成人游戏/Mod社区】{b_item['title']}",
-                "pain_point_zh": b_item["selftext"],
-                "source_platform": "F95zone 成人游戏/Mod社区", "source_url": b_item["url"], "solver_url": b_item["url"]
-            })
-            if sig:
-                f95_parsed.append(sig)
+    if USE_LOCAL_SILENT_BROWSER:
+        try:
+            f95_raw = fetch_via_local_silent_browser("https://f95zone.to/sam/latest_alpha/")
+            if "have to be" in f95_raw.lower() and "logged in" in f95_raw.lower():
+                raise RuntimeError("F95zone 最新页要求登录专用浏览器")
+            f95_parsed = parse_f95_visible_page(f95_raw, now_ts, max_items=8)
+        except Exception as exc:
+            print(f"[SOURCE WARN] F95zone: {type(exc).__name__}: {exc}")
     items.extend(f95_parsed)
-    print(f"[SOURCE OK] F95zone: {len(f95_parsed)} 条")
+    print(f"[SOURCE {'OK' if f95_parsed else 'WARN'}] F95zone: {len(f95_parsed)} 条"
+          + ("；需本地已登录浏览器补采" if not USE_LOCAL_SILENT_BROWSER else ""))
 
     # 9. Itch.io NSFW & DLsite
     try:
@@ -1369,6 +1305,16 @@ def run_fast_bounty_and_radar():
 
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    fake_cb_ids = [row[0] for row in c.execute(
+        "SELECT id FROM signals WHERE id LIKE 'cb_%' AND deal_fact_zh LIKE '%实时高热打赏直播间%'"
+    )]
+    if fake_cb_ids:
+        c.executemany("DELETE FROM signals WHERE id=?", ((signal_id,) for signal_id in fake_cb_ids))
+        c.executemany("DELETE FROM gemini_pending WHERE id=?", ((signal_id,) for signal_id in fake_cb_ids))
+        c.executemany("DELETE FROM gemini_analysis WHERE id=?", ((signal_id,) for signal_id in fake_cb_ids))
+        conn.commit()
+        print(f"[DATA CORRECTION] removed_unverified_chaturbate_counts={len(fake_cb_ids)}")
+    analyze_all_new_signals(all_fetched, conn)
     notified_ids = {row[0] for row in c.execute("SELECT id FROM notified_bounties")}
     pushed_count = 0
     for item, author, raw_title, raw_body in sorted(alert_candidates, key=lambda row: row[0].get("created_ts", 0), reverse=True):
@@ -1450,12 +1396,22 @@ def run_fast_bounty_and_radar():
 
     if USE_LOCAL_SILENT_BROWSER and os.path.exists(os.path.join(BASE_DIR, ".git")):
         try:
-            subprocess.run(["git", "add", "live_signals.json", "radar_pain_solver_history.db"], cwd=BASE_DIR, check=False)
-            subprocess.run(["git", "commit", "-m", "Local silent browser sync [skip ci]"], cwd=BASE_DIR, check=False)
-            subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=BASE_DIR, check=False)
-            subprocess.run(["git", "push"], cwd=BASE_DIR, check=False)
+            git_prefix = ["git", "-c", f"safe.directory={BASE_DIR.replace(os.sep, '/')}"]
+            def run_git(*args):
+                return subprocess.run([*git_prefix, *args], cwd=BASE_DIR, check=True,
+                                      capture_output=True, text=True, encoding="utf-8", errors="replace")
+            run_git("config", "user.name", "Global-Radar-Local")
+            run_git("config", "user.email", "radar-local@users.noreply.github.com")
+            run_git("add", "live_signals.json", "radar_pain_solver_history.db")
+            staged = subprocess.run([*git_prefix, "diff", "--cached", "--quiet"], cwd=BASE_DIR)
+            if staged.returncode:
+                run_git("commit", "-m", "Local visible browser sync [skip ci]")
+                run_git("pull", "--rebase", "origin", "main")
+                run_git("push", "origin", "HEAD:main")
+                print("[LOCAL GIT SYNC] 已推送本地高防来源及 Gemini 待处理原帖")
         except Exception as e:
-            print(f"[LOCAL GIT WARN] {e}")
+            detail = getattr(e, "stderr", None) or getattr(e, "stdout", None) or str(e)
+            print(f"[LOCAL GIT WARN] {detail.strip().splitlines()[-1]}")
 
     return payload
 
@@ -1477,6 +1433,355 @@ class WorkbenchHandler(SimpleHTTPRequestHandler):
             self.path = "/index.html" if os.path.exists("index.html") else "/global_arb_radar_workbench.html"
         return super().do_GET()
 
+
+
+ANALYSIS_FIELDS = (
+    "deal_fact_zh", "pain_point_zh", "solver_case_zh", "action_plan_zh",
+    "platform_ecology_tip_zh", "reverse_money_idea_zh",
+)
+
+def find_local_browser_path():
+    candidates = [
+        os.environ.get("CHROME_PATH", ""),
+        os.path.join(os.environ.get("PROGRAMFILES", ""), "Google", "Chrome", "Application", "chrome.exe"),
+        os.path.join(os.environ.get("PROGRAMFILES(X86)", ""), "Google", "Chrome", "Application", "chrome.exe"),
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), "Google", "Chrome", "Application", "chrome.exe"),
+        os.path.join(os.environ.get("PROGRAMFILES", ""), "Microsoft", "Edge", "Application", "msedge.exe"),
+    ]
+    return next((p for p in candidates if p and os.path.isfile(p)), None) or shutil.which("chrome.exe") or shutil.which("msedge.exe") or ""
+
+def is_human_challenge_page(raw_html):
+    sample = str(raw_html or "")[:12000].lower()
+    return any(marker in sample for marker in (
+        "prove your humanity", "verify you are human", "just a moment",
+        "cf-chl-captcha", "attention required! | cloudflare", "正在进行安全验证"
+    ))
+
+def gemini_generate_json(prompt, api_key, timeout=25):
+    configured = os.environ.get("GEMINI_MODEL", "").strip()
+    models = list(dict.fromkeys(x for x in (configured, "gemini-3.5-flash-lite", "gemini-3.8-flash") if x))
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
+    }
+    last_error = None
+    for model in models:
+        url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+               f"{urllib.parse.quote(model, safe='')}:generateContent")
+        request = urllib.request.Request(
+            url, data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
+        )
+        try:
+            response = json.loads(urllib.request.urlopen(request, timeout=timeout).read().decode("utf-8"))
+            result = json.loads(response["candidates"][0]["content"]["parts"][0]["text"])
+            if not isinstance(result, dict):
+                raise ValueError("Gemini 返回的不是 JSON 对象")
+            print(f"[GEMINI MODEL] {model}", flush=True)
+            return result
+        except urllib.error.HTTPError as exc:
+            last_error = exc
+            print(f"[GEMINI MODEL WARN] {model}: HTTP {exc.code}", flush=True)
+            if exc.code not in (404, 429, 500, 502, 503, 504):
+                raise
+        except TimeoutError as exc:
+            last_error = exc
+            print(f"[GEMINI MODEL WARN] {model}: timeout", flush=True)
+    raise RuntimeError(f"Gemini 候选模型均不可用：{type(last_error).__name__}: {last_error}")
+
+def analyze_all_new_signals(items, conn):
+    """所有抓取源统一拆解；本地缺 Key 时排队给有 Secret 的云端补做。"""
+    key = os.environ.get("GEMINI_API_KEY", "").strip()
+    cursor = conn.cursor()
+    current_ids = {item["id"] for item in items}
+    queued_ids = set()
+    work = list(items)
+    if key:
+        columns = [row[1] for row in cursor.execute("PRAGMA table_info(signals)")]
+        queued_rows = cursor.execute(
+            "SELECT id, raw_title, raw_source_text FROM gemini_pending"
+        ).fetchall()
+        for signal_id, title, body in queued_rows:
+            if signal_id in current_ids:
+                continue
+            values = cursor.execute("SELECT * FROM signals WHERE id=?", (signal_id,)).fetchone()
+            if not values:
+                cursor.execute("DELETE FROM gemini_pending WHERE id=?", (signal_id,))
+                continue
+            item = dict(zip(columns, values))
+            item["_raw_title"] = title
+            item["_raw_source_text"] = body
+            work.append(item)
+            queued_ids.add(signal_id)
+
+    pending = []
+    cached = queued = succeeded = failed = 0
+    for item in work:
+        title = str(item.pop("_raw_title", "") or item["title_zh"])
+        body = str(item.pop("_raw_source_text", "") or item["pain_point_zh"])
+        digest = hashlib.sha256((title + "\n" + body).encode("utf-8")).hexdigest()
+        row = cursor.execute(
+            "SELECT content_hash, response_json FROM gemini_analysis WHERE id=?", (item["id"],)
+        ).fetchone()
+        analysis = None
+        if row and row[0] == digest:
+            try:
+                analysis = json.loads(row[1])
+            except (ValueError, TypeError):
+                pass
+        if analysis and all(isinstance(analysis.get(f), str) and analysis[f].strip() for f in ANALYSIS_FIELDS):
+            for field in ANALYSIS_FIELDS:
+                item[field] = analysis[field]
+            if item["id"] in queued_ids:
+                cursor.execute("UPDATE signals SET " + ", ".join(f"{f}=?" for f in ANALYSIS_FIELDS) +
+                               " WHERE id=?", tuple(item[f] for f in ANALYSIS_FIELDS) + (item["id"],))
+            cursor.execute("DELETE FROM gemini_pending WHERE id=?", (item["id"],))
+            cached += 1
+            continue
+        if not key:
+            cursor.execute("INSERT OR REPLACE INTO gemini_pending VALUES (?, ?, ?, ?, ?)",
+                           (item["id"], title, body, item["source_platform"], digest))
+            queued += 1
+            continue
+        pending.append((item, title, body, digest))
+
+    if not key:
+        conn.commit()
+        print(f"[GEMINI QUEUED] local_without_key={queued} cached={cached}; 云端下一轮补分析", flush=True)
+        return
+
+    for offset in range(0, len(pending), 8):
+        batch = pending[offset:offset + 8]
+        facts = [
+            {"id": item["id"], "source": item["source_platform"], "title": title,
+             "original_post": body[:2200], "verified_fact": item["deal_fact_zh"]}
+            for item, title, body, _ in batch
+        ]
+        prompt = (
+            "请逐条依据原帖生成大白话中文拆解，严格返回 JSON 对象，键为 items 数组。"
+            "每项必须有 id、deal_fact_zh、pain_point_zh、solver_case_zh、action_plan_zh、"
+            "platform_ecology_tip_zh、reverse_money_idea_zh 六个字符串字段。"
+            "原帖没写成交数字时如实写‘⚪ 原帖未披露具体成交单数’。"
+            "痛点依据原帖正文；只有标题时明确说依据标题。不得编造交易、收入和抢单时间。"
+            "行动步骤具体可执行，逆向思路列 2~3 条并说明操作方式。不要改 id 或漏项。"
+            "原始材料：" + json.dumps(facts, ensure_ascii=False)
+        )
+        try:
+            result = gemini_generate_json(prompt, key)
+            by_id = {str(x.get("id")): x for x in result.get("items", []) if isinstance(x, dict)}
+            for item, title, body, digest in batch:
+                answer = by_id.get(str(item["id"]), {})
+                if not all(isinstance(answer.get(f), str) and answer[f].strip() for f in ANALYSIS_FIELDS):
+                    cursor.execute("INSERT OR REPLACE INTO gemini_pending VALUES (?, ?, ?, ?, ?)",
+                                   (item["id"], title, body, item["source_platform"], digest))
+                    failed += 1
+                    continue
+                analysis = {field: answer[field].strip() for field in ANALYSIS_FIELDS}
+                if str(item["deal_fact_zh"]).startswith("✅ 100% 官方公开真实销量"):
+                    analysis["deal_fact_zh"] = item["deal_fact_zh"]
+                item.update(analysis)
+                cursor.execute("INSERT OR REPLACE INTO gemini_analysis VALUES (?, ?, ?)",
+                               (item["id"], digest, json.dumps(analysis, ensure_ascii=False)))
+                if item["id"] in queued_ids:
+                    cursor.execute("UPDATE signals SET " + ", ".join(f"{f}=?" for f in ANALYSIS_FIELDS) +
+                                   " WHERE id=?", tuple(item[f] for f in ANALYSIS_FIELDS) + (item["id"],))
+                cursor.execute("DELETE FROM gemini_pending WHERE id=?", (item["id"],))
+                succeeded += 1
+        except Exception as exc:
+            failed += len(batch)
+            for item, title, body, digest in batch:
+                cursor.execute("INSERT OR REPLACE INTO gemini_pending VALUES (?, ?, ?, ?, ?)",
+                               (item["id"], title, body, item["source_platform"], digest))
+            print(f"[GEMINI WARN] 批次 {offset // 8 + 1}: {type(exc).__name__}: {exc}", flush=True)
+            if "429" in str(exc):
+                for item, title, body, digest in pending[offset + len(batch):]:
+                    cursor.execute("INSERT OR REPLACE INTO gemini_pending VALUES (?, ?, ?, ?, ?)",
+                                   (item["id"], title, body, item["source_platform"], digest))
+                    failed += 1
+                conn.commit()
+                print("[GEMINI RATE LIMIT] 本轮停止请求，剩余条目已排队等待下轮", flush=True)
+                break
+        conn.commit()
+    print(f"[GEMINI SUMMARY] new={len(pending)} success={succeeded} failed={failed} cached={cached}", flush=True)
+
+def parse_reddit_browser_posts(raw_html, sub, max_age_sec, limit):
+    soup = BeautifulSoup(raw_html, "lxml")
+    posts = []
+    now_ts = time.time()
+    for node in soup.select("shreddit-post[permalink][created-timestamp]"):
+        title = clean_raw_html(node.get("post-title") or "")
+        permalink = node.get("permalink") or ""
+        raw_id = node.get("id") or ""
+        if not title or not permalink or not raw_id.startswith("t3_"):
+            continue
+        try:
+            created_utc = int(datetime.fromisoformat(node["created-timestamp"]).timestamp())
+        except (ValueError, TypeError):
+            continue
+        if now_ts - created_utc > max_age_sec or created_utc > now_ts + 300:
+            continue
+        body_node = node.select_one('[property="schema:articleBody"]')
+        body = clean_raw_html(body_node.get_text(" ", strip=True)) if body_node else ""
+        posts.append({
+            "id": raw_id.removeprefix("t3_"), "title": title, "selftext": body,
+            "author": node.get("author") or "", "created_utc": created_utc,
+            "ups": int(node.get("score") or 0),
+            "num_comments": int(node.get("comment-count") or 0),
+            "permalink": permalink,
+        })
+        if len(posts) >= limit:
+            break
+    return posts
+
+def parse_bhw_forum_html(raw_html, source_label, track, now_ts, max_items=8, is_hire=False):
+    soup = BeautifulSoup(raw_html, "lxml")
+    out = []
+    for row in soup.select(".structItem--thread"):
+        if row.select_one(".structItem-status--sticky"):
+            continue
+        anchor = row.select_one('.structItem-title a[data-tp-primary][href^="/seo/"]')
+        if not anchor:
+            continue
+        title = clean_raw_html(anchor.get_text(" ", strip=True))
+        if is_hire and not re.search(
+            r"\b(?:WTB|buying|looking\s+(?:for|to\s+buy)|need|wanted|hiring|seeking|request)\b",
+            title, re.I,
+        ):
+            continue
+        start_node = row.select_one(".structItem-startDate time[data-timestamp]")
+        latest_node = row.select_one(".structItem-latestDate[data-timestamp]")
+        start_ts = int(start_node.get("data-timestamp") or 0) if start_node else 0
+        latest_ts = int(latest_node.get("data-timestamp") or 0) if latest_node else start_ts
+        activity_ts = start_ts if is_hire else latest_ts
+        if len(title) < 12 or not activity_ts or activity_ts > now_ts + 300:
+            continue
+        if now_ts - activity_ts > (7200 if is_hire else 30 * 86400):
+            continue
+        href = anchor.get("href") or ""
+        thread_id = re.search(r"\.(\d+)/?$", href)
+        if not thread_id:
+            continue
+        thread_url = urllib.parse.urljoin("https://www.blackhatworld.com", href)
+        replies_node = row.select_one(".structItem-cell--meta .pairs dd")
+        replies = int((replies_node.get_text(" ", strip=True) or "0").replace(",", "")) if replies_node else 0
+        item = sanitizeAndUpgradeSignal({
+            "id": f"bhw_{thread_id.group(1)}_{activity_ts}", "created_ts": activity_ts,
+            "track": track, "ups": 0, "num_comments": replies,
+            "title_zh": f"【{source_label}】{title}", "pain_point_zh": title,
+            "source_platform": source_label,
+            "source_url": thread_url if is_hire else thread_url + "latest",
+            "solver_url": thread_url,
+        })
+        if item:
+            out.append(item)
+        if len(out) >= max_items:
+            break
+    return out
+
+def parse_affiliatefix_visible_page(raw_html, source_label, now_ts, max_items=8):
+    """从已登录可见页核验最新回复的正文和真实时间。"""
+    soup = BeautifulSoup(raw_html, "lxml")
+    out = []
+    for row in soup.select(".structItem--thread"):
+        if row.select_one(".structItem-status--sticky"):
+            continue
+        anchor = row.select_one('.structItem-title a[href^="/threads/"]')
+        times = row.select("time[data-time]")
+        if not anchor or not times:
+            continue
+        thread_url = urllib.parse.urljoin("https://www.affiliatefix.com", anchor.get("href") or "")
+        if not re.search(r"affiliatefix\.com/threads/[^/]+\.\d+/$", thread_url):
+            continue
+        try:
+            latest_ts = int(times[-1].get("data-time") or 0)
+        except ValueError:
+            continue
+        if not latest_ts or latest_ts > now_ts + 300 or now_ts - latest_ts > 30 * 86400:
+            continue
+        try:
+            post_html = fetch_via_local_silent_browser(thread_url + "latest", wait_sec=2.0)
+            posts = BeautifulSoup(post_html, "lxml").select("article.message")
+            if not posts:
+                continue
+            post = posts[-1]
+            post_time = post.select_one("time[data-time]")
+            post_ts = int(post_time.get("data-time") or 0) if post_time else 0
+            if post_ts < now_ts - 30 * 86400 or post_ts > now_ts + 300:
+                continue
+            body_node = post.select_one(".message-body .bbWrapper") or post.select_one(".message-body")
+            body = clean_raw_html(body_node.get_text(" ", strip=True)) if body_node else ""
+            post_id = re.search(r"js-post-(\d+)", post.get("id") or "")
+            if len(body) < 60 or not post_id:
+                continue
+            title = clean_raw_html(anchor.get_text(" ", strip=True))
+            item = sanitizeAndUpgradeSignal({
+                "id": f"af_post_{post_id.group(1)}", "created_ts": post_ts,
+                "track": "gray_arb", "ups": 0, "num_comments": 0,
+                "title_zh": f"【{source_label}】{title}", "pain_point_zh": body,
+                "deal_fact_zh": "⚪ 原帖未披露具体成交单数",
+                "source_platform": source_label, "source_url": thread_url + "latest",
+                "solver_url": thread_url,
+            })
+            if item:
+                out.append(item)
+        except Exception as exc:
+            print(f"[SOURCE WARN] {source_label} 单条回复: {type(exc).__name__}")
+        if len(out) >= max_items:
+            break
+    return out
+
+def parse_f95_visible_page(raw_html, now_ts, max_items=8):
+    """从登录后的官方最新页提取作品指标和原帖正文。"""
+    soup = BeautifulSoup(raw_html, "lxml")
+    out = []
+    for tile in soup.select(".resource-tile[data-thread-id]"):
+        thread_id = tile.get("data-thread-id") or ""
+        link = tile.select_one("a.resource-tile_link[href]")
+        title_node = tile.select_one(".resource-tile_info-header_title")
+        if not thread_id.isdigit() or not link or not title_node:
+            continue
+        thread_url = link.get("href") or ""
+        if not re.fullmatch(r"https://f95zone\.to/threads/\d+/", thread_url):
+            continue
+        relative_ts = 0
+        for cls, multiplier in (("mins", 60), ("hours", 3600), ("days", 86400)):
+            node = tile.select_one(f".tile-date_{cls}")
+            if node and node.get_text(" ", strip=True).isdigit():
+                relative_ts = int(node.get_text(" ", strip=True)) * multiplier
+                break
+        if not relative_ts or relative_ts > 30 * 86400:
+            continue
+        title = clean_raw_html(title_node.get_text(" ", strip=True))
+        version_node = tile.select_one(".resource-tile_label-version")
+        version = clean_raw_html(version_node.get_text(" ", strip=True)) if version_node else ""
+        views_node = tile.select_one(".resource-tile_info-meta_views")
+        likes_node = tile.select_one(".resource-tile_info-meta_likes")
+        views = views_node.get_text(" ", strip=True) if views_node else "未显示"
+        likes = likes_node.get_text(" ", strip=True) if likes_node else "未显示"
+        try:
+            thread_html = fetch_via_local_silent_browser(thread_url, wait_sec=2.0)
+            first_post = BeautifulSoup(thread_html, "lxml").select_one("article.message .message-body")
+            body = clean_raw_html(first_post.get_text(" ", strip=True)) if first_post else ""
+            if len(body) < 80:
+                continue
+            item = sanitizeAndUpgradeSignal({
+                "id": f"f95_{thread_id}_{re.sub(r'[^a-z0-9]+', '_', version.lower())}",
+                "created_ts": now_ts - relative_ts, "track": "nsfw_adult",
+                "ups": int(likes.replace(",", "")) if likes.replace(",", "").isdigit() else 0,
+                "num_comments": 0,
+                "title_zh": f"【F95zone 成人游戏/Mod社区】{title} {version}",
+                "pain_point_zh": body[:3500],
+                "deal_fact_zh": f"⚪ 官方最新页显示浏览量 {views}、点赞 {likes}；原帖未披露具体成交单数",
+                "source_platform": "F95zone 成人游戏/Mod社区",
+                "source_url": thread_url, "solver_url": thread_url,
+            })
+            if item:
+                out.append(item)
+        except Exception as exc:
+            print(f"[SOURCE WARN] F95zone 单条原帖: {type(exc).__name__}")
+        if len(out) >= max_items:
+            break
+    return out
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -24,6 +24,7 @@ import re
 import html
 import sqlite3
 import random
+import shutil
 import subprocess
 import urllib.request
 import urllib.parse
@@ -44,10 +45,57 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "radar_pain_solver_history.db")
 JSON_OUT_PATH = os.path.join(BASE_DIR, "live_signals.json")
 PROXY_FILE = os.path.join(BASE_DIR, "ip3.txt")
-LOCAL_BROWSER_PROFILE = os.path.join(BASE_DIR, ".radar_silent_chrome_profile")
+LOCAL_BROWSER_PROFILE = os.environ.get(
+    "LOCAL_BROWSER_PROFILE", os.path.join(BASE_DIR, ".radar_silent_chrome_profile")
+)
 
 USE_LOCAL_SILENT_BROWSER = False
 _PLAYWRIGHT_LOCK = threading.Lock()
+
+
+def find_local_browser_path():
+    candidates = [
+        os.environ.get("CHROME_PATH", "").strip(),
+        os.path.join(os.environ.get("PROGRAMFILES", ""), "Google", "Chrome", "Application", "chrome.exe"),
+        os.path.join(os.environ.get("PROGRAMFILES(X86)", ""), "Google", "Chrome", "Application", "chrome.exe"),
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), "Google", "Chrome", "Application", "chrome.exe"),
+        os.path.join(os.environ.get("PROGRAMFILES", ""), "Microsoft", "Edge", "Application", "msedge.exe"),
+        os.path.join(os.environ.get("PROGRAMFILES(X86)", ""), "Microsoft", "Edge", "Application", "msedge.exe"),
+    ]
+    for path in candidates:
+        if path and os.path.isfile(path):
+            return path
+    for name in ("chrome.exe", "msedge.exe", "google-chrome", "chromium"):
+        path = shutil.which(name)
+        if path:
+            return path
+    return ""
+
+
+def is_human_challenge_page(raw_text):
+    sample = str(raw_text or "")[:12000].lower()
+    return any(marker in sample for marker in (
+        "prove your humanity", "verify you are human", "just a moment",
+        "cf-chl-captcha", "attention required! | cloudflare"
+    ))
+
+
+def parse_json_from_browser_html(raw_text):
+    try:
+        return json.loads(raw_text)
+    except (TypeError, json.JSONDecodeError):
+        pass
+    text = BeautifulSoup(str(raw_text or ""), "lxml").get_text(" ", strip=True)
+    try:
+        return json.loads(text)
+    except (TypeError, json.JSONDecodeError):
+        match = re.search(r"(\{.*\})", text, re.S)
+        if match:
+            try:
+                return json.loads(match.group(1))
+            except json.JSONDecodeError:
+                pass
+    raise ValueError("响应不是可解析的 JSON")
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
@@ -132,18 +180,31 @@ def load_proxies():
 
 def fetch_via_local_silent_browser(url, wait_sec=4.0):
     with _PLAYWRIGHT_LOCK:
+        browser_path = find_local_browser_path()
+        if not browser_path:
+            raise RuntimeError("本机未找到 Chrome/Edge；可设置 CHROME_PATH 指向 chrome.exe")
         try:
             from DrissionPage import ChromiumPage, ChromiumOptions
             co = ChromiumOptions()
+            co.set_browser_path(browser_path)
             co.set_user_data_path(LOCAL_BROWSER_PROFILE)
             co.headless(True)
             co.set_argument("--disable-gpu")
             co.set_argument("--mute-audio")
             co.set_argument("--no-sandbox")
             page = ChromiumPage(co)
-            page.get(url, retry=1, timeout=18)
-            time.sleep(wait_sec)
-            return page.html
+            try:
+                page.get(url, retry=1, timeout=18)
+                time.sleep(wait_sec)
+                content = page.html
+                if is_human_challenge_page(content):
+                    raise RuntimeError("页面要求手动完成人机验证，静默模式不会绕过验证")
+                return content
+            finally:
+                try:
+                    page.quit()
+                except Exception:
+                    pass
         except Exception:
             pass
 
@@ -153,6 +214,7 @@ def fetch_via_local_silent_browser(url, wait_sec=4.0):
                 browser = p.chromium.launch_persistent_context(
                     user_data_dir=LOCAL_BROWSER_PROFILE + "_pw",
                     headless=True,
+                    executable_path=browser_path,
                     args=["--disable-blink-features=AutomationControlled", "--mute-audio"]
                 )
                 page = browser.pages[0] if browser.pages else browser.new_page()
@@ -160,9 +222,11 @@ def fetch_via_local_silent_browser(url, wait_sec=4.0):
                 time.sleep(wait_sec)
                 content = page.content()
                 browser.close()
+                if is_human_challenge_page(content):
+                    raise RuntimeError("页面要求手动完成人机验证，静默模式不会绕过验证")
                 return content
         except Exception as e:
-            raise RuntimeError(f"本地浏览器调用失败: {e}")
+            raise RuntimeError(f"本地浏览器启动或验证失败（{browser_path}）：{e}")
 
 
 def http_get(url, timeout=16, headers=None, allow_jina_fallback=False):
@@ -587,7 +651,7 @@ def fetch_reddit_jsonp_py(sub, mode="new", limit=15):
         for host in ("www.reddit.com", "old.reddit.com"):
             try:
                 raw = http_get(f"https://{host}/r/{sub}/{path}", timeout=10, headers=reddit_headers)
-                data = json.loads(raw)
+                data = parse_json_from_browser_html(raw)
                 raw_posts = [c["data"] for c in data.get("data", {}).get("children", [])]
                 posts = [p for p in raw_posts if (time.time() - int(p.get("created_utc") or 0)) <= max_age_sec]
                 if posts:
@@ -1381,12 +1445,28 @@ def run_fast_bounty_and_radar():
 
     if USE_LOCAL_SILENT_BROWSER and os.path.exists(os.path.join(BASE_DIR, ".git")):
         try:
-            subprocess.run(["git", "add", "live_signals.json", "radar_pain_solver_history.db"], cwd=BASE_DIR, check=False)
-            subprocess.run(["git", "commit", "-m", "Local silent browser sync [skip ci]"], cwd=BASE_DIR, check=False)
-            subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=BASE_DIR, check=False)
-            subprocess.run(["git", "push"], cwd=BASE_DIR, check=False)
+            def run_git(*args):
+                return subprocess.run(
+                    ["git", *args], cwd=BASE_DIR, check=True,
+                    capture_output=True, text=True, encoding="utf-8", errors="replace"
+                )
+
+            run_git("config", "user.name", "Global-Radar-Local")
+            run_git("config", "user.email", "radar-local@users.noreply.github.com")
+            run_git("add", "live_signals.json", "radar_pain_solver_history.db")
+            staged = subprocess.run(
+                ["git", "diff", "--cached", "--quiet"], cwd=BASE_DIR, check=False
+            )
+            if staged.returncode == 0:
+                print("[LOCAL GIT SYNC] 没有新的高防源数据需要同步")
+            else:
+                run_git("commit", "-m", "Local silent browser sync [skip ci]")
+                run_git("pull", "--rebase", "origin", "main")
+                run_git("push", "origin", "HEAD:main")
+                print("[LOCAL GIT SYNC] 已确认提交并推送到 GitHub Pages")
         except Exception as e:
-            print(f"[LOCAL GIT WARN] {e}")
+            detail = getattr(e, "stderr", None) or getattr(e, "stdout", None) or str(e)
+            print(f"[LOCAL GIT WARN] 同步失败：{detail.strip().splitlines()[-1]}")
 
     return payload
 

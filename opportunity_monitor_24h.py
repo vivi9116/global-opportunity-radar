@@ -2,16 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 ================================================================================
-全球痛点与真实赚钱机会 24h 自动监控引擎 (v11.6 云端+本地静默浏览器分工协同版)
+全球痛点与真实赚钱机会 24h 自动监控引擎 (v11.7 严格30天时效·全量套利·双核协同版)
 ================================================================================
-核心分工架构：
-1. 【云端模式 (--cloud-once / --bounty-fast)】：在 GitHub Actions 运行
-   - 稳抓 GitHub 一手悬赏、HN、V2EX、Itch.io NSFW、DLsite、DEV.to、Chaturbate (已修HTTP 400)。
-   - PullPush 增加单线程速率控制，避免并发触发 429。
-2. 【本地静默浏览器模式 (--local-browser / --local-daemon)】：在你自己电脑后台无感运行
-   - 专门攻克云端 403/0条 的高防源：Reddit 28个版块、BlackHatWorld 6大版块、AffiliateFix、F95zone。
-   - 采用独立 Profile + 后台静默无头浏览器 (--headless=new)，绝不弹窗、不抢鼠标焦点、不影响你用电脑！
-   - 本地抓完后自动更新 live_signals.json，并支持自动 git pull & git push 同步到你的线上网页。
+核心特性：
+1. 【双重严格时效锁】：悬赏单超过 2 小时（7200秒）自动删除；其他所有赛道（套利/痛点/CPA/成人）
+   超过 30 天（30*86400秒）一律拒绝入库并从 SQLite 数据库自动物理清除，绝不留几百天前的老贴！
+2. 【全量恢复 6 大高变现套利流】：跨平台倒买倒卖套利 (Flipping)、跨国服务转包套利 (Drop-Servicing)、
+   CPA 99%任务锁套利、高佣联盟与TikTok带货套利、寄生虫SEO套利、成人SOI注册与跨语种套利。
+3. 【聚焦 15 天内赚到首笔 $100】：所有落地步骤明确量化到几单/多少点击即可达标 $100。
+4. 【云端 + 本地静默浏览器双核分工】：支持 --cloud-once 与 --local-browser / --local-daemon。
 ================================================================================
 """
 
@@ -45,9 +44,7 @@ JSON_OUT_PATH = os.path.join(BASE_DIR, "live_signals.json")
 PROXY_FILE = os.path.join(BASE_DIR, "ip3.txt")
 LOCAL_BROWSER_PROFILE = os.path.join(BASE_DIR, ".radar_silent_chrome_profile")
 
-# 全局运行模式标记：开启 --local-browser 时自动启用本地静默浏览器过盾
 USE_LOCAL_SILENT_BROWSER = False
-_PLAYWRIGHT_CTX = None
 _PLAYWRIGHT_LOCK = threading.Lock()
 
 USER_AGENTS = [
@@ -82,10 +79,10 @@ REDDIT_TARGET_SUBS = [
     ("Automate", "pain_saas", "Reddit r/Automate (自动化工作流需求)", "top_month"),
     ("beermoney", "gray_arb", "Reddit r/beermoney (亲测网赚打款门道)", "top_month"),
     ("sidehustle", "gray_arb", "Reddit r/sidehustle (野路子副业实操)", "top_month"),
-    ("flipping", "gray_arb", "Reddit r/flipping (跨平台低买高卖倒爷)", "top_month"),
+    ("flipping", "gray_arb", "Reddit r/flipping (跨平台低买高卖倒爷套利)", "top_month"),
     ("affiliatemarketing", "gray_arb", "Reddit r/affiliatemarketing (CPA与联盟营销套利)", "top_month"),
-    ("blackhat", "gray_arb", "Reddit r/blackhat (黑帽SEO与灰产技术热榜)", "top_month"),
-    ("leadgeneration", "gray_arb", "Reddit r/leadgeneration (B2B灰产获客与名单倒卖)", "top_month"),
+    ("blackhat", "gray_arb", "Reddit r/blackhat (黑帽SEO与灰产套利热榜)", "top_month"),
+    ("leadgeneration", "gray_arb", "Reddit r/leadgeneration (B2B灰产获客与名单套利)", "top_month"),
     ("SEO", "gray_arb", "Reddit r/SEO (搜索流量截流与寄生虫SEO)", "top_month"),
     ("juststart", "gray_arb", "Reddit r/juststart (流量站搞钱实战连载)", "top_month"),
     ("NSFWCreators", "nsfw_adult", "Reddit r/NSFWCreators (成人创作者引流变现)", "top_month"),
@@ -136,13 +133,8 @@ def load_proxies():
     return proxies
 
 
-# ==============================================================================
-# 本地电脑静默浏览器引擎（仅在 --local-browser 模式下启用，后台无感过五秒盾，不弹窗不抢焦点）
-# ==============================================================================
 def fetch_via_local_silent_browser(url, wait_sec=4.0):
-    """使用本地电脑的 Chrome/Edge 静默无头模式打开高防网页，拿到过盾后的真实 HTML"""
     with _PLAYWRIGHT_LOCK:
-        # 方案 A：优先尝试 DrissionPage（过 Cloudflare 盾最强，支持静默 headless）
         try:
             from DrissionPage import ChromiumPage, ChromiumOptions
             co = ChromiumOptions()
@@ -154,14 +146,12 @@ def fetch_via_local_silent_browser(url, wait_sec=4.0):
             page = ChromiumPage(co)
             page.get(url, retry=1, timeout=18)
             time.sleep(wait_sec)
-            html_content = page.html
-            return html_content
+            return page.html
         except ImportError:
             pass
         except Exception as e:
             print(f"[LOCAL BROWSER DP WARN] {url}: {e}")
 
-        # 方案 B：尝试 Playwright 静默 Chromium
         try:
             from playwright.sync_api import sync_playwright
             with sync_playwright() as p:
@@ -221,7 +211,6 @@ def http_get(url, timeout=18, headers=None, allow_jina_fallback=False):
                     raise RuntimeError(f"HTTP {resp.status_code} on {mode_name}")
                 resp.raise_for_status()
                 text_out = resp.text
-                # 检测是否返回了 Cloudflare 假 200 拦截空壳页
                 if "Just a moment..." in text_out[:800] or "Attention Required! | Cloudflare" in text_out[:800]:
                     raise RuntimeError(f"Cloudflare challenge page on {mode_name}")
                 return text_out
@@ -233,7 +222,6 @@ def http_get(url, timeout=18, headers=None, allow_jina_fallback=False):
             last_err = exc
             continue
 
-    # 如果常规请求失败或返回假空页，且当前开启了本地静默浏览器模式，则调用本地静默浏览器兜底
     if USE_LOCAL_SILENT_BROWSER and is_shielded:
         return fetch_via_local_silent_browser(url)
 
@@ -286,7 +274,6 @@ def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en="")
     pain_txt = bounty_item.get("pain_point_zh", "")[:280]
     action_txt = bounty_item.get("action_plan_zh", "")[:260]
 
-    dm_url = f"https://www.reddit.com/message/compose/?to={author_name}" if author_name else source_url
     if not custom_dm_en:
         custom_dm_en = (
             "Hey! Just saw your task post. Before your inbox gets flooded with generic bids, "
@@ -383,7 +370,7 @@ def extract_honest_deal_fact(text_blob, ups=0, comments=0):
     if money_matches:
         top_nums = " / ".join(list(dict.fromkeys(money_matches))[:3])
         return f"📊 披露金额/营收: {top_nums} | 热度: {ups}赞 · {comments}评"
-    return f"🔥 高关注真实赚钱需求 ({ups}赞 · {comments}评)"
+    return f"🔥 近30天高关注真需求 ({ups}赞 · {comments}评)"
 
 
 def is_valid_money_opportunity(title, body, track, source_platform, ups=0, cmts=0):
@@ -426,13 +413,13 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
     issue_num = repo_match.group(2) if repo_match else ""
 
     money_list = list(dict.fromkeys(re.findall(r'(\$\d+(?:,\d{3})*(?:\.\d+)?(?:\s*(?:k|K|MRR|mrr|/mo|/hr))?)', blob)))
-    price_str = " / ".join(money_list[:2]) if money_list else ("$40~$200 (直接私信议价)" if defaultTrack == "bounty_direct" else "按交付收 $39~$199")
+    price_str = " / ".join(money_list[:2]) if money_list else ("$40~$200 (直接私信议价)" if defaultTrack == "bounty_direct" else "按交付收 $39~$199 (1~3单满$100)")
 
     industry_m = re.search(r'\b(gym|fitness|clinic|dentist|restaurant|real estate|realtor|lawyer|agency|shopify|wix|ecommerce|hotel|salon|plumber|contractor|podcast|youtuber|creator|onlyfans|accountant)\b', blob, re.I)
     target_client = industry_m.group(1) if industry_m else ""
 
     tech_entities = list(dict.fromkeys(re.findall(
-        r'\b(Python|Rust|TypeScript|React|Next\.js|Node\.js|Docker|PostgreSQL|SQLite|Supabase|Stripe|PayPal|Shopify|Wix|WordPress|Chrome|Telegram|Discord|WhatsApp|OpenAI|Claude|LLM|RAG|Agent|OCR|PDF|CSV|Excel|Google Sheets|Selenium|Playwright|Puppeteer|Cloudflare|Proxy|TikTok|YouTube|Instagram|OnlyFans|Fanvue|Patreon|Etsy|Amazon|eBay|Notion|Airtable|Zapier|n8n|FFmpeg|iOS|Android|Flutter|CPA|OGAds|CrakRevenue|AdBlueMedia|SEO|Backlinks)\b',
+        r'\b(Python|Rust|TypeScript|React|Next\.js|Node\.js|Docker|PostgreSQL|SQLite|Supabase|Stripe|PayPal|Shopify|Wix|WordPress|Chrome|Telegram|Discord|WhatsApp|OpenAI|Claude|LLM|RAG|Agent|OCR|PDF|CSV|Excel|Google Sheets|Selenium|Playwright|Puppeteer|Cloudflare|Proxy|TikTok|YouTube|Instagram|OnlyFans|Fanvue|Patreon|Etsy|Amazon|eBay|Notion|Airtable|Zapier|n8n|FFmpeg|iOS|Android|Flutter|CPA|OGAds|CrakRevenue|AdBlueMedia|SEO|Backlinks|Arbitrage|Flipping)\b',
         blob, re.IGNORECASE
     )))
     entity_tag = " + ".join(tech_entities[:3]) if tech_entities else cleanTitle[:30]
@@ -444,10 +431,10 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
         client_desc = f"线下/海外「{target_client}」实体门店老板" if target_client else f"需要「{cleanTitle[:25]}」的中小企业主"
         return {
             "pain_point_zh": f"【可白嫖的开源商业方案：《{cleanTitle}》】\n● 原帖方案内容：{summary_quote}\n● 商业信息差：作者已把基于 `{entity_tag}` 的完整实现逻辑免费公开，而现实中 {client_desc} 根本不懂技术，找外包公司定制这套系统通常要花 $1,500+。",
-            "solver_case_zh": f"【白嫖现成源码 → 卖给 {client_desc} 做代搭建（Drop-Servicing）】：不要在技术文章评论区守株待兔，直接把作者这套 `{entity_tag}` 方案跑通录个 45 秒演示视频，主动出击卖给实体店老板或挂到闲鱼/Fiverr 收代建费！",
-            "action_plan_zh": f"1. 【复刻原帖 Demo】：点开原帖复制其 `{entity_tag}` 代码与配置，花半小时在本地跑通并录一段 45 秒操作视频；\n2. 【精准找实体店老板】：在 Google Maps / Instagram / 小红书搜 `{target_client or '目标行业'}` 商家联系方式；\n3. 【收安装费+包月维护】：发演示视频给老板：『一口价 $199（或 ¥999）帮您店里配好这套全自动系统，每月 $29 维护』。 ",
+            "solver_case_zh": f"【白嫖现成源码 → 卖给 {client_desc} 做代搭建套利（成 1 单即满 $100）】：不要在技术文章评论区守株待兔，直接把作者这套 `{entity_tag}` 方案跑通录个 45 秒演示视频，主动出击卖给实体店老板或挂到闲鱼/Fiverr 收代建费！",
+            "action_plan_zh": f"1. 【复刻原帖 Demo】：点开原帖复制其 `{entity_tag}` 代码与配置，花半小时在本地跑通并录一段 45 秒操作视频；\n2. 【精准找实体店老板】：在 Google Maps / Instagram / 小红书搜 `{target_client or '目标行业'}` 商家联系方式；\n3. 【收安装费】：发演示视频给老板：『一口价 $149（或 ¥999）帮您店里配好这套全自动系统』，成交 1 单即超 $100。",
             "platform_ecology_tip_zh": f"🔥 技术教程变现铁律：看这篇帖子（{ups}赞·{cmts}评）的全是同行程序员，千万别在原帖底下发广告！真正的付费金主在圈外的实体商家名录里，把技术词包装成“帮门店省掉半个客服工资”一谈一个准。",
-            "reverse_money_idea_zh": f"🔄 把《{cleanTitle[:25]}》榨干的 3 条路径：\n1. 【闲鱼/小红书卖汉化工作流】：把这套方案转成 Coze / Dify / n8n 中文模板，在小红书发笔记《给{target_client or '门店'}做了个AI自动预约系统》，按 ¥99/份 卖给国内店主和同行；\n2. 【Fiverr 挂 $199 代搭建】：在 Fiverr 上架同名服务接欧美老板定制单；\n3. 【打包卖给行业代运营公司】：把工具贴牌批发给专门服务 `{target_client or '实体店'}` 的营销机构。"
+            "reverse_money_idea_zh": f"🔄 把《{cleanTitle[:25]}》榨干的 3 条套利路径：\n1. 【闲鱼/小红书卖汉化工作流】：把这套方案转成 Coze / Dify / n8n 中文模板，在小红书发笔记《给{target_client or '门店'}做了个AI自动预约系统》，按 ¥99/份 卖给国内店主和同行，卖 7 份即满 $100；\n2. 【Fiverr 挂 $120 代搭建】：在 Fiverr 上架同名服务接欧美老板定制单；\n3. 【打包卖给行业代运营公司】：把工具贴牌批发给专门服务 `{target_client or '实体店'}` 的营销机构。"
         }
 
     if defaultTrack == "bounty_direct" or re.search(r'\[task\]|\[hiring\]|\$bid|forhire|slavelabour|donedirtcheap|\bwtb\b', blob, re.I):
@@ -458,10 +445,10 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
         )
         return {
             "pain_point_zh": f"【{sourceLabel} 免费直联急单：《{cleanTitle}》】\n● 雇主需求：{summary_quote}\n● 涉及技能：{entity_tag} | 预算指标：{price_str} | 当前竞标：{cmts} 条评论。",
-            "solver_case_zh": f"跳过简历环节，直接围绕雇主点名的 `{entity_tag}` 需求在 5 分钟内做出前 20% 真实样本截图发私信当场锁单。",
+            "solver_case_zh": f"跳过简历环节，直接围绕雇主点名的 `{entity_tag}` 需求在 5 分钟内做出前 20% 真实样本截图发私信当场锁单（接 2~3 单即满 $100）。",
             "action_plan_zh": f"1. 把需求「{summary_quote[:38]}...」丢给 AI 生成前 15 行数据或 Demo 截图；\n2. 原帖回 `$bid` 后立刻发私信附上截图：『Built a working sample for your {entity_tag} task, can deliver in 1 hour』；\n3. 走 PayPal / USDT 收款交货。",
             "platform_ecology_tip_zh": bounty_tip,
-            "reverse_money_idea_zh": f"🔄 3 条逆向赚钱门道：\n1. 【闲鱼转包赚 6 倍汇率差】：接下美金单后去国内闲鱼搜 `{entity_tag} 代做` 花 ¥80 搞定；\n2. 【脱敏挂 Gumroad 复卖】：把交付脚本按 $29/份 卖给有同样需求的同行；\n3. 【顺藤摸瓜抄雇主业务】：点进雇主发帖历史看他用这批数据在跑什么暴利项目。"
+            "reverse_money_idea_zh": f"🔄 3 条逆向套利门道：\n1. 【闲鱼转包赚 6 倍汇率差套利】：接下美金单后去国内闲鱼搜 `{entity_tag} 代做` 花 ¥80 搞定；\n2. 【脱敏挂 Gumroad 复卖】：把交付脚本按 $29/份 卖给有同样需求的同行；\n3. 【顺藤摸瓜抄雇主业务】：点进雇主发帖历史看他用这批数据在跑什么暴利项目。"
         }
 
     action_step_1 = (
@@ -470,11 +457,11 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
         f"1. 【抢占沙发位 + 提炼痛点】：本帖当前是 0 评论（{ups}赞），点开原帖提取 `{entity_tag}` 核心痛点，并留第 1 条专业干货回复占住第一视觉位；"
     )
     return {
-        "pain_point_zh": f"【实战标的《{cleanTitle}》还原（{ups}赞 · {cmts}评）】\n● 核心领域：{entity_tag}（指标：{price_str}）。\n● 原帖关键内容：{summary_quote}",
-        "solver_case_zh": f"围绕「{cleanTitle[:32]}」验证的真实需求，切入『$29 免月租买断工具』、『$69 人工代配置服务』或『跨国信息差搬运』。",
+        "pain_point_zh": f"【近30天实战标的《{cleanTitle}》还原（{ups}赞 · {cmts}评）】\n● 核心领域：{entity_tag}（指标：{price_str}）。\n● 原帖关键内容：{summary_quote}",
+        "solver_case_zh": f"围绕「{cleanTitle[:32]}」验证的真实需求，切入『$29 免月租买断工具（卖4份满$100）』、『$69 人工代配置服务（接2单满$100）』或『跨国信息差套利』。",
         "action_plan_zh": f"{action_step_1}\n2. 【AI 封装 `{entity_tag}` 极简工具】：用 Cursor 花 1 小时做成免安装脚本或自动化模板；\n3. 【免费样本锁单】：用『前 20 条数据免费帮跑验货』钩子引导客户私信付款。",
         "platform_ecology_tip_zh": f"🔥 截流细节：{'回复排第一的高赞评论（抢占楼中楼）曝光最高' if cmts > 2 else '切勿直发收款硬广链接，用实测结果截图吸引客户主动私信'}。",
-        "reverse_money_idea_zh": f"🔄 围绕《{cleanTitle[:25]}》的 3 条逆向变现路径：\n1. 【跨国信息差搬运】：把本帖套路翻译成中文干货发小红书/闲鱼，卖 ¥49~¥99 的配套工具包；\n2. 【Done-For-You 代配置服务】：挂出 $79 帮欧美小老板远程配好全流程，转包国内闲鱼技术员交付；\n3. 【竞品 1 星差评截胡】：去 Trustpilot / G2 找同类高价软件的最新差评客户推销你的 $29 买断平替版。"
+        "reverse_money_idea_zh": f"🔄 围绕《{cleanTitle[:25]}》在 15 天内赚到 $100 的 3 条逆向套利路径：\n1. 【跨国信息差搬运】：把本帖套路翻译成中文干货发小红书/闲鱼，卖 ¥69~¥99 的配套工具包（卖 8 份即满 $100）；\n2. 【Done-For-You 代配置服务】：挂出 $69 帮欧美小老板远程配好全流程，转包国内闲鱼技术员交付；\n3. 【竞品 1 星差评截胡】：去 Trustpilot / G2 找同类高价软件的最新差评客户推销你的 $29 买断平替版。"
     }
 
 
@@ -491,8 +478,12 @@ def sanitizeAndUpgradeSignal(rawItem):
     isBaseCard = str(rawItem.get("id", "")).startswith("base_")
     createdTs = int(rawItem.get("created_ts") or rawItem.get("created_utc") or time.time())
 
-    if not isBaseCard and track == "bounty_direct":
-        if (time.time() - createdTs) > 7200:
+    # 严格双重时效锁：悬赏单超过 2 小时（7200秒）丢弃；其他所有赛道超过 30 天（30*86400秒）一律丢弃！
+    if not isBaseCard:
+        age_sec = time.time() - createdTs
+        if track == "bounty_direct" and age_sec > 7200:
+            return None
+        if track != "bounty_direct" and age_sec > (30 * 86400):
             return None
 
     ups = int(rawItem.get("ups") or 0)
@@ -506,7 +497,7 @@ def sanitizeAndUpgradeSignal(rawItem):
         "id": rawItem.get("id") or f"sig_{abs(hash(title))}",
         "track": track,
         "title_zh": title,
-        "summary_one_line": rawItem.get("summary_one_line") or f"{source_platform} 核验收录",
+        "summary_one_line": rawItem.get("summary_one_line") or f"{source_platform} 近30天核验收录",
         "deal_fact_zh": rawItem.get("deal_fact_zh") or extract_honest_deal_fact(f"{title} {pain}", ups, cmts),
         "pain_point_zh": u["pain_point_zh"],
         "solver_case_zh": u["solver_case_zh"],
@@ -514,7 +505,7 @@ def sanitizeAndUpgradeSignal(rawItem):
         "reverse_money_idea_zh": u["reverse_money_idea_zh"],
         "action_plan_zh": u["action_plan_zh"],
         "feasibility_pct": 92 if track == "bounty_direct" else 87,
-        "time_to_money": "当天~24h" if track == "bounty_direct" else "2~7天",
+        "time_to_money": "当天拿单($30~$150)" if track == "bounty_direct" else "3~15天首笔$100",
         "capital_req": "$0",
         "source_platform": source_platform,
         "source_url": rawItem.get("source_url", "https://reddit.com"),
@@ -528,8 +519,9 @@ def sanitizeAndUpgradeSignal(rawItem):
 def fetch_reddit_jsonp_py(sub, mode="new", limit=20):
     errors = []
     path = f"top.json?t=month&limit={limit}&raw_json=1" if mode == "top_month" else f"new.json?limit={limit}&raw_json=1"
+    max_age_sec = 30 * 86400 if mode == "top_month" else 7200
 
-    # 1. 本地模式或已配住宅代理时：优先直连 Reddit JSON（本地家庭宽带 100% 绿灯，不触发 PullPush 429！）
+    # 1. 本地模式或已配住宅代理时：优先直连 Reddit JSON 并校验 30天/2小时 时效
     if USE_LOCAL_SILENT_BROWSER or load_proxies():
         reddit_headers = {
             "User-Agent": random.choice(USER_AGENTS),
@@ -539,36 +531,41 @@ def fetch_reddit_jsonp_py(sub, mode="new", limit=20):
             try:
                 raw = http_get(f"https://{host}/r/{sub}/{path}", timeout=12, headers=reddit_headers)
                 data = json.loads(raw)
-                posts = [c["data"] for c in data.get("data", {}).get("children", [])]
+                raw_posts = [c["data"] for c in data.get("data", {}).get("children", [])]
+                posts = [p for p in raw_posts if (time.time() - int(p.get("created_utc") or 0)) <= max_age_sec]
                 if posts:
-                    print(f"[SOURCE OK] Reddit r/{sub}: 本地/住宅网络直连成功获取 {len(posts)} 条")
+                    print(f"[SOURCE OK] Reddit r/{sub}: 本地/住宅网络直连成功获取 {len(posts)} 条时效内新帖")
                     return posts
             except Exception as exc:
                 errors.append(f"{host}: {type(exc).__name__}: {exc}")
 
-    # 2. 云端模式：通过加了 1.2 秒节流保护的 PullPush 通道获取（防止并发触发 429）
+    # 2. 云端模式：强制加 after 时间锁（top_month 严格限定最近 30 天内，new 严格限定最近 2 小时内）
     try:
         time.sleep(1.2)
         sort_by = "score" if mode == "top_month" else "created_utc"
-        pp_url = f"https://api.pullpush.io/reddit/search/submission/?subreddit={sub}&size={limit}&sort=desc&sort_type={sort_by}"
+        after_ts = int(time.time()) - max_age_sec
+        pp_url = f"https://api.pullpush.io/reddit/search/submission/?subreddit={sub}&after={after_ts}&size={limit}&sort=desc&sort_type={sort_by}"
         raw_pp = http_get(pp_url, timeout=14)
         pp_data = json.loads(raw_pp).get("data", [])
         posts = []
         for d in pp_data:
             if not d.get("title"):
                 continue
+            created_utc = int(d.get("created_utc") or 0)
+            if not created_utc or (time.time() - created_utc) > max_age_sec:
+                continue
             posts.append({
                 "id": str(d.get("id")),
                 "title": d.get("title"),
                 "selftext": d.get("selftext") or "",
                 "author": d.get("author") or "",
-                "created_utc": int(d.get("created_utc") or time.time()),
+                "created_utc": created_utc,
                 "ups": int(d.get("score") or 5),
                 "num_comments": int(d.get("num_comments") or 1),
                 "permalink": f"/r/{sub}/comments/{d.get('id')}/"
             })
         if posts:
-            print(f"[SOURCE OK] Reddit r/{sub}: PullPush 节流通道成功获取 {len(posts)} 条")
+            print(f"[SOURCE OK] Reddit r/{sub} (严格时效内): PullPush 成功获取 {len(posts)} 条")
             return posts
     except Exception as exc:
         errors.append(f"PullPush: {type(exc).__name__}: {exc}")
@@ -802,7 +799,7 @@ def fetch_additional_sources(now_ts):
     items = []
     thirty_days_ago_ts = now_ts - (30 * 86400)
 
-    # 1. Hacker News (GitHub 云端 100% 稳抓)
+    # 1. Hacker News (强制 created_at_i > thirty_days_ago_ts 锁死 30 天内)
     hn_queries = [
         ("willing to pay OR too expensive alternative", "pain_saas", "HN 近30天痛点求平替"),
         ("Show HN revenue OR MRR OR first sale OR Stripe", "pain_saas", "HN 近30天真实变现复盘"),
@@ -816,10 +813,11 @@ def fetch_additional_sources(now_ts):
             for hit in data.get("hits", []):
                 object_id = str(hit.get("objectID") or "")
                 title = clean_raw_html(hit.get("title") or hit.get("story_title") or "")
-                if not object_id or not title:
+                created_i = int(hit.get("created_at_i") or 0)
+                if not object_id or not title or created_i < thirty_days_ago_ts:
                     continue
                 item = sanitizeAndUpgradeSignal({
-                    "id": f"hn_{object_id}", "created_ts": int(hit.get("created_at_i") or (now_ts - 14400)),
+                    "id": f"hn_{object_id}", "created_ts": created_i,
                     "track": trk, "ups": hit.get("points") or 0, "num_comments": hit.get("num_comments") or 0,
                     "title_zh": f"【{label}】{title}", "pain_point_zh": hit.get("story_text") or title,
                     "source_platform": label, "source_url": hit.get("url") or f"https://news.ycombinator.com/item?id={object_id}",
@@ -831,29 +829,31 @@ def fetch_additional_sources(now_ts):
         except Exception as exc:
             print(f"[SOURCE WARN] {label}: {exc}")
 
-    # 2. 全网搜索（加 1.2 秒节流 + 放宽布尔词，解决成人CPA与黑帽SEO 0条的问题）
+    # 2. 全网近 30 天套利与快钱搜索引擎（强制加 after=thirty_days_ago_ts 锁死 30 天内，绝不抓几百天前的老贴！）
     global_searches = [
-        ("CPA locker OGAds", "gray_arb", "全网搜索·CPA与任务锁门道"),
-        ("OnlyFans traffic promote", "nsfw_adult", "全网搜索·成人CPA与AI擦边"),
-        ("blackhat SEO rank", "gray_arb", "全网搜索·黑帽寄生虫SEO"),
-        ("made my first 1000 side hustle", "pain_saas", "全网搜索·近30天亲测赚钱复盘"),
-        ("TikTok shop affiliate digital product", "gray_arb", "全网搜索·短视频带货与虚拟品套利")
+        ("arbitrage OR drop servicing OR flipping profit", "gray_arb", "近30天套利·跨平台倒买倒卖与服务转包"),
+        ("CPA locker OGAds AdBlueMedia", "gray_arb", "近30天套利·CPA任务锁日结变现"),
+        ("affiliate commission TikTok shop OR ClickBank", "gray_arb", "近30天套利·高佣联盟与短视频截流"),
+        ("OnlyFans traffic promote OR CrakRevenue", "nsfw_adult", "近30天套利·成人CPA与私域引流"),
+        ("parasite SEO rank OR local lead generation", "gray_arb", "近30天套利·寄生虫SEO与本地线索倒卖"),
+        ("made my first 100 OR first client OR first sale", "pain_saas", "近30天实录·15天内赚到第一笔$100复盘")
     ]
     for q_str, trk, label in global_searches:
         try:
             time.sleep(1.2)
-            pp_url = f"https://api.pullpush.io/reddit/search/submission/?q={urllib.parse.quote(q_str)}&size=12&sort=desc&sort_type=score"
+            pp_url = f"https://api.pullpush.io/reddit/search/submission/?q={urllib.parse.quote(q_str)}&after={thirty_days_ago_ts}&size=12&sort=desc&sort_type=score"
             pp_data = json.loads(http_get(pp_url, timeout=15)).get("data", [])
             cnt = 0
             for d in pp_data:
                 title = clean_raw_html(d.get("title", ""))
-                if not title:
+                created_utc = int(d.get("created_utc") or 0)
+                if not title or not created_utc or (now_ts - created_utc) > (30 * 86400):
                     continue
                 sub_name = d.get("subreddit", "all")
                 post_id = d.get("id", "")
                 link = d.get("full_link") or f"https://www.reddit.com/r/{sub_name}/comments/{post_id}/"
                 item = sanitizeAndUpgradeSignal({
-                    "id": f"rds_{post_id}", "created_ts": int(d.get("created_utc") or (now_ts - 7200)),
+                    "id": f"rds_{post_id}", "created_ts": created_utc,
                     "track": trk, "ups": int(d.get("score") or 10), "num_comments": int(d.get("num_comments") or 2),
                     "title_zh": f"【{label} · r/{sub_name}】{title}",
                     "pain_point_zh": d.get("selftext") or title,
@@ -863,11 +863,11 @@ def fetch_additional_sources(now_ts):
                 if item:
                     items.append(item)
                     cnt += 1
-            print(f"[SOURCE OK] {label}: {cnt} 条")
+            print(f"[SOURCE OK] {label} (严格30天内): {cnt} 条")
         except Exception as exc:
             print(f"[SOURCE WARN] {label}: {exc}")
 
-    # 3. V2EX (GitHub 云端 100% 稳抓)
+    # 3. V2EX (悬赏急单限定 2 小时内)
     for node in ("jobs", "outsourcing"):
         try:
             data = json.loads(http_get(f"https://www.v2ex.com/api/topics/show.json?node_name={node}", timeout=15))
@@ -893,7 +893,7 @@ def fetch_additional_sources(now_ts):
         except Exception as exc:
             print(f"[SOURCE WARN] V2EX {node}: {exc}")
 
-    # 4. BlackHatWorld / AffiliateFix / F95zone：当在本地电脑运行 (--local-browser) 或配好住宅IP时真抓实盘！
+    # 4. BlackHatWorld / AffiliateFix / F95zone
     bhw_forums = [
         ("cpa", "cpa.24", "gray_arb", "BlackHatWorld CPA任务锁"),
         ("affiliate", "affiliate-programs.15", "gray_arb", "BlackHatWorld 联盟营销"),
@@ -942,7 +942,7 @@ def fetch_additional_sources(now_ts):
         except Exception as exc:
             print(f"[SOURCE WARN] {af_label}: {exc}")
 
-    # 5. 修复 Chaturbate HTTP 400：直接抓取免 WM 参数的官方公开房间列表 / HTML 房间卡片
+    # 5. Chaturbate
     try:
         cb_rooms = []
         wm = os.environ.get("CHATURBATE_WM", "").strip()
@@ -960,7 +960,6 @@ def fetch_additional_sources(now_ts):
                 continue
 
         if not cb_rooms:
-            # 免 WM 参数直抓 Chaturbate 首页实时高热直播间
             cb_html = http_get("https://chaturbate.com/", timeout=15)
             cb_soup = BeautifulSoup(cb_html, "lxml")
             for li in cb_soup.select("li.room_list_room")[:10]:
@@ -1060,15 +1059,17 @@ def fetch_additional_sources(now_ts):
     except Exception as exc:
         print(f"[SOURCE WARN] DLsite: {exc}")
 
+    # 6. DEV.to（严格过滤超过 30 天的旧文）
     for dtag in ("saas", "sideprojects", "indiehackers", "automation"):
         try:
-            dev_data = json.loads(http_get(f"https://dev.to/api/articles?tag={dtag}&top=30&per_page=8", timeout=12))
+            dev_data = json.loads(http_get(f"https://dev.to/api/articles?tag={dtag}&top=30&per_page=10", timeout=12))
             for art in dev_data:
                 title = clean_raw_html(art.get("title") or "")
-                if not title:
+                pub_ts = _iso_timestamp(art.get("published_at"), 0)
+                if not title or not pub_ts or (now_ts - pub_ts) > (30 * 86400):
                     continue
                 item = sanitizeAndUpgradeSignal({
-                    "id": f"dev_{art.get('id')}", "created_ts": _iso_timestamp(art.get("published_at"), now_ts - 86400),
+                    "id": f"dev_{art.get('id')}", "created_ts": pub_ts,
                     "track": "pain_saas", "ups": art.get("public_reactions_count") or 0, "num_comments": art.get("comments_count") or 0,
                     "title_zh": f"【DEV.to 近30天变现热榜 #{dtag}】{title}",
                     "pain_point_zh": clean_raw_html(art.get("description") or title),
@@ -1090,7 +1091,7 @@ def run_fast_bounty_and_radar():
     alert_candidates = []
 
     mode_str = "本地静默浏览器穿透模式" if USE_LOCAL_SILENT_BROWSER else "GitHub 云端模式"
-    print(f"[{now_str}] 🚀 正在执行 v11.6 ({mode_str}) 全网扫描...")
+    print(f"[{now_str}] 🚀 正在执行 v11.7 ({mode_str}) 全网扫描 (悬赏限2h内 · 套利/痛点严格限30天内)...")
 
     for sub, track, label in FAST_BOUNTY_SUBS:
         posts = fetch_reddit_jsonp_py(sub, "new", 25)
@@ -1211,7 +1212,11 @@ def run_fast_bounty_and_radar():
             pushed_count += 1
     print(f"[PUSH SUMMARY] candidates={len(alert_candidates)} pushed={pushed_count}")
 
+    # 数据库强制双重物理清理：
+    # 1. 悬赏急单超过 2 小时（7200秒）立即删除；
+    # 2. 其他所有赛道超过 30 天（30*86400秒）立即删除，彻底清光几百天前的历史旧贴！
     c.execute("DELETE FROM signals WHERE track = 'bounty_direct' AND id NOT LIKE 'base_%' AND created_ts < ?", (now_ts - 7200,))
+    c.execute("DELETE FROM signals WHERE track != 'bounty_direct' AND id NOT LIKE 'base_%' AND created_ts < ?", (now_ts - 30 * 86400,))
     c.execute("DELETE FROM signals WHERE source_platform LIKE '%Upwork%' OR source_platform LIKE '%PeoplePerHour%' OR source_platform LIKE '%Freelancer%' OR source_platform LIKE '%Flippa%'")
     c.execute("DELETE FROM signals WHERE solver_case_zh LIKE '%顺应当前热度，围绕该标的提供%' OR action_plan_zh LIKE '%去原帖 0 条评论里%' OR title_zh LIKE '%503%'")
 
@@ -1256,9 +1261,8 @@ def run_fast_bounty_and_radar():
     }
     with open(JSON_OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False)
-    print(f"[{now_str}] v11.6 扫描完毕！共输出 {len(rows)} 条定制拆解数据。")
+    print(f"[{now_str}] v11.7 扫描完毕！共输出 {len(rows)} 条严格时效内（悬赏2h/大盘30天）数据。")
 
-    # 如果是本地模式且目录是 git 仓库，自动同步最新数据到 GitHub 线上网页
     if USE_LOCAL_SILENT_BROWSER and os.path.exists(os.path.join(BASE_DIR, ".git")):
         try:
             subprocess.run(["git", "add", "live_signals.json", "radar_pain_solver_history.db"], cwd=BASE_DIR, check=False)
@@ -1294,8 +1298,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cloud-once", action="store_true", help="GitHub Actions 云端运行一次")
     parser.add_argument("--bounty-fast", action="store_true", help="快速扫描悬赏单")
-    parser.add_argument("--local-browser", action="store_true", help="在本地电脑使用静默无头浏览器运行一次（攻克所有403高防源）")
-    parser.add_argument("--local-daemon", action="store_true", help="在本地电脑后台常驻运行（每60秒扫悬赏，每20分钟扫高防大盘，不弹窗不抢焦点）")
+    parser.add_argument("--local-browser", action="store_true", help="在本地电脑使用静默无头浏览器运行一次")
+    parser.add_argument("--local-daemon", action="store_true", help="在本地电脑后台常驻运行")
     parser.add_argument("--serve", action="store_true")
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()

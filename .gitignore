@@ -4,3 +4,4 @@ __pycache__/
 *.db
 .env
 private/
+.radar_visible_chrome_profile/

@@ -22,6 +22,7 @@ import time
 import json
 import re
 import html
+import hashlib
 import sqlite3
 import random
 import shutil
@@ -46,11 +47,13 @@ DB_PATH = os.path.join(BASE_DIR, "radar_pain_solver_history.db")
 JSON_OUT_PATH = os.path.join(BASE_DIR, "live_signals.json")
 PROXY_FILE = os.path.join(BASE_DIR, "ip3.txt")
 LOCAL_BROWSER_PROFILE = os.environ.get(
-    "LOCAL_BROWSER_PROFILE", os.path.join(BASE_DIR, ".radar_silent_chrome_profile")
+    "LOCAL_BROWSER_PROFILE", os.path.join(BASE_DIR, ".radar_visible_chrome_profile")
 )
 
 USE_LOCAL_SILENT_BROWSER = False
 _PLAYWRIGHT_LOCK = threading.Lock()
+_LOCAL_PAGE = None
+_MANUAL_VERIFY_BLOCKED = set()
 
 
 def find_local_browser_path():
@@ -76,7 +79,7 @@ def is_human_challenge_page(raw_text):
     sample = str(raw_text or "")[:12000].lower()
     return any(marker in sample for marker in (
         "prove your humanity", "verify you are human", "just a moment",
-        "cf-chl-captcha", "attention required! | cloudflare"
+        "cf-chl-captcha", "attention required! | cloudflare", "正在进行安全验证"
     ))
 
 
@@ -179,41 +182,65 @@ def load_proxies():
 
 
 def fetch_via_local_silent_browser(url, wait_sec=4.0):
+    global _LOCAL_PAGE
     with _PLAYWRIGHT_LOCK:
+        domain = urllib.parse.urlparse(url).netloc.lower()
+        if domain in _MANUAL_VERIFY_BLOCKED:
+            raise RuntimeError(f"{domain} 等待手动验证；本轮不重复弹出验证提示")
         browser_path = find_local_browser_path()
         if not browser_path:
             raise RuntimeError("本机未找到 Chrome/Edge；可设置 CHROME_PATH 指向 chrome.exe")
         try:
             from DrissionPage import ChromiumPage, ChromiumOptions
-            co = ChromiumOptions()
-            co.set_browser_path(browser_path)
-            co.set_user_data_path(LOCAL_BROWSER_PROFILE)
-            co.headless(True)
-            co.set_argument("--disable-gpu")
-            co.set_argument("--mute-audio")
-            co.set_argument("--no-sandbox")
-            page = ChromiumPage(co)
-            try:
-                page.get(url, retry=1, timeout=18)
-                time.sleep(wait_sec)
-                content = page.html
+            if _LOCAL_PAGE is None:
+                co = ChromiumOptions()
+                co.set_browser_path(browser_path)
+                co.set_user_data_path(LOCAL_BROWSER_PROFILE)
+                co.set_local_port(int(os.environ.get("RADAR_CHROME_PORT", "9337")))
+                co.headless(False)
+                co.set_argument("--mute-audio")
+                _LOCAL_PAGE = ChromiumPage(co)
+            _LOCAL_PAGE.get(url, retry=1, timeout=18)
+            time.sleep(wait_sec)
+            content = _LOCAL_PAGE.html
+            if is_human_challenge_page(content):
+                print(f"[MANUAL VERIFY] 请在专用 Chrome 窗口完成验证：{url}", flush=True)
+                if sys.stdin.isatty():
+                    input("验证完成后按 Enter 继续；若不想继续请按 Ctrl+C：")
+                    content = _LOCAL_PAGE.html
+                else:
+                    for _ in range(90):
+                        time.sleep(2)
+                        content = _LOCAL_PAGE.html
+                        if not is_human_challenge_page(content):
+                            break
                 if is_human_challenge_page(content):
-                    raise RuntimeError("页面要求手动完成人机验证，静默模式不会绕过验证")
-                return content
-            finally:
-                try:
-                    page.quit()
-                except Exception:
-                    pass
-        except Exception:
-            pass
+                    _MANUAL_VERIFY_BLOCKED.add(domain)
+                    raise RuntimeError("验证在 3 分钟内未完成，本轮暂停该来源")
+                _LOCAL_PAGE.get(url, retry=1, timeout=18)
+                content = _LOCAL_PAGE.html
+            ready_marker = ("structItem--thread" if "blackhatworld.com/forums/" in url else
+                            "<shreddit-post" if "reddit.com/r/" in url and ".json" not in url else "")
+            if ready_marker:
+                for _ in range(10):
+                    if ready_marker in content:
+                        break
+                    time.sleep(1)
+                    content = _LOCAL_PAGE.html
+            return content
+        except RuntimeError as exc:
+            if "手动验证" in str(exc) or "验证在" in str(exc):
+                raise
+            browser_error = exc
+        except Exception as exc:
+            browser_error = exc
 
         try:
             from playwright.sync_api import sync_playwright
             with sync_playwright() as p:
                 browser = p.chromium.launch_persistent_context(
                     user_data_dir=LOCAL_BROWSER_PROFILE + "_pw",
-                    headless=True,
+                    headless=False,
                     executable_path=browser_path,
                     args=["--disable-blink-features=AutomationControlled", "--mute-audio"]
                 )
@@ -221,12 +248,24 @@ def fetch_via_local_silent_browser(url, wait_sec=4.0):
                 page.goto(url, timeout=20000, wait_until="domcontentloaded")
                 time.sleep(wait_sec)
                 content = page.content()
-                browser.close()
                 if is_human_challenge_page(content):
-                    raise RuntimeError("页面要求手动完成人机验证，静默模式不会绕过验证")
+                    print(f"[MANUAL VERIFY] 请在专用 Chrome 窗口完成验证：{url}", flush=True)
+                    if sys.stdin.isatty():
+                        input("验证完成后按 Enter 继续；若不想继续请按 Ctrl+C：")
+                    else:
+                        for _ in range(90):
+                            time.sleep(2)
+                            content = page.content()
+                            if not is_human_challenge_page(content):
+                                break
+                    content = page.content()
+                    if is_human_challenge_page(content):
+                        _MANUAL_VERIFY_BLOCKED.add(domain)
+                        raise RuntimeError("验证在 3 分钟内未完成，本轮暂停该来源")
+                browser.close()
                 return content
         except Exception as e:
-            raise RuntimeError(f"本地浏览器启动或验证失败（{browser_path}）：{e}")
+            raise RuntimeError(f"本地浏览器失败（{browser_path}）：{browser_error}; 回退：{e}")
 
 
 def http_get(url, timeout=16, headers=None, allow_jina_fallback=False):
@@ -391,6 +430,13 @@ def init_db():
             notified_at TEXT
         )
     """)
+    c.execute("""CREATE TABLE IF NOT EXISTS gemini_analysis (
+        id TEXT PRIMARY KEY, content_hash TEXT NOT NULL, response_json TEXT NOT NULL
+    )""")
+    c.execute("""CREATE TABLE IF NOT EXISTS gemini_pending (
+        id TEXT PRIMARY KEY, raw_title TEXT NOT NULL, raw_source_text TEXT NOT NULL,
+        source_platform TEXT NOT NULL, content_hash TEXT NOT NULL
+    )""")
     conn.commit()
     conn.close()
 
@@ -478,6 +524,119 @@ def call_gemini_fast_bounty_dm(raw_title, raw_body, author_name=""):
         return result if isinstance(result, dict) else None
     except Exception:
         return None
+
+
+ANALYSIS_FIELDS = (
+    "deal_fact_zh", "pain_point_zh", "solver_case_zh", "action_plan_zh",
+    "platform_ecology_tip_zh", "reverse_money_idea_zh"
+)
+
+
+def analyze_all_new_signals(items, conn):
+    """所有来源统一分析；本地没有 Key 时把原文排队，交给云端 Secret 补分析。"""
+    key = os.environ.get("GEMINI_API_KEY", "").strip()
+    cursor = conn.cursor()
+    analysis_items = list(items)
+    backfill_ids = set()
+    if key:
+        columns = [row[1] for row in cursor.execute("PRAGMA table_info(signals)")]
+        current_ids = {item["id"] for item in items}
+        for signal_id, title, body, _, _ in cursor.execute(
+            "SELECT id, raw_title, raw_source_text, source_platform, content_hash FROM gemini_pending"
+        ).fetchall():
+            if signal_id in current_ids:
+                continue
+            values = cursor.execute("SELECT * FROM signals WHERE id=?", (signal_id,)).fetchone()
+            if not values:
+                cursor.execute("DELETE FROM gemini_pending WHERE id=?", (signal_id,))
+                continue
+            queued_item = dict(zip(columns, values))
+            queued_item["_raw_title"] = title
+            queued_item["_raw_source_text"] = body
+            analysis_items.append(queued_item)
+            backfill_ids.add(signal_id)
+    pending = []
+    cached = 0
+    queued = 0
+    for item in analysis_items:
+        source_text = str(item.pop("_raw_source_text", "") or item["pain_point_zh"])
+        title = str(item.pop("_raw_title", "") or item["title_zh"])
+        digest = hashlib.sha256((title + "\n" + source_text).encode("utf-8")).hexdigest()
+        row = cursor.execute("SELECT content_hash, response_json FROM gemini_analysis WHERE id=?", (item["id"],)).fetchone()
+        if row and row[0] == digest:
+            try:
+                analysis = json.loads(row[1])
+                for field in ANALYSIS_FIELDS:
+                    if isinstance(analysis.get(field), str) and analysis[field].strip():
+                        item[field] = analysis[field].strip()
+                if item["id"] in backfill_ids:
+                    cursor.execute("UPDATE signals SET " + ", ".join(f"{field}=?" for field in ANALYSIS_FIELDS) +
+                                   " WHERE id=?", tuple(item[field] for field in ANALYSIS_FIELDS) + (item["id"],))
+                cursor.execute("DELETE FROM gemini_pending WHERE id=?", (item["id"],))
+                cached += 1
+                continue
+            except (ValueError, TypeError):
+                pass
+        if not key:
+            cursor.execute("INSERT OR REPLACE INTO gemini_pending VALUES (?, ?, ?, ?, ?)",
+                           (item["id"], title, source_text, item["source_platform"], digest))
+            queued += 1
+            continue
+        pending.append((item, title, source_text[:2200], digest))
+
+    if not key:
+        conn.commit()
+        print(f"[GEMINI QUEUED] local_without_key={queued} cached={cached}; 等待 GitHub Secret 补分析", flush=True)
+        return
+
+    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").strip()
+    url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+           f"{urllib.parse.quote(model, safe='')}:generateContent?key={urllib.parse.quote(key)}")
+    succeeded = 0
+    failed = 0
+    for offset in range(0, len(pending), 8):
+        batch = pending[offset:offset + 8]
+        facts = [{"id": item["id"], "source": item["source_platform"], "title": title,
+                  "original_post": body, "verified_fact": item["deal_fact_zh"]}
+                 for item, title, body, _ in batch]
+        prompt = (
+            "逐条基于原帖生成大白话中文实战拆解，严格返回 JSON 对象，键为 items 数组。"
+            "每个元素含 id、deal_fact_zh、pain_point_zh、solver_case_zh、action_plan_zh、"
+            "platform_ecology_tip_zh、reverse_money_idea_zh。"
+            "金额/销量只写原帖或官方页面确有的数字；未披露成交单数写‘⚪ 原帖未披露具体成交单数’。"
+            "痛点必须依据原帖正文；只有标题时明确说依据标题，不能编造正文、交易和平台时间窗。"
+            "行动步骤具体可执行；逆向思路按原帖线索展开 2~3 条，不编造已成交案例。"
+            "不要更改 id，不要漏项。原始材料：" + json.dumps(facts, ensure_ascii=False)
+        )
+        payload = {"contents": [{"parts": [{"text": prompt}]}],
+                   "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2}}
+        try:
+            request = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"),
+                                             headers={"Content-Type": "application/json"})
+            response = json.loads(urllib.request.urlopen(request, timeout=25).read().decode("utf-8"))
+            parsed = json.loads(response["candidates"][0]["content"]["parts"][0]["text"])
+            by_id = {str(x.get("id")): x for x in parsed.get("items", []) if isinstance(x, dict)}
+            for item, _, _, digest in batch:
+                answer = by_id.get(str(item["id"]), {})
+                if not all(isinstance(answer.get(field), str) and answer[field].strip()
+                           for field in ANALYSIS_FIELDS):
+                    failed += 1
+                    continue
+                analysis = {field: answer[field].strip() for field in ANALYSIS_FIELDS}
+                for field, value in analysis.items():
+                    item[field] = value
+                cursor.execute("INSERT OR REPLACE INTO gemini_analysis VALUES (?, ?, ?)",
+                               (item["id"], digest, json.dumps(analysis, ensure_ascii=False)))
+                if item["id"] in backfill_ids:
+                    cursor.execute("UPDATE signals SET " + ", ".join(f"{field}=?" for field in ANALYSIS_FIELDS) +
+                                   " WHERE id=?", tuple(item[field] for field in ANALYSIS_FIELDS) + (item["id"],))
+                cursor.execute("DELETE FROM gemini_pending WHERE id=?", (item["id"],))
+                succeeded += 1
+            conn.commit()
+        except Exception as exc:
+            failed += len(batch)
+            print(f"[GEMINI WARN] 批次 {offset // 8 + 1}: {type(exc).__name__}: {exc}", flush=True)
+    print(f"[GEMINI SUMMARY] new={len(pending)} success={succeeded} failed={failed} cached={cached}", flush=True)
 
 
 def extract_honest_deal_fact(text_blob, ups=0, comments=0):
@@ -636,8 +795,41 @@ def sanitizeAndUpgradeSignal(rawItem):
         "solver_url": rawItem.get("solver_url", "https://reddit.com"),
         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "deliverable_type": "bounty_sniper_py",
-        "created_ts": createdTs
+        "created_ts": createdTs,
+        "_raw_title": rawItem.get("title_zh") or rawItem.get("title") or title,
+        "_raw_source_text": rawItem.get("pain_point_zh") or rawItem.get("selftext") or pain,
     }
+
+
+def parse_reddit_browser_posts(raw_html, sub, max_age_sec, limit):
+    """读取 Reddit 网页原帖；JSON 接口对浏览器也可能返回网络封锁页。"""
+    soup = BeautifulSoup(raw_html, "lxml")
+    posts = []
+    now_ts = time.time()
+    for node in soup.select("shreddit-post[permalink][created-timestamp]"):
+        title = clean_raw_html(node.get("post-title") or "")
+        permalink = node.get("permalink") or ""
+        raw_id = node.get("id") or ""
+        if not title or not permalink or not raw_id.startswith("t3_"):
+            continue
+        try:
+            created_utc = int(datetime.fromisoformat(node["created-timestamp"]).timestamp())
+        except (ValueError, TypeError):
+            continue
+        if now_ts - created_utc > max_age_sec or created_utc > now_ts + 300:
+            continue
+        body_node = node.select_one('[property="schema:articleBody"]')
+        body = clean_raw_html(body_node.get_text(" ", strip=True)) if body_node else ""
+        posts.append({
+            "id": raw_id.removeprefix("t3_"), "title": title, "selftext": body,
+            "author": node.get("author") or "", "created_utc": created_utc,
+            "ups": int(node.get("score") or 0),
+            "num_comments": int(node.get("comment-count") or 0),
+            "permalink": permalink,
+        })
+        if len(posts) >= limit:
+            break
+    return posts
 
 
 def fetch_reddit_jsonp_py(sub, mode="new", limit=15):
@@ -645,12 +837,29 @@ def fetch_reddit_jsonp_py(sub, mode="new", limit=15):
     path = f"top.json?t=month&limit={limit}&raw_json=1" if mode == "top_month" else f"new.json?limit={limit}&raw_json=1"
     max_age_sec = 30 * 86400 if mode == "top_month" else 7200
 
-    # 通道 1：本地/住宅代理直连 Reddit JSON
-    if USE_LOCAL_SILENT_BROWSER or load_proxies():
+    # 本地可见浏览器读取网页 DOM；本站的 .json 接口即使在浏览器中也可能被拦截。
+    if USE_LOCAL_SILENT_BROWSER:
+        try:
+            listing = "top/?t=month" if mode == "top_month" else "new/"
+            page_url = f"https://www.reddit.com/r/{sub}/{listing}"
+            raw_html = fetch_via_local_silent_browser(page_url, wait_sec=2.0)
+            posts = parse_reddit_browser_posts(raw_html, sub, max_age_sec, limit)
+            if posts:
+                print(f"[SOURCE OK] Reddit r/{sub}: 本地可见网页获取 {len(posts)} 条")
+                return posts
+            print(f"[SOURCE OK] Reddit r/{sub}: 网页可访问，但时效窗内没有原帖")
+            return []
+        except Exception as exc:
+            print(f"[SOURCE WARN] Reddit r/{sub}: 本地网页 {type(exc).__name__}: {exc}")
+            return []
+
+    # 住宅代理直连 Reddit JSON
+    if load_proxies():
         reddit_headers = {"User-Agent": random.choice(USER_AGENTS), "Accept": "application/json"}
         for host in ("www.reddit.com", "old.reddit.com"):
             try:
-                raw = http_get(f"https://{host}/r/{sub}/{path}", timeout=10, headers=reddit_headers)
+                target = f"https://{host}/r/{sub}/{path}"
+                raw = http_get(target, timeout=10, headers=reddit_headers)
                 data = parse_json_from_browser_html(raw)
                 raw_posts = [c["data"] for c in data.get("data", {}).get("children", [])]
                 posts = [p for p in raw_posts if (time.time() - int(p.get("created_utc") or 0)) <= max_age_sec]
@@ -929,6 +1138,51 @@ def parse_links_from_html_or_jina(raw_text, base_url, url_keyword, source_label,
     return out
 
 
+def parse_bhw_forum_html(raw_html, source_label, track, now_ts, max_items=8, is_hire=False):
+    """只读取 BHW 真实论坛行、原帖链接和页面提供的时间。"""
+    soup = BeautifulSoup(raw_html, "lxml")
+    out = []
+    for row in soup.select(".structItem--thread"):
+        if row.select_one(".structItem-status--sticky"):
+            continue
+        anchor = row.select_one('.structItem-title a[data-tp-primary][href^="/seo/"]')
+        if not anchor:
+            continue
+        title = clean_raw_html(anchor.get_text(" ", strip=True))
+        if len(title) < 12:
+            continue
+        start_node = row.select_one(".structItem-startDate time[data-timestamp]")
+        latest_node = row.select_one(".structItem-latestDate[data-timestamp]")
+        start_ts = int(start_node.get("data-timestamp") or 0) if start_node else 0
+        latest_ts = int(latest_node.get("data-timestamp") or 0) if latest_node else start_ts
+        activity_ts = start_ts if is_hire else latest_ts
+        max_age = 7200 if is_hire else 30 * 86400
+        if not activity_ts or activity_ts > now_ts + 300 or now_ts - activity_ts > max_age:
+            continue
+        href = anchor.get("href") or ""
+        thread_id_match = re.search(r"\.(\d+)/?$", href)
+        if not thread_id_match:
+            continue
+        thread_url = urllib.parse.urljoin("https://www.blackhatworld.com", href)
+        replies_node = row.select_one(".structItem-cell--meta .pairs dd")
+        replies = int((replies_node.get_text(" ", strip=True) or "0").replace(",", "")) if replies_node else 0
+        item = sanitizeAndUpgradeSignal({
+            "id": f"bhw_{thread_id_match.group(1)}_{activity_ts}",
+            "created_ts": activity_ts, "track": track, "ups": 0,
+            "num_comments": replies,
+            "title_zh": f"【{source_label}】{title}",
+            "pain_point_zh": title,
+            "source_platform": source_label,
+            "source_url": thread_url + ("latest" if not is_hire else ""),
+            "solver_url": thread_url,
+        })
+        if item:
+            out.append(item)
+        if len(out) >= max_items:
+            break
+    return out
+
+
 def fetch_additional_sources(now_ts):
     items = []
     thirty_days_ago_ts = now_ts - (30 * 86400)
@@ -1053,7 +1307,7 @@ def fetch_additional_sources(now_ts):
 
     # 5. BlackHatWorld 6大核心分版（Jina 原生 Markdown 穿透 + 实时搜索桥双保险，彻底告别 0 条！）
     bhw_forums = [
-        ("cpa", "cpa.24", "gray_arb", "BlackHatWorld CPA任务锁", "CPA content locker"),
+        ("cpa", "cpa.50", "gray_arb", "BlackHatWorld CPA任务锁", "CPA content locker"),
         ("affiliate", "affiliate-programs.15", "gray_arb", "BlackHatWorld 联盟营销", "affiliate program commission"),
         ("making_money", "making-money.12", "gray_arb", "BlackHatWorld 野路子搞钱", "method making money"),
         ("journey", "my-journey-discussions.167", "gray_arb", "BlackHatWorld 实盘连载", "journey day $"),
@@ -1062,20 +1316,20 @@ def fetch_additional_sources(now_ts):
     ]
     for kind, forum, track, bhw_label, search_kw in (bhw_forums if USE_LOCAL_SILENT_BROWSER else []):
         parsed = []
+        raw_html = ""
         try:
             forum_url = f"https://www.blackhatworld.com/forums/{forum}/"
-            raw_html = http_get(forum_url, timeout=18, allow_jina_fallback=True)
-            parsed = parse_links_from_html_or_jina(
-                raw_html, "https://www.blackhatworld.com", "/threads/",
-                bhw_label, track, now_ts, max_items=8, is_hire=(kind == "hire")
-            )
+            raw_html = (fetch_via_local_silent_browser(forum_url) if USE_LOCAL_SILENT_BROWSER
+                        else http_get(forum_url, timeout=18, allow_jina_fallback=True))
+            parsed = parse_bhw_forum_html(raw_html, bhw_label, track, now_ts,
+                                          max_items=8, is_hire=(kind == "hire"))
         except Exception:
             pass
 
         # 若 Jina 被拦截返回 0 条，立即启用实时搜索引擎穿透桥抓取 BHW 近30天新帖！
-        if not parsed:
+        if not parsed and not raw_html:
             days_lim = 1 if kind == "hire" else 30
-            bridge_bhw = fetch_realtime_search_bridge(f"site:blackhatworld.com/threads {search_kw}", max_age_days=days_lim, limit=8)
+            bridge_bhw = fetch_realtime_search_bridge(f"site:blackhatworld.com/seo {search_kw}", max_age_days=days_lim, limit=8)
             for b_item in bridge_bhw:
                 sig = sanitizeAndUpgradeSignal({
                     "id": f"bhw_{kind}_{b_item['id']}",
@@ -1371,6 +1625,7 @@ def run_fast_bounty_and_radar():
 
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    analyze_all_new_signals(all_fetched, conn)
     notified_ids = {row[0] for row in c.execute("SELECT id FROM notified_bounties")}
     pushed_count = 0
     for item, author, raw_title, raw_body in sorted(alert_candidates, key=lambda row: row[0].get("created_ts", 0), reverse=True):
@@ -1445,9 +1700,10 @@ def run_fast_bounty_and_radar():
 
     if USE_LOCAL_SILENT_BROWSER and os.path.exists(os.path.join(BASE_DIR, ".git")):
         try:
+            git_prefix = ["git", "-c", f"safe.directory={BASE_DIR.replace(os.sep, '/')}"]
             def run_git(*args):
                 return subprocess.run(
-                    ["git", *args], cwd=BASE_DIR, check=True,
+                    [*git_prefix, *args], cwd=BASE_DIR, check=True,
                     capture_output=True, text=True, encoding="utf-8", errors="replace"
                 )
 
@@ -1455,7 +1711,7 @@ def run_fast_bounty_and_radar():
             run_git("config", "user.email", "radar-local@users.noreply.github.com")
             run_git("add", "live_signals.json", "radar_pain_solver_history.db")
             staged = subprocess.run(
-                ["git", "diff", "--cached", "--quiet"], cwd=BASE_DIR, check=False
+                [*git_prefix, "diff", "--cached", "--quiet"], cwd=BASE_DIR, check=False
             )
             if staged.returncode == 0:
                 print("[LOCAL GIT SYNC] 没有新的高防源数据需要同步")

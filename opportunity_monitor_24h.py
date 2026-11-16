@@ -450,7 +450,7 @@ def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en="")
 
 def gemini_generate_json(prompt, api_key, timeout=25):
     configured = os.environ.get("GEMINI_MODEL", "").strip()
-    models = list(dict.fromkeys(x for x in (configured, "gemini-3.8-flash", "gemini-3.5-flash-lite") if x))
+    models = list(dict.fromkeys(x for x in (configured, "gemini-3.5-flash-lite", "gemini-3.8-flash") if x))
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
@@ -472,11 +472,13 @@ def gemini_generate_json(prompt, api_key, timeout=25):
             return result
         except urllib.error.HTTPError as exc:
             last_error = exc
-            if exc.code != 404:
+            print(f"[GEMINI MODEL WARN] {model}: HTTP {exc.code}", flush=True)
+            if exc.code not in (404, 429, 500, 502, 503, 504):
                 raise
-        except Exception:
-            raise
-    raise RuntimeError(f"Gemini 候选模型均不可用：HTTP {getattr(last_error, 'code', 'unknown')}")
+        except TimeoutError as exc:
+            last_error = exc
+            print(f"[GEMINI MODEL WARN] {model}: timeout", flush=True)
+    raise RuntimeError(f"Gemini 候选模型均不可用：{type(last_error).__name__}: {last_error}")
 
 
 def call_gemini_fast_bounty_dm(raw_title, raw_body, author_name=""):
@@ -604,6 +606,14 @@ def analyze_all_new_signals(items, conn):
                 cursor.execute("INSERT OR REPLACE INTO gemini_pending VALUES (?, ?, ?, ?, ?)",
                                (item["id"], title, body, item["source_platform"], digest))
             print(f"[GEMINI WARN] 批次 {offset // 8 + 1}: {type(exc).__name__}: {exc}", flush=True)
+            if "429" in str(exc):
+                for item, title, body, digest in pending[offset + len(batch):]:
+                    cursor.execute("INSERT OR REPLACE INTO gemini_pending VALUES (?, ?, ?, ?, ?)",
+                                   (item["id"], title, body, item["source_platform"], digest))
+                    failed += 1
+                conn.commit()
+                print("[GEMINI RATE LIMIT] 本轮停止请求，剩余条目已排队等待下轮", flush=True)
+                break
         conn.commit()
     print(f"[GEMINI SUMMARY] new={len(pending)} success={succeeded} failed={failed} cached={cached}", flush=True)
 
@@ -1386,45 +1396,40 @@ def fetch_additional_sources(now_ts):
         items.extend(parsed)
         print(f"[SOURCE OK] {af_label}: {len(parsed)} 条")
 
-    # 7. Chaturbate
-    try:
-        cb_rooms = []
-        cb_html = http_get("https://chaturbate.com/", timeout=16, allow_jina_fallback=True)
-        for m in re.finditer(r"\[([a-zA-Z0-9_]{3,25})\]\(https?://chaturbate\.com/([a-zA-Z0-9_]{3,25})/?\)", cb_html):
-            uname = m.group(2)
-            if uname.lower() not in ("login", "register", "tags", "affiliates", "terms", "privacy", "apps", "bouncer"):
-                cb_rooms.append({"username": uname, "num_users": random.randint(600, 3500), "tags": ["live", "top_tippers"]})
-        if not cb_rooms:
-            cb_soup = BeautifulSoup(cb_html, "lxml")
-            for a_node in cb_soup.select("a[href^='/']"):
-                href = a_node.get("href", "").strip("/")
-                if re.match(r"^[a-zA-Z0-9_]{4,22}$", href) and href.lower() not in ("login", "register", "tags", "affiliates", "terms", "privacy", "apps"):
-                    cb_rooms.append({"username": href, "num_users": random.randint(600, 3500), "tags": ["live", "cams"]})
-
-        seen_cb = set()
-        unique_cb = []
-        for r in cb_rooms:
-            if r["username"] not in seen_cb:
-                seen_cb.add(r["username"])
-                unique_cb.append(r)
-        top_rooms = unique_cb[:8]
-        for idx, room in enumerate(top_rooms):
-            username = room["username"]
-            viewers = room["num_users"]
-            tags = " / ".join(room["tags"])
-            source_url = f"https://chaturbate.com/{username}/"
-            item = sanitizeAndUpgradeSignal({
-                "id": f"cb_{username}", "created_ts": now_ts - 14400 - (idx * 300), "track": "nsfw_adult", "ups": viewers,
-                "title_zh": f"【Chaturbate 全球成人直播榜 #{username}】当前 {viewers} 人在线打赏 (标签: {tags})",
-                "pain_point_zh": f"当前直播间高热度在线打赏；细分标签：{tags}（适合套 18+ 防封二跳页导流拿 $1~$3/免费注册 或 20% 终身分成）",
-                "deal_fact_zh": f"✅ 实时高热打赏直播间：{viewers} 人在线", "source_platform": "Chaturbate 成人直播榜",
-                "source_url": source_url, "solver_url": source_url,
-            })
-            if item:
-                items.append(item)
-        print(f"[SOURCE OK] Chaturbate: {len(top_rooms)} 条")
-    except Exception as exc:
-        print(f"[SOURCE WARN] Chaturbate: {exc}")
+    # 7. Chaturbate：只采用官方联盟在线房间 API 的真实人数，不从普通链接猜测。
+    cb_wm = os.environ.get("CHATURBATE_WM", "").strip()
+    if not cb_wm:
+        print("[SOURCE WARN] Chaturbate: 缺少 CHATURBATE_WM，不能核验在线人数")
+    else:
+        try:
+            cb_url = ("https://chaturbate.com/api/public/affiliates/onlinerooms/?wm="
+                      + urllib.parse.quote(cb_wm, safe=""))
+            cb_data = json.loads(http_get(cb_url, timeout=16))
+            cb_rooms = cb_data.get("results", []) if isinstance(cb_data, dict) else cb_data
+            cb_count = 0
+            for room in cb_rooms:
+                if not isinstance(room, dict):
+                    continue
+                username = str(room.get("username", ""))
+                viewers = room.get("num_users")
+                if not re.fullmatch(r"[a-zA-Z0-9_]{3,25}", username) or not isinstance(viewers, int):
+                    continue
+                source_url = f"https://chaturbate.com/{username}/"
+                item = sanitizeAndUpgradeSignal({
+                    "id": f"cb_{username}", "created_ts": now_ts, "track": "nsfw_adult", "ups": viewers,
+                    "title_zh": f"【Chaturbate 公开直播间 #{username}】当前 {viewers} 人在线",
+                    "pain_point_zh": "官方在线房间接口记录了此房间的实时在线人数；未披露打赏额或成交单数。",
+                    "deal_fact_zh": f"✅ 官方在线房间接口：{viewers} 人在线；未披露打赏额或成交单数",
+                    "source_platform": "Chaturbate 成人直播榜", "source_url": source_url, "solver_url": source_url,
+                })
+                if item:
+                    items.append(item)
+                    cb_count += 1
+                if cb_count >= 8:
+                    break
+            print(f"[SOURCE OK] Chaturbate 官方接口: {cb_count} 条")
+        except Exception as exc:
+            print(f"[SOURCE WARN] Chaturbate 官方接口: {type(exc).__name__}: {exc}")
 
     # 8. F95zone（强制核验 URL 必须包含 f95zone.to/threads/）
     f95_parsed = []
@@ -1639,6 +1644,16 @@ def run_fast_bounty_and_radar():
 
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    # 旧版本把随机数写成了直播间人数；仅移除这些已确认失实的记录。
+    fake_cb_ids = [row[0] for row in c.execute(
+        "SELECT id FROM signals WHERE id LIKE 'cb_%' AND deal_fact_zh LIKE '%实时高热打赏直播间%'"
+    )]
+    if fake_cb_ids:
+        c.executemany("DELETE FROM signals WHERE id=?", ((signal_id,) for signal_id in fake_cb_ids))
+        c.executemany("DELETE FROM gemini_pending WHERE id=?", ((signal_id,) for signal_id in fake_cb_ids))
+        c.executemany("DELETE FROM gemini_analysis WHERE id=?", ((signal_id,) for signal_id in fake_cb_ids))
+        conn.commit()
+        print(f"[DATA CORRECTION] removed_unverified_chaturbate_counts={len(fake_cb_ids)}")
     analyze_all_new_signals(all_fetched, conn)
     notified_ids = {row[0] for row in c.execute("SELECT id FROM notified_bounties")}
     pushed_count = 0

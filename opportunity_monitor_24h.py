@@ -972,10 +972,14 @@ def fetch_additional_sources(now_ts):
 
     # 3. Lemmy 全球联邦社区
     lemmy_queries = [
-        ("side hustle OR passive income OR flipping", "gray_arb", "Lemmy 全球副业与套利社区"),
-        ("selfhosted automation OR web scraping", "pain_saas", "Lemmy 自动化与开源工具痛点"),
-        ("NSFW patreon OR adult game", "nsfw_adult", "Lemmy 成人创作者与NSFW社区")
+        ("side hustle", "gray_arb", "Lemmy 全球副业与套利社区"),
+        ("passive income", "gray_arb", "Lemmy 全球副业与套利社区"),
+        ("automation", "pain_saas", "Lemmy 自动化与开源工具痛点"),
+        ("web scraping", "pain_saas", "Lemmy 自动化与开源工具痛点"),
+        ("nsfw", "nsfw_adult", "Lemmy 成人创作者与NSFW社区"),
+        ("adult game", "nsfw_adult", "Lemmy 成人创作者与NSFW社区"),
     ]
+    lemmy_seen = set()
     for lq, l_track, l_label in lemmy_queries:
         try:
             l_url = f"https://lemmy.world/api/v3/search?q={urllib.parse.quote(lq)}&type_=Posts&sort=TopMonth&limit=8"
@@ -984,6 +988,9 @@ def fetch_additional_sources(now_ts):
             for p_obj in l_data.get("posts", []):
                 post = p_obj.get("post", {})
                 counts = p_obj.get("counts", {})
+                post_id = post.get("id")
+                if not post_id or post_id in lemmy_seen:
+                    continue
                 title = clean_raw_html(post.get("name", ""))
                 pub_ts = _iso_timestamp(post.get("published"), now_ts - 86400 * 5)
                 if not title or (now_ts - pub_ts) > (30 * 86400):
@@ -998,6 +1005,7 @@ def fetch_additional_sources(now_ts):
                 })
                 if item:
                     items.append(item)
+                    lemmy_seen.add(post_id)
                     l_cnt += 1
             print(f"[SOURCE OK] {l_label}: {l_cnt} 条")
         except Exception as exc:

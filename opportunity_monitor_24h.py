@@ -1551,6 +1551,32 @@ def relay_pending_local_bounties():
     print(f"[RELAY SUMMARY] eligible={eligible} sent={sent}", flush=True)
 
 
+def test_webhook_connection():
+    """Send one explicit connection test through the configured GitHub Secret."""
+    webhook_url = os.environ.get("WEBHOOK_URL", "").strip()
+    if not webhook_url:
+        raise RuntimeError("WEBHOOK_URL 未配置")
+    message = (
+        "✅ 全球赚钱机会雷达：飞书机器人连接测试成功\n"
+        f"测试时间：{datetime.now(timezone.utc):%Y-%m-%d %H:%M:%S} UTC\n"
+        "这是一条连接测试，不是悬赏单。"
+    )
+    is_feishu = "feishu" in webhook_url or "larksuite" in webhook_url
+    payload = ({"msg_type": "text", "content": {"text": message}} if is_feishu
+               else {"msgtype": "text", "text": {"content": message}})
+    request = urllib.request.Request(
+        webhook_url, data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    response_text = urllib.request.urlopen(request, timeout=10).read().decode("utf-8", errors="ignore")
+    if is_feishu:
+        response_data = json.loads(response_text or "{}")
+        response_code = response_data.get("code", response_data.get("StatusCode", 0))
+        if response_code not in (0, "0", None):
+            raise RuntimeError(f"Feishu code={response_code}: {response_data.get('msg') or response_data.get('StatusMessage')}")
+    print("[WEBHOOK TEST SUCCESS] 新飞书机器人已接受测试消息", flush=True)
+
+
 class WorkbenchHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -1985,6 +2011,7 @@ if __name__ == "__main__":
     parser.add_argument("--local-browser", action="store_true")
     parser.add_argument("--local-daemon", action="store_true")
     parser.add_argument("--relay-only", action="store_true")
+    parser.add_argument("--test-webhook", action="store_true")
     parser.add_argument("--serve", action="store_true")
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
@@ -1993,7 +2020,9 @@ if __name__ == "__main__":
     if args.local_browser or args.local_daemon:
         USE_LOCAL_SILENT_BROWSER = True
 
-    if args.relay_only:
+    if args.test_webhook:
+        test_webhook_connection()
+    elif args.relay_only:
         relay_pending_local_bounties()
     elif args.local_daemon:
         while True:

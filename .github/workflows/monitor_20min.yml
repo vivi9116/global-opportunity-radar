@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - radar_pain_solver_history.db
+      - feishu_test_request.json
 
 permissions:
   contents: write
@@ -58,6 +59,13 @@ jobs:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
         run: |
           python opportunity_monitor_24h.py --relay-only
+
+      - name: 4c. Send one explicit Feishu connection test
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[feishu-test]')
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: |
+          python opportunity_monitor_24h.py --test-webhook
 
       - name: 5. Auto Commit & Push Updated Signals
         run: |

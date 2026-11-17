@@ -18,6 +18,7 @@ New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 $env:LOCAL_BROWSER_PROFILE = $profileDir
 $env:RADAR_CHROME_PORT = '9337'
 $env:PYTHONUNBUFFERED = '1'
+$env:PYTHONIOENCODING = 'utf-8'
 Set-Location -LiteralPath $radarDir
 
 $stamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'

@@ -1349,8 +1349,20 @@ def run_fast_bounty_and_radar():
                 alert_body = f"{copy_pack}\n\n【维护者最新评论】\n{latest_context}"
                 alert_candidates.append((item, verified["author"], iss["title"], alert_body))
                 gh_accepted += 1
-        github_scan_complete = True
-        print(f"[GITHUB PRIMARY] examined={len(gh_data.get('items', []))} accepted={gh_accepted} rejected={sum(gh_rejected.values())} reasons={gh_rejected}")
+        github_identity_failures = sum(
+            count for reason, count in gh_rejected.items()
+            if str(reason).startswith("仓库身份核验失败:")
+        )
+        # Local scans may hit GitHub's unauthenticated API limit.  In that case
+        # keep the last cloud-verified cards instead of treating a partial scan
+        # as authoritative and hiding them from live_signals.json.
+        github_scan_complete = github_identity_failures == 0
+        print(
+            f"[GITHUB PRIMARY] examined={len(gh_data.get('items', []))} "
+            f"accepted={gh_accepted} rejected={sum(gh_rejected.values())} "
+            f"identity_failures={github_identity_failures} complete={github_scan_complete} "
+            f"reasons={gh_rejected}"
+        )
     except Exception as exc:
         print(f"[SOURCE WARN] GitHub 一手悬赏: {type(exc).__name__}: {exc}")
 

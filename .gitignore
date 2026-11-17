@@ -5,3 +5,4 @@ __pycache__/
 .env
 private/
 .radar_visible_chrome_profile/
+logs/

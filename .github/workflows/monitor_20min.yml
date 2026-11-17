@@ -60,7 +60,14 @@ jobs:
         run: |
           python opportunity_monitor_24h.py --relay-only
 
-      - name: 4c. Send one explicit Feishu connection test
+      - name: 4c. Drain Gemini queue after local browser sync
+        if: github.event_name == 'push'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python opportunity_monitor_24h.py --gemini-queue-only
+
+      - name: 4d. Send one explicit Feishu connection test
         if: github.event_name == 'push' && contains(github.event.head_commit.message, '[feishu-test]')
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}

@@ -1799,6 +1799,40 @@ def analyze_all_new_signals(items, conn):
             time.sleep(7)
     print(f"[GEMINI SUMMARY] processed={len(pending)} deferred={len(deferred)} success={succeeded} failed={failed} cached={cached}", flush=True)
 
+
+def process_gemini_queue_only():
+    """Drain one bounded Gemini batch after a local-browser database push."""
+    if not os.environ.get("GEMINI_API_KEY", "").strip():
+        raise RuntimeError("GEMINI_API_KEY 未配置")
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        analyze_all_new_signals([], conn)
+        remaining = conn.execute("SELECT COUNT(*) FROM gemini_pending").fetchone()[0]
+
+        if os.path.exists(JSON_OUT_PATH):
+            with open(JSON_OUT_PATH, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+            cards = payload.get("signals", []) if isinstance(payload, dict) else []
+            ids = [str(card.get("id") or "") for card in cards if card.get("id")]
+            if ids:
+                placeholders = ",".join("?" for _ in ids)
+                columns = "id," + ",".join(ANALYSIS_FIELDS)
+                rows = conn.execute(
+                    f"SELECT {columns} FROM signals WHERE id IN ({placeholders})", ids
+                ).fetchall()
+                updated = {row[0]: row[1:] for row in rows}
+                for card in cards:
+                    values = updated.get(str(card.get("id") or ""))
+                    if values:
+                        for field, value in zip(ANALYSIS_FIELDS, values):
+                            card[field] = value
+                with open(JSON_OUT_PATH, "w", encoding="utf-8") as f:
+                    json.dump(payload, f, ensure_ascii=False)
+        print(f"[GEMINI QUEUE DRAIN] remaining={remaining}", flush=True)
+    finally:
+        conn.close()
+
 def parse_reddit_browser_posts(raw_html, sub, max_age_sec, limit):
     soup = BeautifulSoup(raw_html, "lxml")
     posts = []
@@ -2023,6 +2057,7 @@ if __name__ == "__main__":
     parser.add_argument("--local-browser", action="store_true")
     parser.add_argument("--local-daemon", action="store_true")
     parser.add_argument("--relay-only", action="store_true")
+    parser.add_argument("--gemini-queue-only", action="store_true")
     parser.add_argument("--test-webhook", action="store_true")
     parser.add_argument("--serve", action="store_true")
     parser.add_argument("--port", type=int, default=8765)
@@ -2034,6 +2069,8 @@ if __name__ == "__main__":
 
     if args.test_webhook:
         test_webhook_connection()
+    elif args.gemini_queue_only:
+        process_gemini_queue_only()
     elif args.relay_only:
         relay_pending_local_bounties()
     elif args.local_daemon:

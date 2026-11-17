@@ -32,7 +32,7 @@ import subprocess
 import urllib.request
 import urllib.parse
 import urllib.error
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import threading
@@ -1309,7 +1309,7 @@ def run_fast_bounty_and_radar():
     github_scan_complete = False
     current_github_ids = set()
     try:
-        two_hours_ago = (datetime.utcnow() - timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        two_hours_ago = (datetime.now(timezone.utc) - timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%SZ")
         gh_query = f"is:issue is:open label:bounty created:>={two_hours_ago}"
         gh_url = "https://api.github.com/search/issues?" + urllib.parse.urlencode({
             "q": gh_query, "sort": "created", "order": "desc", "per_page": 100,
@@ -1694,8 +1694,17 @@ def analyze_all_new_signals(items, conn):
         print(f"[GEMINI QUEUED] local_without_key={queued} cached={cached}; 云端下一轮补分析", flush=True)
         return
 
-    for offset in range(0, len(pending), 8):
-        batch = pending[offset:offset + 8]
+    max_per_run = max(4, int(os.environ.get("GEMINI_MAX_PER_RUN", "24")))
+    deferred = pending[max_per_run:]
+    pending = pending[:max_per_run]
+    for item, title, body, digest in deferred:
+        cursor.execute("INSERT OR REPLACE INTO gemini_pending VALUES (?, ?, ?, ?, ?)",
+                       (item["id"], title, body, item["source_platform"], digest))
+    conn.commit()
+
+    batch_size = 4
+    for offset in range(0, len(pending), batch_size):
+        batch = pending[offset:offset + batch_size]
         facts = [
             {"id": item["id"], "source": item["source_platform"], "title": title,
              "original_post": body[:2200], "verified_fact": item["deal_fact_zh"]}
@@ -1738,7 +1747,7 @@ def analyze_all_new_signals(items, conn):
             for item, title, body, digest in batch:
                 cursor.execute("INSERT OR REPLACE INTO gemini_pending VALUES (?, ?, ?, ?, ?)",
                                (item["id"], title, body, item["source_platform"], digest))
-            print(f"[GEMINI WARN] 批次 {offset // 8 + 1}: {type(exc).__name__}: {exc}", flush=True)
+            print(f"[GEMINI WARN] 批次 {offset // batch_size + 1}: {type(exc).__name__}: {exc}", flush=True)
             if "429" in str(exc):
                 for item, title, body, digest in pending[offset + len(batch):]:
                     cursor.execute("INSERT OR REPLACE INTO gemini_pending VALUES (?, ?, ?, ?, ?)",
@@ -1748,7 +1757,9 @@ def analyze_all_new_signals(items, conn):
                 print("[GEMINI RATE LIMIT] 本轮停止请求，剩余条目已排队等待下轮", flush=True)
                 break
         conn.commit()
-    print(f"[GEMINI SUMMARY] new={len(pending)} success={succeeded} failed={failed} cached={cached}", flush=True)
+        if offset + batch_size < len(pending):
+            time.sleep(7)
+    print(f"[GEMINI SUMMARY] processed={len(pending)} deferred={len(deferred)} success={succeeded} failed={failed} cached={cached}", flush=True)
 
 def parse_reddit_browser_posts(raw_html, sub, max_age_sec, limit):
     soup = BeautifulSoup(raw_html, "lxml")
@@ -1931,6 +1942,42 @@ def parse_f95_visible_page(raw_html, now_ts, max_items=8):
             break
     return out
 
+
+def sync_remote_before_local_scan():
+    """Pull cloud Gemini/notification state before a new local browser scan."""
+    if not os.path.exists(os.path.join(BASE_DIR, ".git")):
+        return
+    git_prefix = ["git", "-c", f"safe.directory={BASE_DIR.replace(os.sep, '/')}"]
+    status = subprocess.run([*git_prefix, "status", "--porcelain"], cwd=BASE_DIR,
+                            capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if status.returncode or status.stdout.strip():
+        print("[LOCAL GIT WARN] 扫描前仓库不干净，暂停拉取以免覆盖本地文件", flush=True)
+        return
+    try:
+        subprocess.run([*git_prefix, "pull", "--rebase", "origin", "main"], cwd=BASE_DIR,
+                       check=True, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        print("[LOCAL GIT SYNC] 扫描前已同步云端 Gemini 与飞书状态", flush=True)
+    except subprocess.CalledProcessError as exc:
+        detail = exc.stderr or exc.stdout or str(exc)
+        print(f"[LOCAL GIT WARN] 扫描前同步失败：{detail.strip().splitlines()[-1]}", flush=True)
+
+
+def wait_for_local_scan_slot():
+    """Run local scans between cloud slots to avoid simultaneous SQLite commits."""
+    now = datetime.now()
+    slots = (18, 38, 58)
+    target = None
+    for minute in slots:
+        candidate = now.replace(minute=minute, second=0, microsecond=0)
+        if candidate > now:
+            target = candidate
+            break
+    if target is None:
+        target = (now + timedelta(hours=1)).replace(minute=18, second=0, microsecond=0)
+    delay = max(30, int((target - now).total_seconds()))
+    print(f"[LOCAL DAEMON] 下一轮本地补采：{target:%H:%M}（{delay} 秒后）", flush=True)
+    time.sleep(delay)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--cloud-once", action="store_true")
@@ -1951,10 +1998,11 @@ if __name__ == "__main__":
     elif args.local_daemon:
         while True:
             try:
+                sync_remote_before_local_scan()
                 run_fast_bounty_and_radar()
             except Exception as e:
                 print(e)
-            time.sleep(300)
+            wait_for_local_scan_slot()
     elif args.cloud_once or args.bounty_fast or args.local_browser or args.serve:
         run_fast_bounty_and_radar()
         if args.serve:

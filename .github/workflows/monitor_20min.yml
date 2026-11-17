@@ -2,8 +2,12 @@ name: Global Money Radar Dual-Track (WeChat/Feishu/Bark Push + 20m Full Scan)
 
 on:
   schedule:
-    - cron: '*/20 * * * *'
+    - cron: '7,27,47 * * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - radar_pain_solver_history.db
 
 permissions:
   contents: write
@@ -23,10 +27,17 @@ jobs:
           python-version: '3.11'
 
       - name: 3. Install Dependencies
+        if: github.event_name != 'push'
         run: |
           pip install -r requirements.txt
 
+      - name: 3b. Install Relay Dependency
+        if: github.event_name == 'push'
+        run: |
+          pip install beautifulsoup4
+
       - name: 4. Run Fast Bounty Sniper & Push to WeChat/Feishu/Bark
+        if: github.event_name != 'push'
         env:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
@@ -39,6 +50,14 @@ jobs:
           SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: |
           python opportunity_monitor_24h.py --cloud-once
+
+      - name: 4b. Relay fresh local browser bounties to Feishu
+        if: github.event_name == 'push'
+        env:
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: |
+          python opportunity_monitor_24h.py --relay-only
 
       - name: 5. Auto Commit & Push Updated Signals
         run: |

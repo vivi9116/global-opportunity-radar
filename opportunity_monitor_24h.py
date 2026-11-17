@@ -375,6 +375,13 @@ def init_db():
 
 
 def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en=""):
+    try:
+        source_ts = int(bounty_item.get("created_ts") or 0)
+    except (TypeError, ValueError, OverflowError):
+        source_ts = 0
+    if not source_ts or not -300 <= time.time() - source_ts <= 7200:
+        print("[PUSH SKIP] 悬赏原帖时间缺失或已超过两小时", flush=True)
+        return False
     clean_title = bounty_item.get("title_zh", "")
     source_url = bounty_item.get("source_url", "")
     deal_fact = bounty_item.get("deal_fact_zh", "")
@@ -383,13 +390,13 @@ def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en="")
 
     if not custom_dm_en:
         custom_dm_en = (
-            "Hey! Just saw your task post. Before your inbox gets flooded with generic bids, "
-            "I already built a quick working sample based on your exact requirements (screenshot attached). "
-            "I can deliver the complete files within 1-2 hours. Let me know if you want to check the sample!"
+            "Hey! I saw your task post and can prepare a small sample based on your requirements. "
+            "If the sample matches what you need, I can confirm the scope and delivery time with you."
         )
 
+    age_minutes = max(0, int((time.time() - int(bounty_item.get("created_ts") or 0)) / 60))
     plain_summary = (
-        f"🚨【10分钟黄金抢单窗 · 新悬赏急单】\n"
+        f"🚨【{age_minutes}分钟前发布 · 两小时内悬赏急单】\n"
         f"📌 标题：{clean_title}\n"
         f"💰 核验：{deal_fact}\n\n"
         f"📝 雇主具体要求：\n{pain_txt}\n\n"
@@ -399,6 +406,7 @@ def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en="")
     )
 
     pushed_any = False
+    webhook_success = False
     pushplus_token = os.environ.get("PUSHPLUS_TOKEN", "").strip()
     if pushplus_token:
         try:
@@ -418,21 +426,23 @@ def send_multichannel_bounty_alert(bounty_item, author_name="", custom_dm_en="")
     webhook_url = os.environ.get("WEBHOOK_URL", "").strip()
     if webhook_url:
         try:
-            wb_payload = {"msg_type": "text", "content": {"text": plain_summary}} if ("feishu" in webhook_url) else {"msgtype": "text", "text": {"content": plain_summary}}
+            is_feishu = "feishu" in webhook_url or "larksuite" in webhook_url
+            wb_payload = {"msg_type": "text", "content": {"text": plain_summary}} if is_feishu else {"msgtype": "text", "text": {"content": plain_summary}}
             req = urllib.request.Request(webhook_url, data=json.dumps(wb_payload).encode("utf-8"), headers={"Content-Type": "application/json"})
             response_text = urllib.request.urlopen(req, timeout=10).read().decode("utf-8", errors="ignore")
-            if "feishu" in webhook_url or "larksuite" in webhook_url:
+            if is_feishu:
                 response_data = json.loads(response_text or "{}")
                 response_code = response_data.get("code", response_data.get("StatusCode", 0))
                 if response_code not in (0, "0", None):
                     raise RuntimeError(f"Feishu code={response_code}: {response_data.get('msg') or response_data.get('StatusMessage')}")
             pushed_any = True
+            webhook_success = True
             print(f"[WEBHOOK SUCCESS] {clean_title[:50]}")
         except Exception as exc:
             print(f"[WEBHOOK WARN] {type(exc).__name__}: {exc}")
     if not pushplus_token and not webhook_url:
         print("[PUSH SKIP] PUSHPLUS_TOKEN 与 WEBHOOK_URL 均未配置")
-    return pushed_any
+    return webhook_success if webhook_url else pushed_any
 
 
 def call_gemini_fast_bounty_dm(raw_title, raw_body, author_name=""):
@@ -597,10 +607,17 @@ def sanitizeAndUpgradeSignal(rawItem):
     track = rawItem.get("track", "pain_saas")
     source_platform = rawItem.get("source_platform", "全球社区")
     isBaseCard = str(rawItem.get("id", "")).startswith("base_")
-    createdTs = int(rawItem.get("created_ts") or rawItem.get("created_utc") or time.time())
+    try:
+        createdTs = int(rawItem.get("created_ts") or rawItem.get("created_utc") or 0)
+    except (TypeError, ValueError, OverflowError):
+        return None
 
     if not isBaseCard:
+        if not createdTs:
+            return None
         age_sec = time.time() - createdTs
+        if age_sec < -300:
+            return None
         if track == "bounty_direct" and age_sec > 7200:
             return None
         if track != "bounty_direct" and age_sec > (30 * 86400):
@@ -680,10 +697,14 @@ def is_direct_reddit_employer_post(sub, post):
         return False
     if re.search(r"\[offer\]|\[for\s*hire\]", title, re.I):
         return False
-    if sub.lower() in {"slavelabour", "donedirtcheap"}:
+    if sub.lower() in {"slavelabour", "forhire"}:
+        return bool(re.search(r"\[(?:task|hiring)\]", title, re.I))
+    if sub.lower() == "donedirtcheap":
         return bool(re.search(r"\[task\]|\btask\b|\bhiring\b|\bneed\b|\$\d+", title, re.I))
-    if sub.lower() in {"forhire", "hireaprogrammer", "freelance_forhire"}:
+    if sub.lower() in {"hireaprogrammer", "freelance_forhire"}:
         return bool(re.search(r"\[(?:hiring|task)\]|\bhiring\b|\bneed\b|\$\d+", title, re.I))
+    if sub.lower() in {"webscraping", "automate"}:
+        return bool(re.search(r"\[task\]|\[hiring\]|\b(?:hiring|paid gig|paid task|bounty|budget|willing to pay)\b", title, re.I))
     return True
 
 
@@ -1045,7 +1066,7 @@ def fetch_additional_sources(now_ts):
                     continue
                 source_url = topic.get("url") or f"https://www.v2ex.com/t/{topic_id}"
                 item = sanitizeAndUpgradeSignal({
-                    "id": f"v2ex_{topic_id}", "created_ts": int(topic.get("created") or now_ts),
+                    "id": f"v2ex_{topic_id}", "created_ts": topic.get("created"),
                     "track": "bounty_direct", "num_comments": topic.get("replies") or 0,
                     "title_zh": f"【V2EX 免费直联 {node}】{title}",
                     "pain_point_zh": topic.get("content_rendered") or topic.get("content") or title,
@@ -1271,7 +1292,7 @@ def run_fast_bounty_and_radar():
             full_link = permalink if permalink.startswith("http") else ("https://www.reddit.com" + permalink)
             item = sanitizeAndUpgradeSignal({
                 "id": f"rd_{d.get('id')}",
-                "created_ts": d.get("created_utc", now_ts),
+                "created_ts": d.get("created_utc"),
                 "track": track,
                 "ups": d.get("ups", 0),
                 "num_comments": d.get("num_comments", 0),
@@ -1301,7 +1322,7 @@ def run_fast_bounty_and_radar():
             if not verified:
                 gh_rejected[reason] = gh_rejected.get(reason, 0) + 1
                 continue
-            created_ts = int(datetime.strptime(iss["created_at"], "%Y-%m-%dT%H:%M:%SZ").timestamp())
+            created_ts = _iso_timestamp(iss.get("created_at"), 0)
             copy_pack = verified["copy_pack"]
             latest_context = verified["latest_context"]
             deal_fact = extract_honest_deal_fact(f"{iss['title']} {iss.get('body') or ''}", (iss.get("reactions") or {}).get("total_count", 0), iss.get("comments", 0))
@@ -1335,15 +1356,15 @@ def run_fast_bounty_and_radar():
 
     for sub, track, label, mode in REDDIT_TARGET_SUBS[len(FAST_BOUNTY_SUBS):]:
         posts = fetch_reddit_jsonp_py(sub, mode, 8)
-        for d in posts[:6]:
+        for d in posts:
             title = clean_raw_html(d.get("title", ""))
-            if not title:
+            if not title or (track == "bounty_direct" and not is_direct_reddit_employer_post(sub, d)):
                 continue
             permalink = d.get("permalink", "")
             full_link = permalink if permalink.startswith("http") else ("https://www.reddit.com" + permalink)
             item = sanitizeAndUpgradeSignal({
                 "id": f"rd_{d.get('id')}",
-                "created_ts": d.get("created_utc", now_ts - 1800 if track == "bounty_direct" else now_ts - 86400),
+                "created_ts": d.get("created_utc"),
                 "track": track,
                 "ups": d.get("ups", 0),
                 "num_comments": d.get("num_comments", 0),
@@ -1378,13 +1399,12 @@ def run_fast_bounty_and_radar():
                           ((signal_id,) for signal_id in irrelevant_lemmy_ids))
         conn.commit()
         print(f"[DATA CORRECTION] removed_irrelevant_lemmy={len(irrelevant_lemmy_ids)}")
-    analyze_all_new_signals(all_fetched, conn)
     notified_ids = {row[0] for row in c.execute("SELECT id FROM notified_bounties")}
     # 云端接力本地已验证浏览器抓到的一手急单；本地未配置 webhook 时不能漏推。
     fast_source_to_sub = {label: sub for sub, _, label in FAST_BOUNTY_SUBS}
     alert_ids = {item["id"] for item, _, _, _ in alert_candidates}
-    c.execute("SELECT * FROM signals WHERE track='bounty_direct' AND created_ts>=?",
-              (now_ts - 3600,))
+    c.execute("SELECT * FROM signals WHERE track='bounty_direct' AND created_ts BETWEEN ? AND ?",
+              (now_ts - 7200, now_ts + 300))
     alert_columns = [column[0] for column in c.description]
     for record in c.fetchall():
         queued_item = dict(zip(alert_columns, record))
@@ -1403,26 +1423,15 @@ def run_fast_bounty_and_radar():
         alert_ids.add(signal_id)
     pushed_count = 0
     for item, author, raw_title, raw_body in sorted(alert_candidates, key=lambda row: row[0].get("created_ts", 0), reverse=True):
-        age_minutes = max(0, (now_ts - int(item.get("created_ts") or 0)) / 60)
-        if item["id"] in notified_ids or age_minutes > 60 or pushed_count >= 5:
+        age_minutes = (time.time() - int(item.get("created_ts") or 0)) / 60
+        if item["id"] in notified_ids or age_minutes > 120 or age_minutes < -5:
             continue
-        ai_result = call_gemini_fast_bounty_dm(raw_title, raw_body, author)
-        custom_dm = ""
-        if ai_result:
-            if ai_result.get("title_zh"):
-                item["title_zh"] = f"【⚡急单】{clean_raw_html(ai_result['title_zh'])}"
-            if ai_result.get("sample_3min_zh"):
-                ai_action = clean_raw_html(ai_result["sample_3min_zh"])
-                if item.get("source_platform", "").startswith("GitHub 一手悬赏"):
-                    item["action_plan_zh"] = f"{item['action_plan_zh']}\n\n【Gemini 3分钟执行建议】\n{ai_action}"
-                else:
-                    item["action_plan_zh"] = ai_action
-            custom_dm = clean_raw_html(ai_result.get("custom_dm_en") or "")
-        if send_multichannel_bounty_alert(item, author_name=author, custom_dm_en=custom_dm):
+        if send_multichannel_bounty_alert(item, author_name=author):
             c.execute("INSERT OR REPLACE INTO notified_bounties VALUES (?, ?)", (item["id"], now_str))
             notified_ids.add(item["id"])
             pushed_count += 1
     print(f"[PUSH SUMMARY] candidates={len(alert_candidates)} pushed={pushed_count}")
+    analyze_all_new_signals(all_fetched, conn)
 
     c.execute("DELETE FROM signals WHERE track = 'bounty_direct' AND id NOT LIKE 'base_%' AND created_ts < ?", (now_ts - 7200,))
     c.execute("DELETE FROM signals WHERE track != 'bounty_direct' AND id NOT LIKE 'base_%' AND created_ts < ?", (now_ts - 30 * 86400,))
@@ -1446,6 +1455,10 @@ def run_fast_bounty_and_radar():
                 :solver_url, :created_at, :deliverable_type, :created_ts
             )
         """, item)
+    # A long scan can cross the two-hour boundary after the initial cleanup.
+    c.execute("DELETE FROM signals WHERE track='bounty_direct' AND (created_ts < ? OR created_ts > ?)",
+              (int(time.time()) - 7200, int(time.time()) + 300))
+    c.execute("DELETE FROM gemini_pending WHERE id NOT IN (SELECT id FROM signals)")
     conn.commit()
 
     c.execute("SELECT * FROM signals ORDER BY created_ts DESC")
@@ -1490,7 +1503,7 @@ def run_fast_bounty_and_radar():
             run_git("add", "live_signals.json", "radar_pain_solver_history.db")
             staged = subprocess.run([*git_prefix, "diff", "--cached", "--quiet"], cwd=BASE_DIR)
             if staged.returncode:
-                run_git("commit", "-m", "Local visible browser sync [skip ci]")
+                run_git("commit", "-m", "Local visible browser sync")
                 run_git("pull", "--rebase", "origin", "main")
                 run_git("push", "origin", "HEAD:main")
                 print("[LOCAL GIT SYNC] 已推送本地高防来源及 Gemini 待处理原帖")
@@ -1499,6 +1512,43 @@ def run_fast_bounty_and_radar():
             print(f"[LOCAL GIT WARN] {detail.strip().splitlines()[-1]}")
 
     return payload
+
+
+def relay_pending_local_bounties():
+    """Notify fresh verified browser bounties as soon as their DB push arrives."""
+    if not (os.environ.get("WEBHOOK_URL") or os.environ.get("PUSHPLUS_TOKEN")):
+        print("[RELAY SKIP] No notification secret configured", flush=True)
+        return
+    init_db()
+    now_ts = int(time.time())
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    rows = c.execute(
+        "SELECT s.* FROM signals s LEFT JOIN notified_bounties n ON n.id=s.id "
+        "WHERE s.track='bounty_direct' AND s.created_ts BETWEEN ? AND ? "
+        "AND n.id IS NULL ORDER BY s.created_ts DESC",
+        (now_ts - 7200, now_ts + 300),
+    ).fetchall()
+    eligible = sent = 0
+    fast_source_to_sub = {label: sub for sub, _, label in FAST_BOUNTY_SUBS}
+    for row in rows:
+        item = dict(row)
+        platform = item.get("source_platform") or ""
+        raw_title = (item.get("title_zh") or "").split("】", 1)[-1].strip()
+        if platform in fast_source_to_sub:
+            if not is_direct_reddit_employer_post(fast_source_to_sub[platform], {"title": raw_title}):
+                continue
+        elif platform not in ("BlackHatWorld 免费直联雇主急单", "BlackHatWorld WTB现金求购悬赏"):
+            continue
+        eligible += 1
+        if send_multichannel_bounty_alert(item):
+            c.execute("INSERT OR REPLACE INTO notified_bounties VALUES (?, ?)",
+                      (item["id"], datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            conn.commit()
+            sent += 1
+    conn.close()
+    print(f"[RELAY SUMMARY] eligible={eligible} sent={sent}", flush=True)
 
 
 class WorkbenchHandler(SimpleHTTPRequestHandler):
@@ -1544,7 +1594,7 @@ def is_human_challenge_page(raw_html):
 
 def gemini_generate_json(prompt, api_key, timeout=25):
     configured = os.environ.get("GEMINI_MODEL", "").strip()
-    models = list(dict.fromkeys(x for x in (configured, "gemini-3.5-flash-lite", "gemini-3.8-flash") if x))
+    models = list(dict.fromkeys(x for x in (configured, "gemini-2.5-flash-lite", "gemini-3.5-flash-lite", "gemini-3.8-flash") if x))
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
@@ -1557,21 +1607,30 @@ def gemini_generate_json(prompt, api_key, timeout=25):
             url, data=json.dumps(payload).encode("utf-8"),
             headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
         )
-        try:
-            response = json.loads(urllib.request.urlopen(request, timeout=timeout).read().decode("utf-8"))
-            result = json.loads(response["candidates"][0]["content"]["parts"][0]["text"])
-            if not isinstance(result, dict):
-                raise ValueError("Gemini 返回的不是 JSON 对象")
-            print(f"[GEMINI MODEL] {model}", flush=True)
-            return result
-        except urllib.error.HTTPError as exc:
-            last_error = exc
-            print(f"[GEMINI MODEL WARN] {model}: HTTP {exc.code}", flush=True)
-            if exc.code not in (404, 429, 500, 502, 503, 504):
-                raise
-        except TimeoutError as exc:
-            last_error = exc
-            print(f"[GEMINI MODEL WARN] {model}: timeout", flush=True)
+        for attempt in range(2):
+            try:
+                response = json.loads(urllib.request.urlopen(request, timeout=timeout).read().decode("utf-8"))
+                result = json.loads(response["candidates"][0]["content"]["parts"][0]["text"])
+                if not isinstance(result, dict):
+                    raise ValueError("Gemini 返回的不是 JSON 对象")
+                print(f"[GEMINI MODEL] {model}", flush=True)
+                return result
+            except urllib.error.HTTPError as exc:
+                last_error = exc
+                print(f"[GEMINI MODEL WARN] {model}: HTTP {exc.code}", flush=True)
+                if exc.code not in (404, 429, 500, 502, 503, 504):
+                    raise
+                if exc.code in (429, 500, 502, 503, 504) and attempt == 0:
+                    time.sleep(2 + random.random())
+                    continue
+                break
+            except TimeoutError as exc:
+                last_error = exc
+                print(f"[GEMINI MODEL WARN] {model}: timeout", flush=True)
+                if attempt == 0:
+                    time.sleep(2)
+                    continue
+                break
     raise RuntimeError(f"Gemini 候选模型均不可用：{type(last_error).__name__}: {last_error}")
 
 def analyze_all_new_signals(items, conn):
@@ -1878,6 +1937,7 @@ if __name__ == "__main__":
     parser.add_argument("--bounty-fast", action="store_true")
     parser.add_argument("--local-browser", action="store_true")
     parser.add_argument("--local-daemon", action="store_true")
+    parser.add_argument("--relay-only", action="store_true")
     parser.add_argument("--serve", action="store_true")
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
@@ -1886,7 +1946,9 @@ if __name__ == "__main__":
     if args.local_browser or args.local_daemon:
         USE_LOCAL_SILENT_BROWSER = True
 
-    if args.local_daemon:
+    if args.relay_only:
+        relay_pending_local_bounties()
+    elif args.local_daemon:
         while True:
             try:
                 run_fast_bounty_and_radar()

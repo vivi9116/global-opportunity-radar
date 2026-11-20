@@ -14,6 +14,8 @@
 3. 【扭转“全是分享贴”问题 -> 新增全网买家求购/付费求助直抓流 (Buyer Intent Stream)】：
    - 专门抓取全网带着预算找人干活/买工具的帖子 ([WTB], [Hiring], "willing to pay", "need a bot/script",
      "looking for developer/scraper")，直接对接活体买家。
+4. 【无缝合并 Scrapling】：本地模式优先通过 StealthyFetcher(headless=True, solve_cloudflare=True) 静默过盾，
+   失败或遇登录墙时自动回退至 DrissionPage 专用浏览器。
 ================================================================================
 """
 
@@ -47,6 +49,12 @@ try:
     HAS_CURL_CFFI = True
 except ImportError:
     HAS_CURL_CFFI = False
+
+try:
+    from scrapling.fetchers import StealthyFetcher
+    HAS_SCRAPLING = True
+except ImportError:
+    HAS_SCRAPLING = False
 
 if os.name == "nt" and HAS_CURL_CFFI and not os.environ.get("CURL_CA_BUNDLE"):
     try:
@@ -164,6 +172,32 @@ def fetch_via_local_silent_browser(url, wait_sec=4.0):
         domain = urllib.parse.urlparse(url).netloc.lower()
         if domain in _MANUAL_VERIFY_BLOCKED:
             raise RuntimeError(f"{domain} 等待手动验证；本轮不重复请求")
+
+        ready_marker = ("structItem--thread" if "blackhatworld.com/forums/" in url else
+                        "<shreddit-post" if "reddit.com/r/" in url and ".json" not in url else "")
+
+        # 通道 1：优先使用 Scrapling StealthyFetcher 后台静默过 Cloudflare 盾（不弹窗、不抢焦点）
+        if HAS_SCRAPLING and not os.environ.get("DISABLE_SCRAPLING"):
+            try:
+                page = StealthyFetcher.fetch(
+                    url,
+                    headless=True,
+                    solve_cloudflare=True,
+                    timeout=25000,
+                )
+                raw_body = getattr(page, "html_content", None)
+                if not raw_body:
+                    body_attr = getattr(page, "body", b"")
+                    raw_body = body_attr.decode("utf-8", errors="ignore") if isinstance(body_attr, bytes) else str(body_attr or "")
+                low_sample = raw_body[:12000].lower()
+                needs_login = ("have to be" in low_sample and "logged in" in low_sample)
+                if raw_body and not is_human_challenge_page(raw_body) and not needs_login:
+                    if not ready_marker or ready_marker in raw_body:
+                        return raw_body
+            except Exception as exc:
+                print(f"[SCRAPLING WARN] {domain}: {type(exc).__name__}: {exc}，回退至本地专用浏览器", flush=True)
+
+        # 通道 2：回退至原有 DrissionPage 专用浏览器（保留登录态与手动验证兜底）
         browser_path = find_local_browser_path()
         if not browser_path:
             raise RuntimeError("本机未找到 Chrome/Edge；可设置 CHROME_PATH")
@@ -195,8 +229,6 @@ def fetch_via_local_silent_browser(url, wait_sec=4.0):
                 raise RuntimeError("验证在 3 分钟内未完成，本轮暂停该来源")
             _LOCAL_PAGE.get(url, retry=1, timeout=18)
             content = _LOCAL_PAGE.html
-        ready_marker = ("structItem--thread" if "blackhatworld.com/forums/" in url else
-                        "<shreddit-post" if "reddit.com/r/" in url and ".json" not in url else "")
         if ready_marker:
             for _ in range(10):
                 if ready_marker in content:

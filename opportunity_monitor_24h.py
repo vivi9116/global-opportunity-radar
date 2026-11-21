@@ -83,11 +83,18 @@ FAST_BOUNTY_SUBS = [
     ("forhire", "bounty_direct", "Reddit r/forhire (免费直联·全球自由职业雇佣)"),
     ("DoneDirtCheap", "bounty_direct", "Reddit r/DoneDirtCheap (免费直联·快单悬赏)"),
     ("hireaprogrammer", "bounty_direct", "Reddit r/hireaprogrammer (免费直联·开发急单)"),
-    ("freelance_forhire", "bounty_direct", "Reddit r/freelance_forhire (免费直联·外包直聘)"),
-    ("signupsforpay", "bounty_direct", "Reddit r/signupsforpay (免费直联·注册试用秒结小任务)"),
-    ("PaidStudies", "bounty_direct", "Reddit r/PaidStudies (免费直联·线上访谈与测试日结)"),
-    ("jobs4bitcoins", "bounty_direct", "Reddit r/jobs4bitcoins (免费直联·加密日结远程单)"),
-    ("WorkOnline", "bounty_direct", "Reddit r/WorkOnline (远程兼职与AI标注放单监控)")
+    ("freelance_forhire", "bounty_direct", "Reddit r/freelance_forhire (免费直联·外包直聘)")
+]
+
+DAILY_PAY_SUBS = [
+    ("signupsforpay", "Reddit r/signupsforpay (注册试用/完成即付)"),
+    ("PaidStudies", "Reddit r/PaidStudies (线上访谈/测试结算)"),
+    ("jobs4bitcoins", "Reddit r/jobs4bitcoins (加密货币结算远程单)"),
+    ("WorkOnline", "Reddit r/WorkOnline (远程兼职/AI标注)"),
+    ("slavelabour", "Reddit r/slavelabour (微任务日结)"),
+    ("DoneDirtCheap", "Reddit r/DoneDirtCheap (低价快单日结)"),
+    ("forhire", "Reddit r/forhire (自由职业日结)"),
+    ("beermoney", "Reddit r/beermoney (网赚日结实测)")
 ]
 
 REDDIT_TARGET_SUBS = [
@@ -505,6 +512,40 @@ def extract_honest_deal_fact(text_blob, ups=0, comments=0):
     return f"🔥 近30天高关注真需求 ({ups}赞 · {comments}评)"
 
 
+DAILY_PAY_PATTERN = re.compile(
+    r"(?:\bdaily\s+(?:pay|payment|payouts?|settlement)\b|"
+    r"\b(?:pay|paid|payment|payouts?|settled?)\s+(?:daily|each\s+day|every\s+day|"
+    r"same[- ]day|instantly|immediately|upon\s+completion|after\s+(?:each|every)\s+task)\b|"
+    r"\bpaid\s+at\s+(?:the\s+)?end\s+of\s+(?:the\s+)?day\b|"
+    r"日结|当天结(?:算|款)|当日结(?:算|款)|每日结(?:算|款)|按日结(?:算|款)|"
+    r"做完(?:即结|就结)|完成(?:后)?即付|秒结)",
+    re.I,
+)
+
+DAILY_PAY_CONTEXT_PATTERN = re.compile(
+    r"\b(?:task|job|work|gig|study|interview|survey|shift|freelance|remote|hiring|"
+    r"worker|signup|project|annotation|affiliate|commission|cpa|offer)\b|"
+    r"任务|兼职|外包|访谈|问卷|标注|工作|招聘|试用|注册|联盟|佣金|放单",
+    re.I,
+)
+
+
+def is_daily_pay_resource(title, body=""):
+    blob = clean_raw_html(f"{title or ''} {body or ''}")
+    return bool(DAILY_PAY_PATTERN.search(blob) and DAILY_PAY_CONTEXT_PATTERN.search(blob))
+
+
+def extract_daily_pay_fact(title, body="", comments=0):
+    blob = clean_raw_html(f"{title or ''} {body or ''}")
+    money = list(dict.fromkeys(re.findall(
+        r"(?:\$|£|€|¥|￥)\s?\d+(?:,\d{3})*(?:\.\d+)?(?:\s*(?:/day|/task|/hr|per\s+day))?",
+        blob,
+        re.I,
+    )))
+    amount = f" | 原帖金额：{' / '.join(money[:2])}" if money else " | 原帖未披露具体单价"
+    return f"✅ 原帖明确写明日结/当天付款{amount} | 当前 {comments} 条评论"
+
+
 def is_valid_money_opportunity(title, body, track, source_platform, source_url="", ups=0, cmts=0):
     url_lower = str(source_url or "").lower()
     blob = f"{title} {body} {url_lower}".lower()
@@ -524,6 +565,9 @@ def is_valid_money_opportunity(title, body, track, source_platform, source_url="
     for pat in poison_patterns:
         if re.search(pat, blob, re.I):
             return False
+
+    if track == "daily_pay":
+        return is_daily_pay_resource(title, body)
 
     if any(k in source_platform for k in (
         "DLsite", "Chaturbate", "Itch.io", "F95zone", "GitHub 一手悬赏",
@@ -563,7 +607,7 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
     cleanBody = re.sub(r'【来自[^】]+】|●\s*原帖摘要：|●\s*互动指标：.*', '', rawBody or "").strip()
     blob = f"{cleanTitle} {cleanBody}"
 
-    money_list = list(dict.fromkeys(re.findall(r'(\$\d+(?:,\d{3})*(?:\.\d+)?(?:\s*(?:k|K|MRR|mrr|/mo|/hr))?)', blob)))
+    money_list = list(dict.fromkeys(re.findall(r'(\$\d+(?:,\d{3})*(?:\.\d+)?(?:\s*(?:k|K|MRR|mrr|/mo|/hr|/day|/task))?)', blob)))
     price_str = " / ".join(money_list[:2]) if money_list else ("$40~$200 (直接私信议价)" if defaultTrack == "bounty_direct" else "按交付收 $39~$199 (1~3单满$100)")
 
     industry_m = re.search(r'\b(gym|fitness|clinic|dentist|restaurant|real estate|realtor|lawyer|agency|shopify|wix|ecommerce|hotel|salon|plumber|contractor|podcast|youtuber|creator|onlyfans|accountant)\b', blob, re.I)
@@ -577,6 +621,16 @@ def generate_unique_non_template_analysis(rawTitle, rawBody, sourceLabel, source
 
     sentences = [s.strip() for s in re.split(r'[.!?;\n]+', cleanBody) if len(s.strip()) > 18]
     summary_quote = " | ".join(sentences[:2])[:220] if sentences else cleanTitle
+
+    if defaultTrack == "daily_pay":
+        daily_amount = " / ".join(money_list[:2]) if money_list else "原帖未披露具体单价"
+        return {
+            "pain_point_zh": f"【7天内日结资源：《{cleanTitle}》】\n● 原帖明确结算方式：日结、当天付款或完成即付。\n● 原帖任务：{summary_quote}\n● 金额信息：{daily_amount}。",
+            "solver_case_zh": f"先用最小任务验证付款：只接一个可在当天完成的 `{entity_tag}` 小样，交付前确认收款渠道和结算触发条件；到账后再决定是否扩大工作量。",
+            "action_plan_zh": f"1. 点开原帖确认发布日期在 7 天内，并截图保存日结/当天付款原文；\n2. 私信只问三件事：首个小任务内容、验收标准、当天几点通过什么渠道付款；\n3. 先完成一个最小 `{entity_tag}` 交付并确认到账，再接第二天或更大的任务。",
+            "platform_ecology_tip_zh": "⚡ 日结资源筛选细节：优先选公开写明单价、付款渠道和验收条件的帖子；只写‘高收入’但不写怎么结算的不收录。首单控制在当天可完成的最小范围，避免做完一周才发现对方拖款。",
+            "reverse_money_idea_zh": f"🔄 3 条延伸赚钱路子：\n1. 【批量代做】：把高频 `{entity_tag}` 日结任务整理成标准操作清单，同时承接多位发包人的重复小单；\n2. 【跨国转包】：先用最小样本锁定海外日结单，再把机械步骤拆给国内兼职，自己负责质检和英文沟通赚差价；\n3. 【卖工具】：把重复交付过程做成脚本、表格模板或提示词包，按一次性买断价卖给同类接单者。"
+        }
 
     if any(k in sourceLabel for k in ("电鸭", "Remotive", "Jobicy", "RemoteOK")):
         return {
@@ -658,7 +712,9 @@ def sanitizeAndUpgradeSignal(rawItem):
             return None
         if track == "bounty_direct" and age_sec > 7200:
             return None
-        if track != "bounty_direct" and age_sec > (30 * 86400):
+        if track == "daily_pay" and age_sec > (7 * 86400):
+            return None
+        if track not in ("bounty_direct", "daily_pay") and age_sec > (30 * 86400):
             return None
 
     ups = int(rawItem.get("ups") or 0)
@@ -673,20 +729,27 @@ def sanitizeAndUpgradeSignal(rawItem):
         "track": track,
         "title_zh": title,
         "summary_one_line": rawItem.get("summary_one_line") or f"{source_platform} 核验收录",
-        "deal_fact_zh": rawItem.get("deal_fact_zh") or extract_honest_deal_fact(f"{title} {pain}", ups, cmts),
+        "deal_fact_zh": rawItem.get("deal_fact_zh") or (
+            extract_daily_pay_fact(title, pain, cmts)
+            if track == "daily_pay"
+            else extract_honest_deal_fact(f"{title} {pain}", ups, cmts)
+        ),
         "pain_point_zh": u["pain_point_zh"],
         "solver_case_zh": u["solver_case_zh"],
         "platform_ecology_tip_zh": u["platform_ecology_tip_zh"],
         "reverse_money_idea_zh": u["reverse_money_idea_zh"],
         "action_plan_zh": u["action_plan_zh"],
-        "feasibility_pct": 93 if track == "bounty_direct" else 87,
-        "time_to_money": "当天拿单($10~$150)" if track == "bounty_direct" else "3~15天首笔$100",
+        "feasibility_pct": 93 if track == "bounty_direct" else (88 if track == "daily_pay" else 87),
+        "time_to_money": (
+            "当天拿单($10~$150)" if track == "bounty_direct"
+            else ("当天/每日结算" if track == "daily_pay" else "3~15天首笔$100")
+        ),
         "capital_req": "$0",
         "source_platform": source_platform,
         "source_url": source_url,
         "solver_url": rawItem.get("solver_url") or source_url,
         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "deliverable_type": "bounty_sniper_py",
+        "deliverable_type": "daily_pay_resource" if track == "daily_pay" else "bounty_sniper_py",
         "created_ts": createdTs,
         "_raw_title": rawItem.get("title_zh") or rawItem.get("title") or title,
         "_raw_source_text": rawItem.get("pain_point_zh") or rawItem.get("selftext") or pain,
@@ -696,7 +759,7 @@ def sanitizeAndUpgradeSignal(rawItem):
 def fetch_reddit_jsonp_py(sub, mode="new", limit=15):
     errors = []
     path = f"top.json?t=month&limit={limit}&raw_json=1" if mode == "top_month" else f"new.json?limit={limit}&raw_json=1"
-    max_age_sec = 30 * 86400 if mode == "top_month" else 7200
+    max_age_sec = 30 * 86400 if mode == "top_month" else (7 * 86400 if mode == "new_week" else 7200)
 
     if USE_LOCAL_SILENT_BROWSER:
         try:
@@ -936,15 +999,19 @@ def fetch_remote_parttime_and_microtasks(now_ts):
             if not re.search(r"兼职|日结|周结|外包|远程|短期|项目|按单|小时|freelance|part", f"{title} {summary}", re.I):
                 continue
             post_url = f"https://eleduck.com/posts/{p.get('id')}"
+            daily_pay = is_daily_pay_resource(title, summary)
             item = sanitizeAndUpgradeSignal({
                 "id": f"eleduck_{p.get('id')}",
                 "created_ts": pub_ts,
-                "track": "pain_saas",
+                "track": "daily_pay" if daily_pay else "pain_saas",
                 "ups": int(p.get("votes_count") or 5),
                 "num_comments": int(p.get("comments_count") or 1),
                 "title_zh": f"【电鸭远程兼职/外包】{title}",
                 "pain_point_zh": summary,
-                "deal_fact_zh": f"✅ 国内免费直联远程兼职（电鸭社区）| 评论: {p.get('comments_count', 0)}",
+                "deal_fact_zh": (
+                    extract_daily_pay_fact(title, summary, p.get("comments_count", 0))
+                    if daily_pay else f"✅ 国内免费直联远程兼职（电鸭社区）| 评论: {p.get('comments_count', 0)}"
+                ),
                 "source_platform": "电鸭社区 (免费远程兼职)",
                 "source_url": post_url,
                 "solver_url": post_url,
@@ -976,15 +1043,19 @@ def fetch_remote_parttime_and_microtasks(now_ts):
                 continue
             salary = clean_raw_html(j.get("salary") or "雇主直谈/时薪")
             job_url = j.get("url") or "https://remotive.com"
+            daily_pay = is_daily_pay_resource(title, f"{desc} {salary}")
             item = sanitizeAndUpgradeSignal({
                 "id": f"remotive_{j.get('id')}",
                 "created_ts": pub_ts,
-                "track": "pain_saas",
+                "track": "daily_pay" if daily_pay else "pain_saas",
                 "ups": 10,
                 "num_comments": 2,
                 "title_zh": f"【Remotive 全球远程兼职】{title} @ {company} ({salary})",
                 "pain_point_zh": f"岗位类型: {j_type} | 地域要求: {loc or 'Worldwide'} | 薪资: {salary}\n{desc}",
-                "deal_fact_zh": f"✅ 100% 免费直投远程兼职 | 薪资: {salary} | 地域: {loc or 'Worldwide'}",
+                "deal_fact_zh": (
+                    extract_daily_pay_fact(title, f"{desc} {salary}", 0)
+                    if daily_pay else f"✅ 100% 免费直投远程兼职 | 薪资: {salary} | 地域: {loc or 'Worldwide'}"
+                ),
                 "source_platform": "Remotive 全球远程兼职",
                 "source_url": job_url,
                 "solver_url": job_url,
@@ -1015,15 +1086,19 @@ def fetch_remote_parttime_and_microtasks(now_ts):
                 if scam_or_local_only.search(f"{title} {geo} {excerpt}"):
                     continue
                 job_url = j.get("url") or "https://jobicy.com"
+                daily_pay = is_daily_pay_resource(title, excerpt)
                 item = sanitizeAndUpgradeSignal({
                     "id": f"jobicy_{j.get('id')}",
                     "created_ts": pub_ts,
-                    "track": "pain_saas",
+                    "track": "daily_pay" if daily_pay else "pain_saas",
                     "ups": 8,
                     "num_comments": 2,
                     "title_zh": f"【Jobicy 远程{jt}】{title} @ {company} ({geo})",
                     "pain_point_zh": f"地域: {geo} | 摘要: {excerpt}",
-                    "deal_fact_zh": f"✅ 免费直投远程 {jt} | 地域: {geo}",
+                    "deal_fact_zh": (
+                        extract_daily_pay_fact(title, excerpt, 0)
+                        if daily_pay else f"✅ 免费直投远程 {jt} | 地域: {geo}"
+                    ),
                     "source_platform": f"Jobicy 远程{jt}",
                     "source_url": job_url,
                     "solver_url": job_url,
@@ -1056,15 +1131,20 @@ def fetch_remote_parttime_and_microtasks(now_ts):
             sal_min, sal_max = j.get("salary_min") or 0, j.get("salary_max") or 0
             sal_str = f"${sal_min}~${sal_max}" if sal_min else "雇主直谈"
             job_url = j.get("url") or "https://remoteok.com"
+            daily_blob = f"{loc} {sal_str} {' '.join(j.get('tags') or [])}"
+            daily_pay = is_daily_pay_resource(title, daily_blob)
             item = sanitizeAndUpgradeSignal({
                 "id": f"remoteok_{j.get('id')}",
                 "created_ts": pub_ts,
-                "track": "pain_saas",
+                "track": "daily_pay" if daily_pay else "pain_saas",
                 "ups": 10,
                 "num_comments": 2,
                 "title_zh": f"【RemoteOK 全球远程】{title} @ {company} ({sal_str})",
                 "pain_point_zh": f"地域: {loc} | 薪资: {sal_str} | 标签: {', '.join(j.get('tags') or [])}",
-                "deal_fact_zh": f"✅ RemoteOK 免费直投 | 薪资: {sal_str} | 地域: {loc}",
+                "deal_fact_zh": (
+                    extract_daily_pay_fact(title, daily_blob, 0)
+                    if daily_pay else f"✅ RemoteOK 免费直投 | 薪资: {sal_str} | 地域: {loc}"
+                ),
                 "source_platform": "RemoteOK 全球远程兼职",
                 "source_url": job_url,
                 "solver_url": job_url,
@@ -1228,6 +1308,7 @@ def fetch_additional_sources(now_ts):
     ]
     for kind, forum, track, bhw_label in bhw_forums:
         parsed = []
+        daily_parsed = []
         if USE_LOCAL_SILENT_BROWSER:
             try:
                 raw_html = fetch_via_local_silent_browser(
@@ -1237,6 +1318,12 @@ def fetch_additional_sources(now_ts):
                     raw_html, bhw_label, track, now_ts, max_items=8,
                     is_hire=(kind in ("hire", "wtb")),
                 )
+                if kind in ("hire", "wtb", "cpa", "affiliate", "making_money"):
+                    daily_label = f"{bhw_label}·7天内日结"
+                    daily_parsed = parse_bhw_forum_html(
+                        raw_html, daily_label, "daily_pay", now_ts,
+                        max_items=8, is_daily=True,
+                    )
                 if kind == "journey":
                     for item in parsed:
                         try:
@@ -1256,8 +1343,11 @@ def fetch_additional_sources(now_ts):
             except Exception as exc:
                 print(f"[SOURCE WARN] {bhw_label}: 本地浏览器 {type(exc).__name__}: {exc}")
         items.extend(parsed)
+        items.extend(daily_parsed)
         print(f"[SOURCE {'OK' if parsed else 'WARN'}] {bhw_label}: {len(parsed)} 条"
               + ("；云端需本地已验证浏览器补采" if not USE_LOCAL_SILENT_BROWSER else ""))
+        if kind in ("hire", "wtb", "cpa", "affiliate", "making_money"):
+            print(f"[SOURCE {'OK' if daily_parsed else 'WARN'}] {bhw_label} 7天内日结: {len(daily_parsed)} 条")
 
     # 6. AffiliateFix
     for af_path, af_label, af_kw in (
@@ -1447,6 +1537,38 @@ def run_fast_bounty_and_radar():
                 all_fetched.append(item)
                 alert_candidates.append((item, d.get("author", ""), title, clean_raw_html(d.get("selftext") or "")))
 
+    fast_sub_names = {sub.lower() for sub, _, _ in FAST_BOUNTY_SUBS}
+    for sub, label in DAILY_PAY_SUBS:
+        posts = fetch_reddit_jsonp_py(sub, "new_week", 30)
+        daily_count = 0
+        for d in posts:
+            title = clean_raw_html(d.get("title", ""))
+            body = clean_raw_html(d.get("selftext") or title)
+            created_ts = int(d.get("created_utc") or 0)
+            if not title or not is_daily_pay_resource(title, body):
+                continue
+            if sub.lower() in fast_sub_names and time.time() - created_ts <= 7200:
+                continue
+            permalink = d.get("permalink", "")
+            full_link = permalink if permalink.startswith("http") else ("https://www.reddit.com" + permalink)
+            item = sanitizeAndUpgradeSignal({
+                "id": f"rd_daily_{d.get('id')}",
+                "created_ts": created_ts,
+                "track": "daily_pay",
+                "ups": d.get("ups", 0),
+                "num_comments": d.get("num_comments", 0),
+                "title_zh": f"【{label}·7天内日结】{title}",
+                "pain_point_zh": body,
+                "deal_fact_zh": extract_daily_pay_fact(title, body, d.get("num_comments", 0)),
+                "source_platform": f"{label}·7天内日结",
+                "source_url": full_link,
+                "solver_url": full_link,
+            })
+            if item:
+                all_fetched.append(item)
+                daily_count += 1
+        print(f"[SOURCE {'OK' if daily_count else 'WARN'}] {label} 7天内日结: {daily_count} 条")
+
     github_scan_complete = False
     current_github_ids = set()
     try:
@@ -1583,7 +1705,8 @@ def run_fast_bounty_and_radar():
     analyze_all_new_signals(all_fetched, conn)
 
     c.execute("DELETE FROM signals WHERE track = 'bounty_direct' AND id NOT LIKE 'base_%' AND created_ts < ?", (now_ts - 7200,))
-    c.execute("DELETE FROM signals WHERE track != 'bounty_direct' AND id NOT LIKE 'base_%' AND created_ts < ?", (now_ts - 30 * 86400,))
+    c.execute("DELETE FROM signals WHERE track = 'daily_pay' AND id NOT LIKE 'base_%' AND created_ts < ?", (now_ts - 7 * 86400,))
+    c.execute("DELETE FROM signals WHERE track NOT IN ('bounty_direct', 'daily_pay') AND id NOT LIKE 'base_%' AND created_ts < ?", (now_ts - 30 * 86400,))
 
     c.execute("SELECT id, title_zh, pain_point_zh, track, source_platform, source_url FROM signals WHERE id NOT LIKE 'base_%'")
     existing_records = c.fetchall()
@@ -1606,6 +1729,8 @@ def run_fast_bounty_and_radar():
         """, item)
     c.execute("DELETE FROM signals WHERE track='bounty_direct' AND (created_ts < ? OR created_ts > ?)",
               (int(time.time()) - 7200, int(time.time()) + 300))
+    c.execute("DELETE FROM signals WHERE track='daily_pay' AND (created_ts < ? OR created_ts > ?)",
+              (int(time.time()) - 7 * 86400, int(time.time()) + 300))
     c.execute("DELETE FROM gemini_pending WHERE id NOT IN (SELECT id FROM signals)")
     conn.commit()
 
@@ -1622,7 +1747,7 @@ def run_fast_bounty_and_radar():
         ):
             continue
         plat_key = "DLsite" if "DLsite" in sp else ("HN" if ("Hacker News" in sp or sp.startswith("HN")) else sp[:18])
-        cap = 35 if row.get("track") == "bounty_direct" else (6 if plat_key in ("DLsite", "HN") else 10)
+        cap = 35 if row.get("track") in ("bounty_direct", "daily_pay") else (6 if plat_key in ("DLsite", "HN") else 10)
         plat_counts[plat_key] = plat_counts.get(plat_key, 0) + 1
         if plat_counts[plat_key] <= cap:
             rows.append(row)
@@ -1999,7 +2124,7 @@ def parse_reddit_browser_posts(raw_html, sub, max_age_sec, limit):
     return posts
 
 
-def parse_bhw_forum_html(raw_html, source_label, track, now_ts, max_items=8, is_hire=False):
+def parse_bhw_forum_html(raw_html, source_label, track, now_ts, max_items=8, is_hire=False, is_daily=False):
     soup = BeautifulSoup(raw_html, "lxml")
     out = []
     for row in soup.select(".structItem--thread"):
@@ -2009,6 +2134,8 @@ def parse_bhw_forum_html(raw_html, source_label, track, now_ts, max_items=8, is_
         if not anchor:
             continue
         title = clean_raw_html(anchor.get_text(" ", strip=True))
+        if is_daily and not is_daily_pay_resource(title, title):
+            continue
         if is_hire and not re.search(
             r"\b(?:WTB|buying|looking\s+(?:for|to\s+buy)|need|wanted|hiring|seeking|request)\b",
             title, re.I,
@@ -2018,10 +2145,11 @@ def parse_bhw_forum_html(raw_html, source_label, track, now_ts, max_items=8, is_
         latest_node = row.select_one(".structItem-latestDate[data-timestamp]")
         start_ts = int(start_node.get("data-timestamp") or 0) if start_node else 0
         latest_ts = int(latest_node.get("data-timestamp") or 0) if latest_node else start_ts
-        activity_ts = start_ts if is_hire else latest_ts
+        activity_ts = start_ts if (is_hire or is_daily) else latest_ts
         if len(title) < 12 or not activity_ts or activity_ts > now_ts + 300:
             continue
-        if now_ts - activity_ts > (7200 if is_hire else 30 * 86400):
+        max_age_sec = 7 * 86400 if is_daily else (7200 if is_hire else 30 * 86400)
+        if now_ts - activity_ts > max_age_sec:
             continue
         href = anchor.get("href") or ""
         thread_id = re.search(r"\.(\d+)(?:/(?:unread|latest))?/?$", href)
@@ -2033,11 +2161,12 @@ def parse_bhw_forum_html(raw_html, source_label, track, now_ts, max_items=8, is_
         replies_node = row.select_one(".structItem-cell--meta .pairs dd")
         replies = int((replies_node.get_text(" ", strip=True) or "0").replace(",", "")) if replies_node else 0
         item = sanitizeAndUpgradeSignal({
-            "id": f"bhw_{thread_id.group(1)}_{activity_ts}", "created_ts": activity_ts,
+            "id": f"bhw_{'daily_' if is_daily else ''}{thread_id.group(1)}_{activity_ts}", "created_ts": activity_ts,
             "track": track, "ups": 0, "num_comments": replies,
             "title_zh": f"【{source_label}】{title}", "pain_point_zh": title,
             "source_platform": source_label,
-            "source_url": thread_url if is_hire else thread_url + "latest",
+            "deal_fact_zh": extract_daily_pay_fact(title, title, replies) if is_daily else None,
+            "source_url": thread_url if (is_hire or is_daily) else thread_url + "latest",
             "solver_url": thread_url,
         })
         if item:

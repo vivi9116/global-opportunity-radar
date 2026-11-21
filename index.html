@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>全球痛点与真实赚钱机会 24h 监控工作台 (v12.0 BHW双悬赏区+v9.2十大实战矩阵补全版)</title>
+  <title>全球痛点与真实赚钱机会 24h 监控工作台 (v12.1 免费远程兼职+日结小任务+BHW双悬赏)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -35,17 +35,17 @@
   <!-- 顶部导航栏 -->
   <header class="w-full bg-slate-900/95 border border-slate-800 rounded-xl px-4 py-2.5 mb-3 flex flex-wrap items-center justify-between gap-2">
     <div class="flex items-center gap-2.5 flex-wrap">
-      <span class="badge-pill bg-emerald-600 text-white">v12.0 BHW双悬赏+v9.2全矩阵满血版</span>
+      <span class="badge-pill bg-emerald-600 text-white">v12.1 免费远程兼职+日结小任务+BHW双悬赏</span>
       <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight">
-        全球痛点、BHW/Reddit免费悬赏、跨国套利与成人CPA 24h 监控台（专抓活体买家求购急单 · 15天赚首笔$100）
+        全球痛点、免费远程兼职/日结小任务、BHW/Reddit悬赏与跨国套利 24h 监控台（0门槛免费源 · 15天赚首笔$100）
       </h1>
     </div>
     <div class="flex items-center gap-2 flex-wrap text-xs font-semibold">
       <span id="totalCountBadge" class="px-2.5 py-1 rounded-md bg-emerald-950 border border-emerald-700 text-emerald-300">
-        📊 正在并发扫描 BHW/Reddit 悬赏与 v9.2 全矩阵...
+        📊 正在并发扫描免费远程兼职、日结小任务与全网悬赏...
       </span>
       <span id="gatewayStatus" class="px-2.5 py-1 rounded-md bg-amber-950/90 border border-amber-700/80 text-amber-300">
-        🟡 正在聚合全球雇主求购单与近30天套利流...
+        🟡 正在聚合全球雇主求购单与远程兼职流...
       </span>
       <span class="px-2.5 py-1 rounded-md bg-rose-950/90 border border-rose-700/80 text-rose-300">
         ⚡ 60秒悬赏快轨: <strong id="fastTimerText" class="text-white font-mono">01:00</strong>
@@ -63,13 +63,13 @@
   <nav class="w-full flex flex-wrap items-center justify-between gap-2 mb-3">
     <div class="flex flex-wrap gap-2">
       <button onclick="switchMainTab('tab_radar')" id="btn_tab_radar" class="px-4 py-2 rounded-xl font-bold text-sm bg-blue-600 text-white cursor-pointer">
-        📡 1. 全球赚钱机会雷达 (BHW/Reddit/GitHub悬赏急单 + 跨国套利 + 成人CPA + 痛点买断)
+        📡 1. 全球赚钱机会雷达 (日结小任务 + 免费远程兼职 + BHW/Reddit/GitHub悬赏 + 套利)
       </button>
       <button onclick="switchMainTab('tab_factory')" id="btn_tab_factory" class="px-4 py-2 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 cursor-pointer">
         🏭 2. 一对一落地工具生成工厂 (防封二跳页 / 99%任务锁 / 抢单器 / 截流话术)
       </button>
       <button onclick="switchMainTab('tab_truth')" id="btn_tab_truth" class="px-4 py-2 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 cursor-pointer">
-        🔍 3. BHW双悬赏区拿单潜规则与四重内容安检说明
+        🔍 3. 免费远程兼职/日结源与四重安检说明
       </button>
     </div>
     <div class="flex items-center gap-2">
@@ -86,14 +86,14 @@
   <section id="tab_radar" class="w-full">
     <div class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 mb-3 flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap items-center gap-1.5">
-        <button onclick="filterTrack('all')" id="flt_all" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer">全部全球机会 (v9.2全矩阵+实时求购流)</button>
-        <button onclick="filterTrack('bounty_direct')" id="flt_bounty_direct" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-bold cursor-pointer">💰 免费直联悬赏急单 (BHW Hire&WTB / Reddit / GitHub / V2EX)</button>
+        <button onclick="filterTrack('all')" id="flt_all" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold cursor-pointer">全部全球机会 (v12.1全矩阵)</button>
+        <button onclick="filterTrack('bounty_direct')" id="flt_bounty_direct" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-bold cursor-pointer">💰 日结小任务/免费悬赏 (signups/PaidStudies/BHW/Reddit/GitHub)</button>
+        <button onclick="filterTrack('pain_saas')" id="flt_pain_saas" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold cursor-pointer">💻 免费远程兼职(电鸭/Remotive/Jobicy) + 软件痛点</button>
         <button onclick="filterTrack('gray_arb')" id="flt_gray_arb" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold cursor-pointer">🕵️ 跨国套利/服务转包/CPA内容锁/BHW (近30天)</button>
-        <button onclick="filterTrack('pain_saas')" id="flt_pain_saas" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold cursor-pointer">💻 软件痛点买断/差评截胡/开源复刻 (近30天)</button>
         <button onclick="filterTrack('nsfw_adult')" id="flt_nsfw_adult" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 text-xs font-bold cursor-pointer">🔞 成人CPA/F95zone/Chaturbate/DLsite (近30天)</button>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <input id="searchInput" oninput="resetPageAndRender()" type="text" placeholder="🔍 搜全球关键词 (如 BlackHatWorld / WTB / 套利 / CPA / 悬赏 / GitHub)..." class="px-3 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white w-72 focus:outline-none focus:border-blue-500" />
+        <input id="searchInput" oninput="resetPageAndRender()" type="text" placeholder="🔍 搜关键词 (如 电鸭 / Remotive / 日结 / signupsforpay / BHW / 悬赏)..." class="px-3 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white w-72 focus:outline-none focus:border-blue-500" />
       </div>
     </div>
 
@@ -177,10 +177,10 @@ You don't need a $49/mo subscription for this — I can either send you the full
   <!-- ==================== 标签页 3：实情交底表 ==================== -->
   <section id="tab_truth" class="w-full hidden">
     <div class="w-full v92-card rounded-xl p-5">
-      <h2 class="text-lg font-extrabold text-white mb-3">🔍 v12.0 BHW 双悬赏区（Hire #76 + WTB #92）与全网求购急单流说明</h2>
+      <h2 class="text-lg font-extrabold text-white mb-3">🔍 v12.1 免费远程兼职、日结小任务与 BHW 双悬赏区说明</h2>
       <div class="space-y-3 text-xs sm:text-sm text-slate-300">
-        <p>1. <strong class="text-emerald-400">补全 BlackHatWorld 两大悬赏专区</strong>：同时抓取 `Hire a Freelancer (forums/hire-a-freelancer.76)` 与 `Want to Buy 求购悬赏区 (forums/want-to-buy.92)`。在 BHW 拿单无需买 Jr.VIP 会员在帖下留言，直接点进原帖复制雇主留下的 Telegram / Skype 或发 PM 私信甩出样本/闲鱼货源即可收 USDT。</p>
-        <p>2. <strong class="text-amber-300">拒绝全是“经验分享贴”，专抓“买家求购急单”</strong>：系统新增 `Buyer Intent Stream`，专门检索全网最新发布的 `[Hiring]`、`[Task]`、`[WTB]`、`willing to pay`、`need a bot/scraper` 贴，同时完整恢复 v9.2 的 10 大跨赛道实战盈利模型。</p>
+        <p>1. <strong class="text-emerald-400">新增 100% 免费日结小任务与远程兼职源</strong>：接入 Reddit `r/signupsforpay`（注册试用秒结）、`r/PaidStudies`（线上访谈日结）、`r/jobs4bitcoins`（加密日结）、`r/WorkOnline`（远程兼职/AI标注），以及云端直连的 **电鸭社区、Remotive、Jobicy、RemoteOK** 免费接口，内置反垫付/反押金/反 US-Only 过滤。</p>
+        <p>2. <strong class="text-amber-300">保留原有全部核心能力</strong>：Scrapling 静默过盾 + BHW 双悬赏区 + 悬赏 2h 自动清理 + 大盘 30 天时效锁 + 四重域名与反歧义安检。</p>
       </div>
     </div>
   </section>
@@ -198,10 +198,10 @@ const ALLOWED_DOMAINS = [
   "reddit.com", "github.com", "news.ycombinator.com", "v2ex.com",
   "blackhatworld.com", "affiliatefix.com", "dlsite.com", "chaturbate.com",
   "f95zone.to", "itch.io", "dev.to", "lemmy.world", "crakrevenue.com", "ogads.com",
-  "g2.com", "trustpilot.com", "etsy.com"
+  "g2.com", "trustpilot.com", "etsy.com",
+  "remotive.com", "jobicy.com", "remoteok.com", "eleduck.com", "weworkremotely.com"
 ];
 
-// 满血补全 v9.2 的 10 大跨赛道王牌赚钱实战模型（涵盖 BHW悬赏、Reddit急单、G2差评截胡、Etsy虚拟品、CPA锁、成人多平台套利）
 const GLOBAL_DEEP_BASE = [
   {
     id: "base_01", track: "bounty_direct", created_ts: Math.floor(Date.now() / 1000) + 7200,
@@ -372,14 +372,14 @@ function isValidMoneySignalJS(title, pain, track, sourcePlat, sourceUrl, ups, cm
   if (!urlLower || !ALLOWED_DOMAINS.some(d => urlLower.includes(d))) return false;
 
   if (/peopleperhour|upwork|freelancer\.com|flippa/i.test(blob)) return false;
-  if (/\b(?:accountant|accounting|bookkeeping|auditor|auditing|tax\s+prep|aicpa|cpa\s+exam|public\s+accountant|deloitte|pwc|kpmg)\b/i.test(blob)) return false;
-  if (/公認会計士|会計士|税理士|経理|求人サイト|キャリア求人|転職|ジョブズ|cpa-jobs/i.test(blob)) return false;
+  if (/\b(?:accountant|accounting|bookkeeping|auditor|auditing|tax\s+prep|aicpa|cpa\s+exam|public\s+accountant|deloitte|pwc|kpmg|registration\s+fee|pay\s+to\s+apply|deposit\s+required)\b/i.test(blob)) return false;
+  if (/公認会計士|会計士|税理士|経理|求人サイト|キャリア求人|転職|ジョブズ|cpa-jobs|刷单|垫付|押金|会费|培训贷/i.test(blob)) return false;
   if (/\b(?:503|502|504|outage|is\s+down|status\s+page|us-east-1|cve-\d+)\b/i.test(title)) return false;
 
-  if (/DLsite|Chaturbate|Itch\.io|F95zone|GitHub 一手悬赏|BlackHatWorld 免费直联|BlackHatWorld WTB/i.test(sourcePlat)) return true;
+  if (/DLsite|Chaturbate|Itch\.io|F95zone|GitHub 一手悬赏|BlackHatWorld 免费直联|BlackHatWorld WTB|电鸭社区|Remotive|Jobicy|RemoteOK/i.test(sourcePlat)) return true;
 
   if (track === "bounty_direct") {
-    return /\[task\]|\[hiring\]|\[wtb\]|\bwtb\b|\bhiring\b|\blooking\s+for\b|\bneed\b|\bbounty\b|\bwilling\s+to\s+pay\b|\$\d+|外包|急招|兼职|开发|脚本|爬虫|求购/i.test(blob);
+    return /\[task\]|\[hiring\]|\[wtb\]|\[offer\]|\bwtb\b|\bhiring\b|\blooking\s+for\b|\bneed\b|\bbounty\b|\bwilling\s+to\s+pay\b|\$\d+|\b(?:study|interview|paying|signup|remote|part[- ]time)\b|外包|急招|兼职|日结|开发|脚本|爬虫|求购/i.test(blob);
   }
   if (track === "nsfw_adult") {
     return /\b(?:onlyfans|fanvue|fansly|patreon|chaturbate|camgirl|nsfw|lewd|hentai|eroge|dlsite|crakrevenue|adult|ai\s+girlfriend|subscribers|ppv)\b/i.test(blob);
@@ -424,6 +424,19 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
 
   const sentences = cleanBody.split(/[.!?;\n]+/).map(s => s.trim()).filter(s => s.length > 18 && !s.includes(cleanTitle.slice(0, 20)));
   const summaryQuote = sentences.slice(0, 2).join(" | ").slice(0, 220) || cleanBody.slice(0, 200) || cleanTitle;
+
+  if (/电鸭|Remotive|Jobicy|RemoteOK/i.test(sourceLabel)) {
+    return {
+      track: "pain_saas",
+      feas: 90,
+      timeToMoney: "本周内开工收款",
+      pain: `【免费直投远程兼职/合同单：《${cleanTitle}》】\n● 岗位摘要：${summaryQuote}\n● 渠道优势：0 平台订阅费、免买投标币，直接对接招聘方。`,
+      solver: `用 AI 针对该岗位涉及的 \`${entityTag}\` 写一段 150 字精准自荐信并附带 1 个相关作品截图，直接发给雇主。`,
+      action: `1. 点开原帖直链核对时薪/日结方式与联系方式；\n2. 围绕 \`${entityTag}\` 发送简短自荐并提出可先免费试做 15 分钟样本；\n3. 同步投递 3~5 个同类免费远程兼职锁定稳定现金流。`,
+      ecoTip: `🔥 免费远程兼职拿单技巧：不要只发通用简历！第一封消息里直接写明『我可以先花 15 分钟为您试做一小段样本确认质量』，回复率提升 3 倍。`,
+      revIdea: `🔄 3 条增收路子：\n1. 利用 AI 提效同时维护 2~3 家不限坐班的远程雇主；\n2. 遇到做不完的活转包给国内闲鱼熟手赚差价；\n3. 把帮雇主做过的流程沉淀成报价单卖给同行业其他公司。`
+    };
+  }
 
   if (repoName || sourceLabel.includes("GitHub")) {
     const targetRepo = repoName || cleanTitle.slice(0, 28);
@@ -513,7 +526,7 @@ function buildUniqueEntityPlaybook(rawTitle, rawBody, sourceLabel, sourceUrl, de
     track: defaultTrack || "pain_saas",
     feas: 86,
     timeToMoney: "3~10天首笔$100",
-    pain: `【近30天痛点与变现标的《${cleanTitle}》还原（{ups}赞 · ${cmts}评）】\n● 涉及领域与技术栈：${entityTag}（${hasRealMoney ? "提及金额：" + priceStr : "痛点/产品复盘"}）。\n● 原帖核心内容：${summaryQuote}`,
+    pain: `【近30天痛点与变现标的《${cleanTitle}》还原（${ups}赞 · ${cmts}评）】\n● 涉及领域与技术栈：${entityTag}（${hasRealMoney ? "提及金额：" + priceStr : "痛点/产品复盘"}）。\n● 原帖核心内容：${summaryQuote}`,
     solver: `针对「${cleanTitle.slice(0, 32)}」暴露出的高价订阅或操作繁琐痛点，切入『$29 免月租一次性买断小工具（卖4份破$100）』或『$69 人工代配置服务（接2单破$100）』。`,
     action: hasComments
       ? `1. 【抓评论区现成痛点客户】：点开原帖查看那 ${cmts} 条评论，找到同样在抱怨该问题或求工具的回复者；\n2. 【AI 极速封装 \`${entityTag}\` 小工具】：用 Cursor 把解决该痛点的脚本打包成免安装版；\n3. 【楼中楼截流 + 私信锁单】：在第一条高赞评论下回复干货解法，留钩子『前 20 条免费帮跑』引流进私信成交。`
@@ -532,7 +545,11 @@ function sanitizeAndUpgradeSignal(rawItem) {
   let sourceUrl = String(rawItem.source_url || "");
   if (!rawTitle || !sourceUrl) return null;
 
-  if (/\[offer\]|\[for\s*hire\]|\[selling\]|\[wts\]/i.test(rawTitle)) return null;
+  if (!/signupsforpay/i.test(sourcePlat + " " + sourceUrl)) {
+    if (/\[offer\]|\[for\s*hire\]|\[selling\]|\[wts\]/i.test(rawTitle)) return null;
+  } else {
+    if (/\[for\s*hire\]|\[selling\]|\[wts\]/i.test(rawTitle)) return null;
+  }
 
   const isBaseCard = String(rawItem.id || "").startsWith("base_");
   const createdTs = Number(rawItem.created_ts || rawItem.created_utc || 0);
@@ -627,23 +644,34 @@ async function fetchRedditJsonp(sub, mode = "new", limit = 12) {
 
 function isDirectRedditEmployerPost(sub, post) {
   const title = String(post && post.title || "");
-  if (!title || post.crosspost_parent || post.removed_by_category || /\[offer\]|\[for\s*hire\]/i.test(title)) return false;
+  if (!title || post.crosspost_parent || post.removed_by_category) return false;
+  if (/^signupsforpay$/i.test(sub)) {
+    if (/\[for\s*hire\]/i.test(title)) return false;
+    return /\[offer\]|\$\d+|\b(?:pay|paying|bonus|signup)\b/i.test(title);
+  }
+  if (/\[offer\]|\[for\s*hire\]/i.test(title)) return false;
+  if (/^(PaidStudies|jobs4bitcoins|WorkOnline)$/i.test(sub)) {
+    return /\[hiring\]|\[task\]|\$\d+|\b(?:study|interview|paying|hiring|part[- ]time|remote|annotation|gig)\b/i.test(title);
+  }
   if (/^(slavelabour|forhire)$/i.test(sub)) return /\[(?:task|hiring)\]/i.test(title);
   if (/^(webscraping|Automate)$/i.test(sub)) return /\[task\]|\[hiring\]|\b(?:hiring|paid gig|paid task|bounty|budget|willing to pay)\b/i.test(title);
   return /\[task\]|\[hiring\]|\b(?:task|hiring|need|budget)\b|\$\d+/i.test(title);
 }
 
-// 60秒悬赏快轨：前端读取 Reddit 原帖与已核验数据；BHW 仅使用本地浏览器核验的原帖时间。
 async function pollFastBountiesOnly() {
   const badge = document.getElementById('gatewayStatus');
-  badge.innerText = "🎯 正在执行 60 秒快轨：同步 Reddit 急单与已核验的 BHW/GitHub 数据...";
+  badge.innerText = "🎯 正在执行 60 秒快轨：同步日结小任务、Reddit急单与已核验的 BHW/GitHub 数据...";
 
   const fastSubs = [
     { sub: "slavelabour", track: "bounty_direct", label: "Reddit r/slavelabour (免费直联急单)" },
     { sub: "forhire", track: "bounty_direct", label: "Reddit r/forhire (免费外包雇佣)" },
     { sub: "DoneDirtCheap", track: "bounty_direct", label: "Reddit r/DoneDirtCheap (免费快单悬赏)" },
     { sub: "hireaprogrammer", track: "bounty_direct", label: "Reddit r/hireaprogrammer (免费程序急单)" },
-    { sub: "freelance_forhire", track: "bounty_direct", label: "Reddit r/freelance_forhire (免费直聘急单)" }
+    { sub: "freelance_forhire", track: "bounty_direct", label: "Reddit r/freelance_forhire (免费直聘急单)" },
+    { sub: "signupsforpay", track: "bounty_direct", label: "Reddit r/signupsforpay (免费直联·注册试用秒结小任务)" },
+    { sub: "PaidStudies", track: "bounty_direct", label: "Reddit r/PaidStudies (免费直联·线上访谈与测试日结)" },
+    { sub: "jobs4bitcoins", track: "bounty_direct", label: "Reddit r/jobs4bitcoins (免费直联·加密日结远程单)" },
+    { sub: "WorkOnline", track: "bounty_direct", label: "Reddit r/WorkOnline (远程兼职与AI标注放单监控)" }
   ];
 
   const freshItems = [];
@@ -660,7 +688,7 @@ async function pollFastBountiesOnly() {
           ups: d.ups || 0,
           num_comments: d.num_comments || 0,
           title_zh: `【${s.label}】${d.title}`,
-          deal_fact_zh: `✅ 免费直联悬赏急单：当前仅 ${d.num_comments || 0} 条竞标评论 (${d.ups || 0} 赞)`,
+          deal_fact_zh: `✅ 免费直联悬赏/日结单：当前仅 ${d.num_comments || 0} 条评论 (${d.ups || 0} 赞)`,
           pain_point_zh: d.selftext || d.title,
           source_platform: s.label,
           source_url: "https://www.reddit.com" + d.permalink,
@@ -692,7 +720,7 @@ async function pollFastBountiesOnly() {
   }
   renderCards();
   badge.className = "px-2.5 py-1 rounded-md bg-emerald-950 border border-emerald-600 text-emerald-300";
-  badge.innerText = `🟢 已同步核验急单 (${new Date().toLocaleTimeString()})`;
+  badge.innerText = `🟢 已同步核验急单与日结小任务 (${new Date().toLocaleTimeString()})`;
 }
 
 async function fetchAllGlobalStreams() {
@@ -917,7 +945,7 @@ function renderCards() {
   filtered.sort((a, b) => (b.created_ts || 0) - (a.created_ts || 0));
 
   const visibleList = filtered.slice(0, displayLimit);
-  document.getElementById('totalCountBadge').innerText = `📊 当前筛选共 ${filtered.length} 条纯正赚钱机会 (BHW双悬赏+v9.2全矩阵 · 聚焦15天首笔$100)`;
+  document.getElementById('totalCountBadge').innerText = `📊 当前筛选共 ${filtered.length} 条纯正赚钱机会 (免费远程兼职+日结小任务+BHW双悬赏)`;
   document.getElementById('loadMoreBar').style.display = visibleList.length < filtered.length ? 'flex' : 'none';
 
   grid.innerHTML = visibleList.map((item, idx) => {
